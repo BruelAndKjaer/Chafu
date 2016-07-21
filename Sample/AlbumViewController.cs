@@ -7,7 +7,7 @@ using UIKit;
 
 namespace Sample
 {
-    public class ViewController : UIViewController
+    public class AlbumViewController : UIViewController
     {
         public override void ViewDidLoad()
         {
@@ -27,12 +27,17 @@ namespace Sample
             var @delegate = new PhotoGalleryDelegate(albumView, dataSource);
 
             View.Add(albumView);
-            View.AddConstraints(new[]{
-                NSLayoutConstraint.Create(albumView, NSLayoutAttribute.Top, NSLayoutRelation.Equal, View, NSLayoutAttribute.Top, 1, 0),
-                NSLayoutConstraint.Create(albumView, NSLayoutAttribute.Bottom, NSLayoutRelation.Equal, View, NSLayoutAttribute.Bottom, 1, 0),
-                NSLayoutConstraint.Create(albumView, NSLayoutAttribute.Width, NSLayoutRelation.Equal, View, NSLayoutAttribute.Width, 1, 0),
-                NSLayoutConstraint.Create(albumView, NSLayoutAttribute.Leading, NSLayoutRelation.Equal, View, NSLayoutAttribute.Leading, 1, 0)
-                });
+            View.AddConstraints(new[]
+            {
+                NSLayoutConstraint.Create(albumView, NSLayoutAttribute.Top, NSLayoutRelation.Equal, View,
+                    NSLayoutAttribute.Top, 1, 0),
+                NSLayoutConstraint.Create(albumView, NSLayoutAttribute.Bottom, NSLayoutRelation.Equal, View,
+                    NSLayoutAttribute.Bottom, 1, 0),
+                NSLayoutConstraint.Create(albumView, NSLayoutAttribute.Width, NSLayoutRelation.Equal, View,
+                    NSLayoutAttribute.Width, 1, 0),
+                NSLayoutConstraint.Create(albumView, NSLayoutAttribute.Leading, NSLayoutRelation.Equal, View,
+                    NSLayoutAttribute.Leading, 1, 0)
+            });
 
             albumView.Initialize(dataSource, @delegate);
         }

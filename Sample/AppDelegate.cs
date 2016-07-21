@@ -22,7 +22,7 @@ namespace Sample
             Window = new UIWindow(UIScreen.MainScreen.Bounds);
 
             // If you have defined a root view controller, set it here:
-            Window.RootViewController = new UINavigationController(new ViewController());
+            Window.RootViewController = new UINavigationController(new HomeViewController());
 
             // make the window visible
             Window.MakeKeyAndVisible();
