@@ -13,6 +13,11 @@ namespace Fusuma
         public static string CameraTitle { get; set; } = "PHOTO";
         public static string VideoTitle { get; set; } = "VIDEO";
         public static ModeOrder ModeOrder { get; set; } = ModeOrder.LibraryFirst;
+        public static UIImage FlashOnImage { get; set; }
+        public static UIImage FlashOffImage { get; set; }
+        public static UIImage FlipImage { get; set; }
+        public static UIImage ShutterImage { get; set; }
+        public static bool ShowBackCameraFirst { get; set; } = true;
     }
 
     public enum ModeOrder
