@@ -300,19 +300,15 @@ namespace Fusuma
                 _flipButton.TintColor = Configuration.TintColor;
                 _shutterButton.TintColor = Configuration.TintColor;
 
-                _flashButton.SetImage(_flashOffImage?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate),
-                    UIControlState.Normal);
-                _flipButton.SetImage(flipImage?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate),
-                    UIControlState.Normal);
-                _shutterButton.SetImage(shutterImage?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate),
-                    UIControlState.Normal);
+				_flashOnImage = _flashOnImage?.ImageWithRenderingMode (UIImageRenderingMode.AlwaysTemplate);
+				_flashOffImage = _flashOffImage?.ImageWithRenderingMode (UIImageRenderingMode.AlwaysTemplate);
+				flipImage = flipImage?.ImageWithRenderingMode (UIImageRenderingMode.AlwaysTemplate);
+				shutterImage = shutterImage?.ImageWithRenderingMode (UIImageRenderingMode.AlwaysTemplate);
             }
-            else
-            {
-                _flashButton.SetImage(_flashOffImage, UIControlState.Normal);
-                _flipButton.SetImage(flipImage, UIControlState.Normal);
-                _shutterButton.SetImage(shutterImage, UIControlState.Normal);
-            }
+
+			_flashButton.SetImage (_flashOffImage, UIControlState.Normal);
+			_flipButton.SetImage (flipImage, UIControlState.Normal);
+			_shutterButton.SetImage (shutterImage, UIControlState.Normal);
 
             Hidden = false;
 
