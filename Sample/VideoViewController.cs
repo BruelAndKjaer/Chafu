@@ -1,4 +1,5 @@
-﻿using Foundation;
+﻿using System;
+using Foundation;
 using Fusuma;
 using UIKit;
 
@@ -35,6 +36,7 @@ namespace Sample
 
         private void OnVideo(NSUrl obj)
         {
+			Console.WriteLine (obj);
             UIApplication.SharedApplication.OpenUrl(obj);
         }
     }
