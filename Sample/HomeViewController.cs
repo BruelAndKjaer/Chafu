@@ -22,8 +22,15 @@ namespace Sample
             cameraButton.TouchUpInside +=
                 (sender, args) => NavigationController.PushViewController(new CameraViewController(), true);
 
+            var videoButton = new UIButton(UIButtonType.System);
+            videoButton.SetTitle("Camera", UIControlState.Normal);
+            videoButton.Frame = new CGRect(10, 130, 310, 50);
+            videoButton.TouchUpInside +=
+                (sender, args) => NavigationController.PushViewController(new VideoViewController(), true);
+
             Add(albumButton);
             Add(cameraButton);
+            Add(videoButton);
         }
     }
 }
