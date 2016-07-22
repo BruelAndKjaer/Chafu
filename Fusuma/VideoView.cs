@@ -128,9 +128,9 @@ namespace Fusuma
                     buttonContainer, NSLayoutAttribute.CenterY, 1, 0),
                 NSLayoutConstraint.Create(FlashButton, NSLayoutAttribute.CenterY, NSLayoutRelation.Equal,
                     buttonContainer, NSLayoutAttribute.CenterY, 1, 0),
-                NSLayoutConstraint.Create(FlashButton, NSLayoutAttribute.CenterY, NSLayoutRelation.Equal,
+                NSLayoutConstraint.Create(FlipButton, NSLayoutAttribute.CenterY, NSLayoutRelation.Equal,
                     buttonContainer, NSLayoutAttribute.CenterY, 1, 0),
-                NSLayoutConstraint.Create(FlashButton, NSLayoutAttribute.Leading, NSLayoutRelation.Equal,
+                NSLayoutConstraint.Create(FlipButton, NSLayoutAttribute.Leading, NSLayoutRelation.Equal,
                     buttonContainer, NSLayoutAttribute.Leading, 1, 15)
             });
 
@@ -217,7 +217,7 @@ namespace Fusuma
             {
                 FlashButton.TintColor = Configuration.TintColor;
                 FlipButton.TintColor = Configuration.TintColor;
-                
+				_toggleRecordingButton.TintColor = Configuration.TintColor;
 
                 FlashOnImage = FlashOnImage?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
                 FlashOffImage = FlashOffImage?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
@@ -268,7 +268,7 @@ namespace Fusuma
             if (_isRecording)
             {
                 var outputPath = Path.Combine(Path.GetTempPath(), "output.mov");
-                var outputUrl = NSUrl.FromString(outputPath);
+                var outputUrl = NSUrl.FromString("file:///" + outputPath);
 
                 var fileManager = NSFileManager.DefaultManager;
                 if (fileManager.FileExists(outputPath))
