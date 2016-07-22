@@ -18,6 +18,8 @@ namespace Fusuma
         public static UIImage FlipImage { get; set; }
         public static UIImage ShutterImage { get; set; }
         public static bool ShowBackCameraFirst { get; set; } = true;
+        public static UIImage VideoStartImage { get; set; }
+        public static UIImage VideoStopImage { get; set; }
     }
 
     public enum ModeOrder

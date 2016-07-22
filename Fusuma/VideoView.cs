@@ -1,30 +1,32 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using AVFoundation;
-using CoreFoundation;
 using CoreGraphics;
+using CoreMedia;
 using Foundation;
 using UIKit;
 
 namespace Fusuma
 {
-    public class CameraView : BaseCameraView
+    public class VideoView : BaseCameraView, IAVCaptureFileOutputRecordingDelegate
     {
-        private UIButton _shutterButton;
+        private UIButton _toggleRecordingButton;
+        private bool _isRecording;
+        private AVCaptureMovieFileOutput _videoOutput;
+        private UIImage _videoStartImage;
+        private UIImage _videoStopImage;
+        private Action<NSUrl> _onVideoFinished;
 
-        private AVCaptureStillImageOutput _imageOutput;
-        private NSObject _willEnterForegroundObserver;
-        private Action<UIImage> _onImage;
-
-        public CameraView(IntPtr handle) 
+        public VideoView(IntPtr handle) 
             : base(handle) { CreateView(); }
-        public CameraView() { CreateView(); }
+        public VideoView() { CreateView(); }
 
         private void CreateView()
         {
             Hidden = true;
             ContentMode = UIViewContentMode.ScaleToFill;
-            Frame = new CGRect(0,0, 400, 600);
+            Frame = new CGRect(0, 0, 400, 600);
             AutoresizingMask = UIViewAutoresizing.All;
             BackgroundColor = Configuration.BackgroundColor;
 
@@ -50,7 +52,7 @@ namespace Fusuma
             };
             Add(buttonContainer);
 
-            _shutterButton = new UIButton(new CGRect(166, 41, 68, 68))
+            _toggleRecordingButton = new UIButton(new CGRect(166, 41, 68, 68))
             {
                 TranslatesAutoresizingMaskIntoConstraints = false,
                 VerticalAlignment = UIControlContentVerticalAlignment.Center,
@@ -60,17 +62,17 @@ namespace Fusuma
                 Opaque = false,
                 LineBreakMode = UILineBreakMode.MiddleTruncation
             };
-            _shutterButton.TouchUpInside += OnShutter;
-            _shutterButton.SetImage(UIImage.FromBundle("ic_radio_button_checked"), UIControlState.Normal);
-            buttonContainer.Add(_shutterButton);
+            _toggleRecordingButton.TouchUpInside += OnToggleRecording;
+            _toggleRecordingButton.SetImage(UIImage.FromBundle("ic_radio_button_checked"), UIControlState.Normal);
+            buttonContainer.Add(_toggleRecordingButton);
 
-            var heightConstraint = NSLayoutConstraint.Create(_shutterButton, NSLayoutAttribute.Height,
+            var heightConstraint = NSLayoutConstraint.Create(_toggleRecordingButton, NSLayoutAttribute.Height,
                 NSLayoutRelation.Equal);
             heightConstraint.Constant = 68;
-            var widthConstraint = NSLayoutConstraint.Create(_shutterButton, NSLayoutAttribute.Width,
+            var widthConstraint = NSLayoutConstraint.Create(_toggleRecordingButton, NSLayoutAttribute.Width,
                 NSLayoutRelation.Equal);
             widthConstraint.Constant = 68;
-            _shutterButton.AddConstraints(new[] { heightConstraint, widthConstraint});
+            _toggleRecordingButton.AddConstraints(new[] { heightConstraint, widthConstraint });
 
             FlipButton = new UIButton(new CGRect(15, 55, 40, 40))
             {
@@ -116,13 +118,13 @@ namespace Fusuma
             widthConstraint.Constant = 40;
             FlashButton.AddConstraints(new[] { heightConstraint, widthConstraint });
 
-            buttonContainer.AddConstraints(new []
+            buttonContainer.AddConstraints(new[]
             {
-                NSLayoutConstraint.Create(_shutterButton, NSLayoutAttribute.CenterX, NSLayoutRelation.Equal, 
-                    buttonContainer, NSLayoutAttribute.CenterX, 1, 0),    
+                NSLayoutConstraint.Create(_toggleRecordingButton, NSLayoutAttribute.CenterX, NSLayoutRelation.Equal,
+                    buttonContainer, NSLayoutAttribute.CenterX, 1, 0),
                 NSLayoutConstraint.Create(FlashButton, NSLayoutAttribute.Trailing, NSLayoutRelation.Equal,
                     buttonContainer, NSLayoutAttribute.Trailing, 1, -15),
-                NSLayoutConstraint.Create(_shutterButton, NSLayoutAttribute.CenterY, NSLayoutRelation.Equal,
+                NSLayoutConstraint.Create(_toggleRecordingButton, NSLayoutAttribute.CenterY, NSLayoutRelation.Equal,
                     buttonContainer, NSLayoutAttribute.CenterY, 1, 0),
                 NSLayoutConstraint.Create(FlashButton, NSLayoutAttribute.CenterY, NSLayoutRelation.Equal,
                     buttonContainer, NSLayoutAttribute.CenterY, 1, 0),
@@ -132,12 +134,12 @@ namespace Fusuma
                     buttonContainer, NSLayoutAttribute.Leading, 1, 15)
             });
 
-            AddConstraints(new []
+            AddConstraints(new[]
             {
-                NSLayoutConstraint.Create(buttonContainer, NSLayoutAttribute.Bottom, NSLayoutRelation.Equal, 
+                NSLayoutConstraint.Create(buttonContainer, NSLayoutAttribute.Bottom, NSLayoutRelation.Equal,
                     this, NSLayoutAttribute.Bottom, 1, 0),
                 NSLayoutConstraint.Create(buttonContainer, NSLayoutAttribute.Trailing, NSLayoutRelation.Equal,
-                    this, NSLayoutAttribute.Trailing, 1, 0), 
+                    this, NSLayoutAttribute.Trailing, 1, 0),
                 NSLayoutConstraint.Create(buttonContainer, NSLayoutAttribute.Top, NSLayoutRelation.Equal,
                     PreviewContainer, NSLayoutAttribute.Bottom, 1, 0),
                 NSLayoutConstraint.Create(buttonContainer, NSLayoutAttribute.Leading, NSLayoutRelation.Equal,
@@ -151,89 +153,11 @@ namespace Fusuma
             });
         }
 
-        private void OnFlash(object sender, EventArgs e)
+        public void Initialize(Action<NSUrl> onVideoFinished)
         {
-            Flash();
-        }
+            if (Session != null) return;
 
-        private void OnFlip(object sender, EventArgs e)
-        {
-            Flip();
-        }
-
-        private void OnShutter(object sender, EventArgs e)
-        {
-            if (_imageOutput == null) return;
-
-            DispatchQueue.DefaultGlobalQueue.DispatchAsync(() =>
-            {
-                var videoConnection = _imageOutput.ConnectionFromMediaType(AVMediaType.Video);
-
-                _imageOutput.CaptureStillImageAsynchronously(videoConnection, (buffer, error) =>
-                {
-                    Session?.StopRunning();
-
-                    var data = AVCaptureStillImageOutput.JpegStillToNSData(buffer);
-
-                    var image = new UIImage(data);
-                    var imageWidth = image.Size.Width;
-                    var imageHeight = image.Size.Height;
-
-                    var previewWidth = PreviewContainer.Frame.Width;
-
-                    var centerCoordinate = imageHeight*0.5;
-
-                    var imageRef = image.CGImage.WithImageInRect(new CGRect(centerCoordinate - imageWidth*0.5, 0, imageWidth,
-                        imageWidth));
-
-                    DispatchQueue.MainQueue.DispatchAsync(() =>
-                    {
-                        if (Configuration.CropImage)
-                        {
-                            var resizedImage = new UIImage(imageRef, previewWidth/imageWidth, image.Orientation);
-                            _onImage?.Invoke(resizedImage);
-                        }
-                        else
-                        {
-                            _onImage?.Invoke(image);
-                        }
-
-                        Session?.StopRunning();
-                        Session = null;
-                        Device = null;
-                        _imageOutput = null;
-                    });
-                });
-            });
-        }
-
-        public void Initialize(Action<UIImage> onImage)
-        {
-            if (Session != null)
-                return;
-
-            _onImage = onImage;
-
-            FlashOnImage = Configuration.FlashOnImage ?? UIImage.FromBundle("ic_flash_on");
-            FlashOffImage = Configuration.FlashOffImage ?? UIImage.FromBundle("ic_flash_off");
-            var flipImage = Configuration.FlipImage ?? UIImage.FromBundle("ic_loop");
-            var shutterImage = Configuration.ShutterImage ?? UIImage.FromBundle("ic_radio_button_checked");
-
-            if (Configuration.TintIcons)
-            {
-                FlashButton.TintColor = Configuration.TintColor;
-                FlipButton.TintColor = Configuration.TintColor;
-                _shutterButton.TintColor = Configuration.TintColor;
-
-                FlashOnImage = FlashOnImage?.ImageWithRenderingMode (UIImageRenderingMode.AlwaysTemplate);
-                FlashOffImage = FlashOffImage?.ImageWithRenderingMode (UIImageRenderingMode.AlwaysTemplate);
-				flipImage = flipImage?.ImageWithRenderingMode (UIImageRenderingMode.AlwaysTemplate);
-				shutterImage = shutterImage?.ImageWithRenderingMode (UIImageRenderingMode.AlwaysTemplate);
-            }
-
-			FlashButton.SetImage (FlashOffImage, UIControlState.Normal);
-			FlipButton.SetImage (flipImage, UIControlState.Normal);
-			_shutterButton.SetImage (shutterImage, UIControlState.Normal);
+            _onVideoFinished = onVideoFinished;
 
             Hidden = false;
 
@@ -246,16 +170,25 @@ namespace Fusuma
             if (Device == null)
                 throw new Exception("Could not find capture device, does your device have a camera?");
 
-            FlashButton.Hidden = !Device.HasFlash;
-
             try
             {
                 NSError error;
                 VideoInput = new AVCaptureDeviceInput(Device, out error);
+
                 Session.AddInput(VideoInput);
 
-                _imageOutput = new AVCaptureStillImageOutput();
-                Session.AddOutput(_imageOutput);
+                _videoOutput = new AVCaptureMovieFileOutput();
+
+                var totalSeconds = 60L;
+                var timeScale = 30; //FPS
+
+                var maxDuration = new CMTime(totalSeconds, timeScale);
+
+                _videoOutput.MaxRecordedDuration = maxDuration;
+                _videoOutput.MinFreeDiskSpaceLimit = 1024*1024;
+
+                if (Session.CanAddOutput(_videoOutput))
+                    Session.AddOutput(_videoOutput);
 
                 var videoLayer = new AVCaptureVideoPreviewLayer(Session)
                 {
@@ -266,36 +199,106 @@ namespace Fusuma
                 PreviewContainer.Layer.AddSublayer(videoLayer);
 
                 Session.StartRunning();
-
-                FocusView = new UIView(new CGRect(0, 0, 90, 90));
-                var tapRecognizer = new UITapGestureRecognizer(Focus);
-                PreviewContainer.AddGestureRecognizer(tapRecognizer);
             }
-            catch { /* ignored */ }
+            catch { /* ignore */ }
+
+            FocusView = new UIView(new CGRect(0, 0, 90, 90));
+            var tapRecognizer = new UITapGestureRecognizer(Focus);
+            PreviewContainer.AddGestureRecognizer(tapRecognizer);
+
+
+            FlashOnImage = Configuration.FlashOnImage ?? UIImage.FromBundle("ic_flash_on");
+            FlashOffImage = Configuration.FlashOffImage ?? UIImage.FromBundle("ic_flash_off");
+            var flipImage = Configuration.FlipImage ?? UIImage.FromBundle("ic_loop");
+            _videoStartImage = Configuration.VideoStartImage ?? UIImage.FromBundle("video_button");
+            _videoStopImage = Configuration.VideoStopImage ?? UIImage.FromBundle("video_button_rec");
+
+            if (Configuration.TintIcons)
+            {
+                FlashButton.TintColor = Configuration.TintColor;
+                FlipButton.TintColor = Configuration.TintColor;
+                
+
+                FlashOnImage = FlashOnImage?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
+                FlashOffImage = FlashOffImage?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
+                flipImage = flipImage?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
+                _videoStartImage = _videoStartImage?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
+                _videoStopImage = _videoStopImage?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
+            }
+
+            FlashButton.SetImage(FlashOffImage, UIControlState.Normal);
+            FlipButton.SetImage(flipImage, UIControlState.Normal);
+            _toggleRecordingButton.SetImage(_videoStartImage, UIControlState.Normal);
 
             FlashConfiguration();
             StartCamera();
-
-            _willEnterForegroundObserver = UIApplication.Notifications.ObserveWillEnterForeground(WillEnterForeground);
         }
 
-        private void WillEnterForeground(object sender, NSNotificationEventArgs nsNotificationEventArgs)
+        public override void StopCamera()
         {
-            StartCamera();
+            if (_isRecording)
+                ToggleRecording();
+            base.StopCamera();
         }
 
-        protected override void Dispose(bool disposing)
+        private void OnFlash(object sender, EventArgs e)
         {
-            if (disposing)
+            Flash();
+        }
+
+        private void OnFlip(object sender, EventArgs e)
+        {
+            Flip();
+        }
+
+        private void OnToggleRecording(object sender, EventArgs e)
+        {
+            ToggleRecording();
+        }
+
+        private void ToggleRecording()
+        {
+            if (_videoOutput == null) return;
+
+            _isRecording = !_isRecording;
+
+            var shotImage = _isRecording ? _videoStopImage : _videoStartImage;
+            _toggleRecordingButton.SetImage(shotImage, UIControlState.Normal);
+
+            if (_isRecording)
             {
-                _willEnterForegroundObserver?.Dispose();
-                _willEnterForegroundObserver = null;
+                var outputPath = Path.Combine(Path.GetTempPath(), "output.mov");
+                var outputUrl = NSUrl.FromString(outputPath);
 
-                _shutterButton.TouchUpInside -= OnShutter;
-                FlipButton.TouchUpInside -= OnFlip;
-                FlashButton.TouchUpInside -= OnFlash;
+                var fileManager = NSFileManager.DefaultManager;
+                if (fileManager.FileExists(outputPath))
+                {
+                    NSError error;
+                    fileManager.Remove(outputPath, out error);
+                    if (error != null)
+                    {
+                        Console.WriteLine($"Error removing item at path {outputPath}");
+                        _isRecording = false;
+                        return;
+                    }
+                }
+
+                FlipButton.Enabled = false;
+                FlashButton.Enabled = false;
+                _videoOutput.StartRecordingToOutputFile(outputUrl, this);
             }
-            base.Dispose(disposing);
+            else
+            {
+                _videoOutput.StopRecording();
+                FlipButton.Enabled = true;
+                FlashButton.Enabled = true;
+            }
+        }
+
+        public void FinishedRecording(AVCaptureFileOutput captureOutput, NSUrl outputFileUrl, NSObject[] connections, 
+            NSError error)
+        {
+            _onVideoFinished?.Invoke(outputFileUrl);
         }
     }
 }
