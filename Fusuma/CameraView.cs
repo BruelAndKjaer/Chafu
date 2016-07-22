@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using AVFoundation;
+using CoreFoundation;
 using CoreGraphics;
 using Foundation;
 using HealthKit;
@@ -18,11 +19,17 @@ namespace Fusuma
         private UIButton _shutterButton;
         private UIImage _flashOnImage;
         private UIImage _flashOffImage;
+        private UIView _focusView;
 
         private AVCaptureSession _session;
         private AVCaptureDevice _device;
         private AVCaptureStillImageOutput _imageOutput;
         private NSObject _willEnterForegroundObserver;
+        private AVCaptureDeviceInput _videoInput;
+        private Action<UIImage> _onImage;
+
+        private static bool CameraAvailable
+            => AVCaptureDevice.GetAuthorizationStatus(AVMediaType.Video) == AVAuthorizationStatus.Authorized;
 
         public CameraView(IntPtr handle) 
             : base(handle) { CreateView(); }
@@ -129,7 +136,7 @@ namespace Fusuma
                 NSLayoutConstraint.Create(_shutterButton, NSLayoutAttribute.CenterX, NSLayoutRelation.Equal, 
                     buttonContainer, NSLayoutAttribute.CenterX, 1, 0),    
                 NSLayoutConstraint.Create(_flashButton, NSLayoutAttribute.Trailing, NSLayoutRelation.Equal,
-                    buttonContainer, NSLayoutAttribute.Trailing, 1, 15),
+                    buttonContainer, NSLayoutAttribute.Trailing, 1, -15),
                 NSLayoutConstraint.Create(_shutterButton, NSLayoutAttribute.CenterY, NSLayoutRelation.Equal,
                     buttonContainer, NSLayoutAttribute.CenterY, 1, 0),
                 NSLayoutConstraint.Create(_flashButton, NSLayoutAttribute.CenterY, NSLayoutRelation.Equal,
@@ -161,23 +168,126 @@ namespace Fusuma
 
         private void OnFlash(object sender, EventArgs e)
         {
-                
+            if (!CameraAvailable) return;
+
+            try
+            {
+                if (!_device.HasFlash) return;
+
+                NSError error;
+                if (_device.LockForConfiguration(out error))
+                {
+                    var mode = _device.FlashMode;
+                    if (mode == AVCaptureFlashMode.Off)
+                    {
+                        _device.FlashMode = AVCaptureFlashMode.On;
+                        _flashButton.SetImage(_flashOnImage, UIControlState.Normal);
+                    }
+                    else
+                    {
+                        _device.FlashMode = AVCaptureFlashMode.Off;
+                        _flashButton.SetImage(_flashOffImage, UIControlState.Normal);
+                    }
+                    _device.UnlockForConfiguration();
+                }
+            }
+            catch
+            {
+                _flashButton.SetImage(_flashOffImage, UIControlState.Normal);
+            }
         }
 
         private void OnFlip(object sender, EventArgs e)
         {
+            if (!CameraAvailable) return;
 
+            _session?.StopRunning();
+
+            try
+            {
+                _session?.BeginConfiguration();
+
+                if (_session != null)
+                {
+                    foreach (var input in _session.Inputs)
+                    {
+                        _session.RemoveInput(input);
+                    }
+
+                    var position = _videoInput.Device.Position == AVCaptureDevicePosition.Front
+                        ? AVCaptureDevicePosition.Back
+                        : AVCaptureDevicePosition.Front;
+
+                    foreach (var device in AVCaptureDevice.DevicesWithMediaType(AVMediaType.Video))
+                    {
+                        if (device.Position == position)
+                        {
+                            NSError error;
+                            _videoInput = new AVCaptureDeviceInput(device, out error);
+                            _session.AddInput(_videoInput);
+                        }
+                    }
+                }
+
+                _session?.CommitConfiguration();
+            }
+            catch { }
+
+            _session?.StartRunning();
         }
 
         private void OnShutter(object sender, EventArgs e)
         {
-                
+            if (_imageOutput == null) return;
+
+            DispatchQueue.DefaultGlobalQueue.DispatchAsync(() =>
+            {
+                var videoConnection = _imageOutput.ConnectionFromMediaType(AVMediaType.Video);
+
+                _imageOutput.CaptureStillImageAsynchronously(videoConnection, (buffer, error) =>
+                {
+                    _session?.StopRunning();
+
+                    var data = AVCaptureStillImageOutput.JpegStillToNSData(buffer);
+
+                    var image = new UIImage(data);
+                    var imageWidth = image.Size.Width;
+                    var imageHeight = image.Size.Height;
+
+                    var previewWidth = _previewContainer.Frame.Width;
+
+                    var centerCoordinate = imageHeight*0.5;
+
+                    var imageRef = image.CGImage.WithImageInRect(new CGRect(centerCoordinate - imageWidth*0.5, 0, imageWidth,
+                        imageWidth));
+
+                    DispatchQueue.MainQueue.DispatchAsync(() =>
+                    {
+                        if (Configuration.CropImage)
+                        {
+                            var resizedImage = new UIImage(imageRef, previewWidth/imageWidth, image.Orientation);
+                            _onImage?.Invoke(resizedImage);
+                        }
+                        else
+                        {
+                            _onImage?.Invoke(image);
+                        }
+
+                        _session?.StopRunning();
+                        _session = null;
+                        _device = null;
+                        _imageOutput = null;
+                    });
+                });
+            });
         }
 
-        public void Initialize()
+        public void Initialize(Action<UIImage> onImage)
         {
             if (_session != null)
                 return;
+
+            _onImage = onImage;
 
             _flashOnImage = Configuration.FlashOnImage ?? UIImage.FromBundle("ic_flash_on");
             _flashOffImage = Configuration.FlashOffImage ?? UIImage.FromBundle("ic_flash_off");
@@ -220,8 +330,8 @@ namespace Fusuma
             try
             {
                 NSError error;
-                var videoInput = new AVCaptureDeviceInput(_device, out error);
-                _session.AddInput(videoInput);
+                _videoInput = new AVCaptureDeviceInput(_device, out error);
+                _session.AddInput(_videoInput);
 
                 _imageOutput = new AVCaptureStillImageOutput();
                 _session.AddOutput(_imageOutput);
@@ -235,6 +345,10 @@ namespace Fusuma
                 _previewContainer.Layer.AddSublayer(videoLayer);
 
                 _session.StartRunning();
+
+                _focusView = new UIView(new CGRect(0, 0, 90, 90));
+                var tapRecognizer = new UITapGestureRecognizer(Focus);
+                _previewContainer.AddGestureRecognizer(tapRecognizer);
             }
             catch { /* ignored */ }
 
@@ -242,6 +356,51 @@ namespace Fusuma
             StartCamera();
 
             _willEnterForegroundObserver = UIApplication.Notifications.ObserveWillEnterForeground(WillEnterForeground);
+        }
+
+        private void Focus(UITapGestureRecognizer recognizer)
+        {
+            var point = recognizer.LocationInView(this);
+            var viewSize = Bounds.Size;
+            var newPoint = new CGPoint(point.Y/viewSize.Height, 1.0 - point.X/viewSize.Width);
+
+            var device = AVCaptureDevice.DefaultDeviceWithMediaType(AVMediaType.Video);
+
+            NSError error;
+            if (device.LockForConfiguration(out error))
+            {
+                if (device.IsFocusModeSupported(AVCaptureFocusMode.AutoFocus))
+                {
+                    device.FocusMode = AVCaptureFocusMode.AutoFocus;
+                    device.FocusPointOfInterest = newPoint;
+                }
+
+                if (device.IsExposureModeSupported(AVCaptureExposureMode.ContinuousAutoExposure))
+                {
+                    device.ExposureMode = AVCaptureExposureMode.ContinuousAutoExposure;
+                    device.ExposurePointOfInterest = newPoint;
+                }
+
+                device.UnlockForConfiguration();
+            }
+
+            _focusView.Alpha = 0;
+            _focusView.Center = point;
+            _focusView.BackgroundColor = UIColor.Clear;
+            _focusView.Layer.BorderColor = Configuration.BaseTintColor.CGColor;
+            _focusView.Layer.BorderWidth = 1;
+            _focusView.Transform = CGAffineTransform.MakeScale(1.0f, 1.0f);
+            Add(_focusView);
+
+            AnimateNotify(0.8, 0.0, 0.8f, 3.0f, UIViewAnimationOptions.CurveEaseIn, () =>
+            {
+                _focusView.Alpha = 1;
+                _focusView.Transform = CGAffineTransform.MakeScale(0.7f, 0.7f);
+            }, finished =>
+            {
+                _focusView.Transform = CGAffineTransform.MakeScale(1.0f, 1.0f);
+                _focusView.RemoveFromSuperview();
+            });
         }
 
         private void WillEnterForeground(object sender, NSNotificationEventArgs nsNotificationEventArgs)
@@ -265,7 +424,21 @@ namespace Fusuma
 
         private void FlashConfiguration()
         {
+            try
+            {
+                if (_device != null && _device.HasFlash)
+                {
+                    NSError error;
+                    if (_device.LockForConfiguration(out error))
+                    {
+                        _device.FlashMode = AVCaptureFlashMode.Off;
+                        _flashButton.SetImage(_flashOffImage, UIControlState.Normal);
 
+                        _device.UnlockForConfiguration();
+                    }
+                }
+            }
+            catch { /* ignore */ }
         }
 
         protected override void Dispose(bool disposing)
