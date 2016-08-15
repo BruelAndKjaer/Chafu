@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using CoreGraphics;
+﻿using CoreGraphics;
 using Fusuma;
 using UIKit;
 
@@ -21,7 +18,6 @@ namespace Sample
                 TranslatesAutoresizingMaskIntoConstraints = false,
                 AccessibilityLabel = "AlbumView"
             };
-            albumView.CollectionView.RegisterClassForCell(typeof(AlbumViewCell), "AlbumViewCell");
 
             var dataSource = new PhotoGalleryDataSource(albumView, new CGSize(100, 100));
             var @delegate = new PhotoGalleryDelegate(albumView, dataSource);

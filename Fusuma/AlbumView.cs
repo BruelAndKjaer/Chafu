@@ -1,11 +1,14 @@
 ﻿using System;
 using CoreGraphics;
+using Foundation;
 using UIKit;
 
 namespace Fusuma
 {
     public class AlbumView : UIView
     {
+        public event EventHandler<UIImage> ImageSelected;
+
         private CGPoint _dragStartPos = CGPoint.Empty;
         private nfloat _cropBottomY;
         private float _dragDiff = 20f;
@@ -108,6 +111,8 @@ namespace Fusuma
             });
 
             Hidden = true;
+
+            CollectionView.RegisterClassForCell(typeof(AlbumViewCell), "AlbumViewCell");
         }
 
         public void Initialize(UICollectionViewDataSource dataSource, UICollectionViewDelegate @delegate)
@@ -134,6 +139,8 @@ namespace Fusuma
 
             CollectionView.DataSource = dataSource;
             CollectionView.Delegate = @delegate;
+
+            //CollectionView.ScrollToItem(NSIndexPath.FromItemSection(0,0),UICollectionViewScrollPosition.Top, false);
         }
 
         private void Panned(UIPanGestureRecognizer sender)

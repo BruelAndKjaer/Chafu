@@ -84,7 +84,11 @@
     <Compile Include="CameraView.cs" />
     <Compile Include="Configuration.cs" />
     <Compile Include="DragDirection.cs" />
+    <Compile Include="FusumaAlbumDataSource.cs" />
+    <Compile Include="FusumaViewController.cs" />
     <Compile Include="ImageCropView.cs" />
+    <Compile Include="Mode.cs" />
+    <Compile Include="ModeOrder.cs" />
     <Compile Include="PhotoGalleryDataSource.cs" />
     <Compile Include="PhotoGalleryDelegate.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

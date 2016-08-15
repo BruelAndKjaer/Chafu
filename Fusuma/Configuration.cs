@@ -20,11 +20,11 @@ namespace Fusuma
         public static bool ShowBackCameraFirst { get; set; } = true;
         public static UIImage VideoStartImage { get; set; }
         public static UIImage VideoStopImage { get; set; }
-    }
-
-    public enum ModeOrder
-    {
-        CameraFirst,
-        LibraryFirst
+        public static UIImage AlbumImage { get; set; }
+        public static UIImage CameraImage { get; set; }
+        public static UIImage VideoImage { get; set; }
+        public static UIImage CheckImage { get; set; }
+        public static UIImage CloseImage { get; set; }
+        public static bool PreferStatusbarHidden { get; set; } = true;
     }
 }

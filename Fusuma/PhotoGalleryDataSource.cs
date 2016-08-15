@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using CoreFoundation;
 using CoreGraphics;
 using Foundation;
@@ -9,7 +10,7 @@ using UIKit;
 
 namespace Fusuma
 {
-    public class PhotoGalleryDataSource : UICollectionViewDataSource, IPHPhotoLibraryChangeObserver
+    public class PhotoGalleryDataSource : FusumaAlbumDataSource, IPHPhotoLibraryChangeObserver
     {
         private readonly AlbumView _albumView;
         private readonly CGSize _cellSize;
@@ -264,6 +265,40 @@ namespace Fusuma
             }
 
             base.Dispose(disposing);
+        }
+
+        public override Task<UIImage> GetCroppedImage(CGRect cropRect)
+        {
+            var tcs = new TaskCompletionSource<UIImage>();
+
+            Task.Run(() =>
+            {
+                try
+                {
+                    var options = new PHImageRequestOptions
+                    {
+                        DeliveryMode = PHImageRequestOptionsDeliveryMode.HighQualityFormat,
+                        NetworkAccessAllowed = true,
+                        NormalizedCropRect = cropRect,
+                        ResizeMode = PHImageRequestOptionsResizeMode.Exact
+                    };
+
+                    var targetWidth = Math.Floor((float)_asset.PixelWidth * cropRect.Width);
+                    var targetHeight = Math.Floor((float)_asset.PixelHeight * cropRect.Height);
+                    var dimension = Math.Max(Math.Min(targetHeight, targetWidth), 1024 * UIScreen.MainScreen.Scale);
+
+                    var targetSize = new CGSize(dimension, dimension);
+
+                    PHImageManager.DefaultManager.RequestImageForAsset(_asset, targetSize, PHImageContentMode.AspectFill,
+                        options, (result, info) => tcs.SetResult(result));
+                }
+                catch(Exception e)
+                {
+                    tcs.TrySetException(e);
+                }
+            });
+
+            return tcs.Task;
         }
     }
 }
