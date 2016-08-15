@@ -13,7 +13,7 @@ namespace Fusuma
             var border = new CALayer
             {
                 BorderColor = color.CGColor,
-                Frame = new CGRect(0, self.Frame.Height, self.Frame.Width, width),
+                Frame = new CGRect(0, self.Frame.Height - width, self.Frame.Width, width),
                 BorderWidth = width,
                 Name = BorderLayerName
             };

@@ -34,13 +34,14 @@ namespace Sample
             fullPickerButton.SetTitle("Full Picker", UIControlState.Normal);
             fullPickerButton.TouchUpInside += (sender, args) =>
             {
-                NavigationController.PushViewController(fusumaViewController, true);
+				NavigationController.PresentModalViewController (fusumaViewController, true);
             };
 
             Add(imageView);
             Add(albumButton);
             Add(cameraButton);
             Add(videoButton);
+			Add(fullPickerButton);
 
             View.SubviewsDoNotTranslateAutoresizingMaskIntoConstraints();
 

@@ -7,8 +7,6 @@ namespace Fusuma
 {
     public class AlbumView : UIView
     {
-        public event EventHandler<UIImage> ImageSelected;
-
         private CGPoint _dragStartPos = CGPoint.Empty;
         private nfloat _cropBottomY;
         private float _dragDiff = 20f;
@@ -89,7 +87,7 @@ namespace Fusuma
                     ImageCropViewContainer, NSLayoutAttribute.Trailing, 1, 0)
             });
 
-            BackgroundColor = UIColor.White;
+			BackgroundColor = Configuration.BackgroundColor;
 
             AddConstraints(new[]
             {

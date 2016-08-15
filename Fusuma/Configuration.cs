@@ -7,7 +7,7 @@ namespace Fusuma
         public static UIColor BaseTintColor { get; set; } = UIColor.FromRGBA(255, 255, 255, 255);
         public static UIColor TintColor { get; set; } = UIColor.FromRGBA(0, 0x96, 0x88, 255);
         public static UIColor BackgroundColor { get; set; } = UIColor.FromRGBA(0x21, 0x21, 0x21, 255);
-        public static bool CropImage { get; set; } = true;
+        public static bool CropImage { get; set; } = false;
         public static bool TintIcons { get; set; } = true;
         public static string CameraRollTitle { get; set; } = "CAMERA ROLL";
         public static string CameraTitle { get; set; } = "PHOTO";

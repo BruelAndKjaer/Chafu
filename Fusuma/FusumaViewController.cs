@@ -1,4 +1,5 @@
 ﻿using System;
+using Cirrious.FluentLayouts.Touch;
 using CoreGraphics;
 using Foundation;
 using UIKit;
@@ -17,9 +18,6 @@ namespace Fusuma
         private VideoView _videoView;
 
         private Mode _mode = Mode.Camera;
-        private UIView _cameraViewContainer;
-        private UIView _libraryViewContainer;
-        private UIView _videoViewContainer;
         private UIButton _libraryButton;
         private UIButton _doneButton;
         private UIButton _closeButton;
@@ -28,8 +26,8 @@ namespace Fusuma
         private UILabel _menuTitle;
         private UIView _menuView;
 
-        public bool HasVideo { get; set; }
-        public FusumaAlbumDataSource AlbumDataSource { get; set; }
+		public bool HasVideo { get; set; } = false;
+		public FusumaAlbumDataSource AlbumDataSource { get; set; }
         public UICollectionViewDelegate AlbumDelegate { get; set; }
 
         public override void ViewDidLoad()
@@ -40,38 +38,15 @@ namespace Fusuma
             View.AutoresizingMask = UIViewAutoresizing.All;
             View.Frame = new CGRect(0, 0, 600, 600);
 
-            _videoViewContainer = new UIView
-            {
-                TranslatesAutoresizingMaskIntoConstraints = false,
-                Frame = new CGRect(0, 0, 600, 555),
-                BackgroundColor = UIColor.Black,
-                AccessibilityLabel = "VideoViewContainer"
-            };
-
-            _cameraViewContainer = new UIView
-            {
-                TranslatesAutoresizingMaskIntoConstraints = false,
-                Frame = new CGRect(0, 0, 600, 555),
-                BackgroundColor = UIColor.Black,
-                AccessibilityLabel = "CameraViewContainer"
-            };
-
-            _libraryViewContainer = new UIView
-            {
-                TranslatesAutoresizingMaskIntoConstraints = false,
-                Frame = new CGRect(0, 0, 600, 555),
-                BackgroundColor = UIColor.Black,
-                AccessibilityLabel = "LibraryViewContainer"
-            };
-
             _menuView = new UIView
             {
                 Frame = new CGRect(0, 0, 600, 50),
                 TranslatesAutoresizingMaskIntoConstraints = false,
+				Opaque = false,
                 AccessibilityLabel = "MenuView"
             };
 
-            View.AddSubviews(_videoViewContainer, _cameraViewContainer, _libraryViewContainer, _menuView);
+            View.AddSubviews(_menuView);
 
             _closeButton = new UIButton(new CGRect(8, 8, 40, 40))
             {
@@ -114,33 +89,8 @@ namespace Fusuma
 
             _menuView.AddSubviews(_closeButton, _doneButton, _menuTitle);
 
-            _menuView.AddConstraints(new[]
-            {
-                NSLayoutConstraint.Create(_closeButton, NSLayoutAttribute.Leading, NSLayoutRelation.Equal, _menuView,
-                    NSLayoutAttribute.Leading, 1, 8),
-                NSLayoutConstraint.Create(_menuView, NSLayoutAttribute.Height, NSLayoutRelation.Equal, 1, 50),
-                NSLayoutConstraint.Create(_menuView, NSLayoutAttribute.Trailing, NSLayoutRelation.Equal, _doneButton,
-                    NSLayoutAttribute.Trailing, 1, 8),
-                NSLayoutConstraint.Create(_menuTitle, NSLayoutAttribute.Leading, NSLayoutRelation.Equal,
-                    _closeButton, NSLayoutAttribute.Trailing, 1, 8),
-                NSLayoutConstraint.Create(_doneButton, NSLayoutAttribute.Leading, NSLayoutRelation.Equal, _menuTitle,
-                    NSLayoutAttribute.Trailing, 1, 8),
-                NSLayoutConstraint.Create(_doneButton, NSLayoutAttribute.Top, NSLayoutRelation.Equal, _menuView,
-                    NSLayoutAttribute.Top, 1, 6),
-                NSLayoutConstraint.Create(_menuTitle, NSLayoutAttribute.CenterY, NSLayoutRelation.Equal, _menuView,
-                    NSLayoutAttribute.CenterY, 1, 2),
-                NSLayoutConstraint.Create(_closeButton, NSLayoutAttribute.Top, NSLayoutRelation.Equal, _menuView,
-                    NSLayoutAttribute.Top, 1, 8),
-                NSLayoutConstraint.Create(_closeButton, NSLayoutAttribute.Height, NSLayoutRelation.Equal, 1, 40),
-                NSLayoutConstraint.Create(_closeButton, NSLayoutAttribute.Width, NSLayoutRelation.Equal, 1, 40),
-                NSLayoutConstraint.Create(_doneButton, NSLayoutAttribute.Height, NSLayoutRelation.Equal, 1, 40),
-                NSLayoutConstraint.Create(_doneButton, NSLayoutAttribute.Width, NSLayoutRelation.Equal, 1, 40),
-                NSLayoutConstraint.Create(_menuTitle, NSLayoutAttribute.Height, NSLayoutRelation.Equal, 1, 21)
-            });
-
             _libraryButton = new UIButton
             {
-                Frame = new CGRect(0, 555, 200, 45),
                 TranslatesAutoresizingMaskIntoConstraints = false,
                 LineBreakMode = UILineBreakMode.MiddleTruncation,
                 HorizontalAlignment = UIControlContentHorizontalAlignment.Center,
@@ -152,7 +102,6 @@ namespace Fusuma
 
             _videoButton = new UIButton
             {
-                Frame = new CGRect(400, 555, 200, 45),
                 TranslatesAutoresizingMaskIntoConstraints = false,
                 LineBreakMode = UILineBreakMode.MiddleTruncation,
                 HorizontalAlignment = UIControlContentHorizontalAlignment.Center,
@@ -164,7 +113,6 @@ namespace Fusuma
 
             _cameraButton = new UIButton
             {
-                Frame = new CGRect(200, 555, 200, 45),
                 TranslatesAutoresizingMaskIntoConstraints = false,
                 LineBreakMode = UILineBreakMode.MiddleTruncation,
                 HorizontalAlignment = UIControlContentHorizontalAlignment.Center,
@@ -174,36 +122,62 @@ namespace Fusuma
                 AccessibilityLabel = "PhotoButton"
             };
 
-            View.AddSubviews(_libraryButton, _videoButton, _cameraButton);
+            View.AddSubviews(_libraryButton, _cameraButton);
 
-            View.AddConstraints(new []
-            {
-                NSLayoutConstraint.Create(_menuView, NSLayoutAttribute.Trailing, NSLayoutRelation.Equal, View, NSLayoutAttribute.Trailing, 1, 0),
-                NSLayoutConstraint.Create(_libraryViewContainer, NSLayoutAttribute.Top, NSLayoutRelation.Equal, View, NSLayoutAttribute.Top, 1, 0), 
-                NSLayoutConstraint.Create(_cameraButton, NSLayoutAttribute.Leading, NSLayoutRelation.Equal, _libraryButton, NSLayoutAttribute.Trailing, 1, 0), 
-                NSLayoutConstraint.Create(_menuView, NSLayoutAttribute.Leading, NSLayoutRelation.Equal, View, NSLayoutAttribute.Leading, 1, 0), 
-                NSLayoutConstraint.Create(_cameraButton, NSLayoutAttribute.Bottom, NSLayoutRelation.Equal, View, NSLayoutAttribute.Bottom, 1, 0),
-                NSLayoutConstraint.Create(_cameraButton, NSLayoutAttribute.Top, NSLayoutRelation.Equal, _libraryButton, NSLayoutAttribute.Top, 1, 0), 
-                NSLayoutConstraint.Create(_cameraViewContainer, NSLayoutAttribute.Top, NSLayoutRelation.Equal, View, NSLayoutAttribute.Top, 1,0),
-                NSLayoutConstraint.Create(_cameraButton, NSLayoutAttribute.Top, NSLayoutRelation.Equal, _videoButton, NSLayoutAttribute.Top, 1, 0), 
-                NSLayoutConstraint.Create(_menuView, NSLayoutAttribute.Top, NSLayoutRelation.Equal, View, NSLayoutAttribute.Top, 1, 0), 
-                NSLayoutConstraint.Create(_cameraButton, NSLayoutAttribute.Width, NSLayoutRelation.Equal, _libraryButton, NSLayoutAttribute.Width, 1,0), 
-                NSLayoutConstraint.Create(_videoViewContainer, NSLayoutAttribute.Leading, NSLayoutRelation.Equal, _libraryViewContainer, NSLayoutAttribute.Leading, 1, 0), 
-                NSLayoutConstraint.Create(_videoButton, NSLayoutAttribute.Trailing, NSLayoutRelation.Equal, View, NSLayoutAttribute.Trailing, 1, 0), 
-                NSLayoutConstraint.Create(_libraryViewContainer, NSLayoutAttribute.Trailing, NSLayoutRelation.Equal, View, NSLayoutAttribute.Trailing, 1,0), 
-                NSLayoutConstraint.Create(_cameraButton, NSLayoutAttribute.Width, NSLayoutRelation.Equal, _videoButton, NSLayoutAttribute.Width, 1, 0), 
-                NSLayoutConstraint.Create(_cameraViewContainer, NSLayoutAttribute.Trailing, NSLayoutRelation.Equal, _libraryViewContainer, NSLayoutAttribute.Trailing, 1, 0), 
-                NSLayoutConstraint.Create(_videoViewContainer, NSLayoutAttribute.Top, NSLayoutRelation.Equal, View, NSLayoutAttribute.Top, 1, 0), 
-                NSLayoutConstraint.Create(_libraryViewContainer, NSLayoutAttribute.Leading, NSLayoutRelation.Equal, View, NSLayoutAttribute.Leading, 1, 0), 
-                NSLayoutConstraint.Create(_videoButton, NSLayoutAttribute.Leading, NSLayoutRelation.Equal, _cameraButton, NSLayoutAttribute.Trailing, 1, 0), 
-                NSLayoutConstraint.Create(_libraryButton, NSLayoutAttribute.Leading, NSLayoutRelation.Equal, View, NSLayoutAttribute.Leading, 1, 0), 
-                NSLayoutConstraint.Create(_videoViewContainer, NSLayoutAttribute.Trailing, NSLayoutRelation.Equal, _libraryViewContainer, NSLayoutAttribute.Trailing, 1, 0),
-                NSLayoutConstraint.Create(_cameraViewContainer, NSLayoutAttribute.Leading, NSLayoutRelation.Equal, _libraryViewContainer, NSLayoutAttribute.Leading, 1, 0),
-                NSLayoutConstraint.Create(_cameraButton, NSLayoutAttribute.Top, NSLayoutRelation.Equal, _libraryViewContainer, NSLayoutAttribute.Bottom, 1, 0),   
-                NSLayoutConstraint.Create(_libraryButton, NSLayoutAttribute.Bottom, NSLayoutRelation.Equal, View, NSLayoutAttribute.Bottom, 1, 0), 
-                NSLayoutConstraint.Create(_cameraViewContainer, NSLayoutAttribute.Bottom, NSLayoutRelation.Equal, _libraryViewContainer, NSLayoutAttribute.Bottom, 1, 0), 
-                NSLayoutConstraint.Create(_videoViewContainer, NSLayoutAttribute.Bottom, NSLayoutRelation.Equal, _libraryViewContainer, NSLayoutAttribute.Bottom, 1, 0)
-            });
+			_cameraView = new CameraView {
+				BackgroundColor = Configuration.BackgroundColor,
+				TranslatesAutoresizingMaskIntoConstraints = false
+			};
+			_albumView = new AlbumView {
+				BackgroundColor = Configuration.BackgroundColor,
+				TranslatesAutoresizingMaskIntoConstraints = false
+			};
+
+			View.AddSubviews (_cameraView, _albumView);
+
+			View.AddConstraints (
+				_menuView.Height ().EqualTo (50),
+				_menuView.AtTopOf (View),
+				_menuView.AtLeftOf (View),
+				_menuView.AtRightOf (View),
+
+				_closeButton.AtLeftOf (_menuView, 8),
+				_closeButton.AtTopOf (_menuView, 8),
+				_closeButton.Width ().EqualTo (40),
+				_closeButton.Height ().EqualTo (40),
+
+				_menuTitle.WithSameCenterY (_menuView).Plus (2),
+				_menuTitle.ToRightOf (_closeButton, 8),
+				_menuTitle.Height ().EqualTo (21),
+
+				_doneButton.ToRightOf (_menuTitle, 8),
+				_doneButton.AtTopOf (_menuView, 8),
+				_doneButton.Width ().EqualTo (40),
+				_doneButton.Height ().EqualTo (40),
+				_doneButton.AtRightOf (View, 8),
+
+				_albumView.AtTopOf (View),
+				_albumView.AtLeftOf (View),
+				_albumView.AtRightOf (View),
+
+				_cameraView.AtTopOf (View),
+				_cameraView.WithSameLeft (_albumView),
+				_cameraView.WithSameRight (_albumView),
+
+				_libraryButton.AtLeftOf (View),
+				_libraryButton.AtBottomOf (View),
+
+				_cameraButton.ToRightOf (_libraryButton),
+				_cameraButton.AtBottomOf (View),
+
+				_libraryButton.Height ().EqualTo (45),
+				_cameraButton.Height ().EqualTo (45),
+
+				_cameraButton.WithSameWidth(_libraryButton),
+
+				_albumView.Above(_libraryButton),
+				_cameraView.Above (_libraryButton)
+			);
 
             View.BackgroundColor = Configuration.BackgroundColor;
             _menuView.BackgroundColor = Configuration.BackgroundColor;
@@ -258,31 +232,46 @@ namespace Fusuma
             _libraryButton.ClipsToBounds = true;
             _videoButton.ClipsToBounds = true;
 
-            ChangeMode(Mode.Library);
-
-            _cameraViewContainer.AddSubview(_cameraView ?? (_cameraView = new CameraView()));
-            _libraryViewContainer.AddSubview(_albumView ?? (_albumView = new AlbumView()));
-            _videoViewContainer.AddSubview(_videoView ?? (_videoView = new VideoView()));
-
             if (HasVideo)
             {
-                _videoView.RemoveFromSuperview();
+				_videoView = new VideoView {
+					BackgroundColor = Configuration.BackgroundColor,
+					TranslatesAutoresizingMaskIntoConstraints = false
+				};
 
-                View.AddConstraint(NSLayoutConstraint.Create(View, NSLayoutAttribute.Trailing, NSLayoutRelation.Equal,
-                    _cameraButton, NSLayoutAttribute.Trailing, 1, 0));
+				View.AddSubviews (_videoView, _videoButton);
 
-                View.LayoutIfNeeded();
+				View.AddConstraints (
+					_videoView.AtTopOf (View),
+					_videoView.WithSameLeft (_albumView),
+					_videoView.WithSameRight (_albumView),
+
+					_videoButton.ToRightOf (_cameraButton),
+					_videoButton.AtBottomOf (View),
+					_videoButton.AtRightOf(View),
+					_videoButton.WithSameWidth (_cameraButton),
+					_videoButton.Height ().EqualTo (45),
+
+					_videoView.Above (_libraryButton)
+				);
             }
+			else{
+				View.AddConstraints (
+					_cameraButton.AtRightOf(View)
+				);
+			}
+
+			if (Configuration.ModeOrder == ModeOrder.LibraryFirst)
+				ChangeMode (Mode.Library);
+			else
+				ChangeMode (Mode.Camera);
         }
 
         public override void ViewDidAppear(bool animated)
         {
             base.ViewDidAppear(animated);
 
-            _albumView.Frame = new CGRect(CGPoint.Empty, _libraryViewContainer.Frame.Size);
             _albumView.LayoutIfNeeded();
-
-            _cameraView.Frame = new CGRect(CGPoint.Empty, _cameraViewContainer.Frame.Size);
             _cameraView.LayoutIfNeeded();
 
             if (AlbumDataSource == null && AlbumDelegate == null)
@@ -297,7 +286,6 @@ namespace Fusuma
 
             if (HasVideo)
             {
-                _videoView.Frame = new CGRect(CGPoint.Empty, _videoViewContainer.Frame.Size);
                 _videoView.LayoutIfNeeded();
                 _videoView.Initialize(OnVideo);
             }
@@ -313,6 +301,12 @@ namespace Fusuma
         {
             base.ViewWillDisappear(animated);
             StopAll();
+
+			_libraryButton.TouchUpInside -= LibraryButtonPressed;
+			_closeButton.TouchUpInside -= CloseButtonPressed;
+			_cameraButton.TouchUpInside -= CameraButtonPressed;
+			_videoButton.TouchUpInside -= VideoButtonPressed;
+			_doneButton.TouchUpInside -= DoneButtonPressed;
         }
 
         public override bool PrefersStatusBarHidden() => Configuration.PreferStatusbarHidden;
@@ -390,10 +384,10 @@ namespace Fusuma
             switch (mode)
             {
                 case Mode.Camera:
-                    _cameraView.StopCamera();
+                    _cameraView?.StopCamera();
                     break;
                 case Mode.Video:
-                    _videoView.StopCamera();
+                    _videoView?.StopCamera();
                     break;
             }
 
@@ -404,26 +398,39 @@ namespace Fusuma
             switch (mode)
             {
                 case Mode.Library:
+					_albumView.Hidden = false;
+					_cameraView.Hidden = true;
+					if (_videoView != null)
+						_videoView.Hidden = true;
                     _menuTitle.Text = Configuration.CameraRollTitle;
                     _doneButton.Hidden = false;
 
                     HighlightButton(_libraryButton);
-                    View.BringSubviewToFront(_libraryViewContainer);
+					View.BringSubviewToFront(_albumView);
                     break;
                 case Mode.Camera:
+					_albumView.Hidden = true;
+					_cameraView.Hidden = false;
+					if(_videoView != null)
+						_videoView.Hidden = true;
                     _menuTitle.Text = Configuration.CameraTitle;
                     _doneButton.Hidden = true;
 
                     HighlightButton(_cameraButton);
-                    View.BringSubviewToFront(_cameraViewContainer);
+					View.BringSubviewToFront(_cameraView);
+					_cameraView.UpdateConstraints ();
                     _cameraView.StartCamera();
                     break;
                 case Mode.Video:
+					_albumView.Hidden = true;
+					_cameraView.Hidden = true;
+					_videoView.Hidden = false;
                     _menuTitle.Text = Configuration.VideoTitle;
                     _doneButton.Hidden = true;
 
                     HighlightButton(_videoButton);
-                    View.BringSubviewToFront(_videoViewContainer);
+					View.BringSubviewToFront(_videoView);
+					_videoView.UpdateConstraints ();
                     _videoView.StartCamera();
                     break;
             }
@@ -440,7 +447,9 @@ namespace Fusuma
 
             foreach (var button in buttons)
             {
-                if (button.Layer.Sublayers.Length <= 1) continue;
+				if (button == null) continue;
+				if (button.Layer.Sublayers == null) continue;
+				if (button.Layer.Sublayers.Length <= 1) continue;
 
                 foreach (var layer in button.Layer.Sublayers)
                 {
@@ -449,7 +458,8 @@ namespace Fusuma
                 }
             }
 
-            _videoButton.TintColor = Configuration.BaseTintColor;
+			if (_videoButton != null)
+            	_videoButton.TintColor = Configuration.BaseTintColor;
         }
 
         private static void HighlightButton(UIView button)

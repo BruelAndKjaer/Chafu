@@ -5,6 +5,7 @@ using CoreFoundation;
 using CoreGraphics;
 using Foundation;
 using UIKit;
+using Cirrious.FluentLayouts.Touch;
 
 namespace Fusuma
 {
@@ -16,6 +17,8 @@ namespace Fusuma
         private NSObject _willEnterForegroundObserver;
         private Action<UIImage> _onImage;
 
+		private UIView buttonContainer;
+
         public CameraView(IntPtr handle) 
             : base(handle) { CreateView(); }
         public CameraView() { CreateView(); }
@@ -23,26 +26,19 @@ namespace Fusuma
         private void CreateView()
         {
             Hidden = true;
-            ContentMode = UIViewContentMode.ScaleToFill;
-            Frame = new CGRect(0,0, 400, 600);
-            AutoresizingMask = UIViewAutoresizing.All;
             BackgroundColor = Configuration.BackgroundColor;
 
             PreviewContainer = new UIView
             {
                 AccessibilityLabel = "PreviewContainer",
-                Frame = new CGRect(0, 50, 400, 400),
                 BackgroundColor = UIColor.Black,
                 TranslatesAutoresizingMaskIntoConstraints = false,
                 ContentMode = UIViewContentMode.ScaleToFill
             };
             Add(PreviewContainer);
-            AddConstraint(NSLayoutConstraint.Create(PreviewContainer, NSLayoutAttribute.Height, NSLayoutRelation.Equal,
-                PreviewContainer, NSLayoutAttribute.Width, 1, 0));
 
-            var buttonContainer = new UIView
+            buttonContainer = new UIView
             {
-                Frame = new CGRect(0, 450, 400, 150),
                 TranslatesAutoresizingMaskIntoConstraints = false,
                 ContentMode = UIViewContentMode.ScaleToFill,
                 AccessibilityLabel = "ButtonContainer",
@@ -50,7 +46,7 @@ namespace Fusuma
             };
             Add(buttonContainer);
 
-            _shutterButton = new UIButton(new CGRect(166, 41, 68, 68))
+            _shutterButton = new UIButton()
             {
                 TranslatesAutoresizingMaskIntoConstraints = false,
                 VerticalAlignment = UIControlContentVerticalAlignment.Center,
@@ -62,17 +58,8 @@ namespace Fusuma
             };
             _shutterButton.TouchUpInside += OnShutter;
             _shutterButton.SetImage(UIImage.FromBundle("ic_radio_button_checked"), UIControlState.Normal);
-            buttonContainer.Add(_shutterButton);
-
-            var heightConstraint = NSLayoutConstraint.Create(_shutterButton, NSLayoutAttribute.Height,
-                NSLayoutRelation.Equal);
-            heightConstraint.Constant = 68;
-            var widthConstraint = NSLayoutConstraint.Create(_shutterButton, NSLayoutAttribute.Width,
-                NSLayoutRelation.Equal);
-            widthConstraint.Constant = 68;
-            _shutterButton.AddConstraints(new[] { heightConstraint, widthConstraint});
-
-            FlipButton = new UIButton(new CGRect(15, 55, 40, 40))
+            
+            FlipButton = new UIButton()
             {
                 TranslatesAutoresizingMaskIntoConstraints = false,
                 VerticalAlignment = UIControlContentVerticalAlignment.Center,
@@ -84,17 +71,8 @@ namespace Fusuma
             };
             FlipButton.TouchUpInside += OnFlip;
             FlipButton.SetImage(UIImage.FromBundle("ic_loop"), UIControlState.Normal);
-            buttonContainer.Add(FlipButton);
 
-            heightConstraint = NSLayoutConstraint.Create(FlipButton, NSLayoutAttribute.Height,
-                NSLayoutRelation.Equal);
-            heightConstraint.Constant = 40;
-            widthConstraint = NSLayoutConstraint.Create(FlipButton, NSLayoutAttribute.Width,
-                NSLayoutRelation.Equal);
-            widthConstraint.Constant = 40;
-            FlipButton.AddConstraints(new[] { heightConstraint, widthConstraint });
-
-            FlashButton = new UIButton(new CGRect(15, 55, 40, 40))
+            FlashButton = new UIButton()
             {
                 TranslatesAutoresizingMaskIntoConstraints = false,
                 VerticalAlignment = UIControlContentVerticalAlignment.Center,
@@ -106,50 +84,50 @@ namespace Fusuma
             };
             FlashButton.TouchUpInside += OnFlash;
             FlashButton.SetImage(UIImage.FromBundle("ic_flash_off"), UIControlState.Normal);
+
+			buttonContainer.Add (_shutterButton);
+			buttonContainer.Add (FlipButton);
             buttonContainer.Add(FlashButton);
-
-            heightConstraint = NSLayoutConstraint.Create(FlashButton, NSLayoutAttribute.Height,
-                NSLayoutRelation.Equal);
-            heightConstraint.Constant = 40;
-            widthConstraint = NSLayoutConstraint.Create(FlashButton, NSLayoutAttribute.Width,
-                NSLayoutRelation.Equal);
-            widthConstraint.Constant = 40;
-            FlashButton.AddConstraints(new[] { heightConstraint, widthConstraint });
-
-            buttonContainer.AddConstraints(new []
-            {
-                NSLayoutConstraint.Create(_shutterButton, NSLayoutAttribute.CenterX, NSLayoutRelation.Equal, 
-                    buttonContainer, NSLayoutAttribute.CenterX, 1, 0),    
-                NSLayoutConstraint.Create(FlashButton, NSLayoutAttribute.Trailing, NSLayoutRelation.Equal,
-                    buttonContainer, NSLayoutAttribute.Trailing, 1, -15),
-                NSLayoutConstraint.Create(_shutterButton, NSLayoutAttribute.CenterY, NSLayoutRelation.Equal,
-                    buttonContainer, NSLayoutAttribute.CenterY, 1, 0),
-                NSLayoutConstraint.Create(FlashButton, NSLayoutAttribute.CenterY, NSLayoutRelation.Equal,
-                    buttonContainer, NSLayoutAttribute.CenterY, 1, 0),
-                NSLayoutConstraint.Create(FlipButton, NSLayoutAttribute.CenterY, NSLayoutRelation.Equal,
-                    buttonContainer, NSLayoutAttribute.CenterY, 1, 0),
-                NSLayoutConstraint.Create(FlipButton, NSLayoutAttribute.Leading, NSLayoutRelation.Equal,
-                    buttonContainer, NSLayoutAttribute.Leading, 1, 15)
-            });
-
-            AddConstraints(new []
-            {
-                NSLayoutConstraint.Create(buttonContainer, NSLayoutAttribute.Bottom, NSLayoutRelation.Equal, 
-                    this, NSLayoutAttribute.Bottom, 1, 0),
-                NSLayoutConstraint.Create(buttonContainer, NSLayoutAttribute.Trailing, NSLayoutRelation.Equal,
-                    this, NSLayoutAttribute.Trailing, 1, 0), 
-                NSLayoutConstraint.Create(buttonContainer, NSLayoutAttribute.Top, NSLayoutRelation.Equal,
-                    PreviewContainer, NSLayoutAttribute.Bottom, 1, 0),
-                NSLayoutConstraint.Create(buttonContainer, NSLayoutAttribute.Leading, NSLayoutRelation.Equal,
-                    this, NSLayoutAttribute.Leading, 1, 0),
-                NSLayoutConstraint.Create(PreviewContainer, NSLayoutAttribute.Top, NSLayoutRelation.Equal,
-                    this, NSLayoutAttribute.Top, 1, 50),
-                NSLayoutConstraint.Create(PreviewContainer, NSLayoutAttribute.Trailing, NSLayoutRelation.Equal,
-                    this, NSLayoutAttribute.Trailing, 1, 0),
-                NSLayoutConstraint.Create(PreviewContainer, NSLayoutAttribute.Leading, NSLayoutRelation.Equal,
-                    this, NSLayoutAttribute.Leading, 1, 0)
-            });
         }
+
+		public override void UpdateConstraints ()
+		{
+			RemoveConstraints (Constraints);
+
+			AddConstraint (NSLayoutConstraint.Create (PreviewContainer, NSLayoutAttribute.Height, NSLayoutRelation.Equal,
+				PreviewContainer, NSLayoutAttribute.Width, 1, 0));
+
+			this.AddConstraints (
+				PreviewContainer.AtTopOf (this, 50),
+				PreviewContainer.AtLeftOf (this),
+				PreviewContainer.AtRightOf (this),
+
+				buttonContainer.Below (PreviewContainer),
+				buttonContainer.AtBottomOf (this),
+				buttonContainer.AtLeftOf (this),
+				buttonContainer.AtRightOf (this),
+
+				_shutterButton.Height ().EqualTo (68),
+				 _shutterButton.Width ().EqualTo (68),
+
+				 FlipButton.Height ().EqualTo (40),
+				 FlipButton.Width ().EqualTo (40),
+
+				 FlashButton.Height ().EqualTo (40),
+				 FlashButton.Width ().EqualTo (40),
+
+				_shutterButton.WithSameCenterX (buttonContainer),
+				_shutterButton.WithSameCenterY (buttonContainer),
+
+				FlipButton.WithSameCenterY (buttonContainer),
+				FlipButton.AtLeftOf (buttonContainer, 15),
+
+				FlashButton.WithSameCenterY (buttonContainer),
+				FlashButton.AtRightOf (buttonContainer, 15)
+			);
+
+			base.UpdateConstraints ();
+		}
 
         private void OnFlash(object sender, EventArgs e)
         {
