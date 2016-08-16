@@ -21,6 +21,6 @@
     </dependencies>
   </metadata>
   <files>
-    <file target="lib/Xamarin.iOS10" src="../Chafu/bin/Release/Chafu.*" />
+    <file src="Chafu/bin/Release/Chafu.*" target="lib/Xamarin.iOS10" />
   </files>
 </package>
