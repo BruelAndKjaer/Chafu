@@ -2,8 +2,9 @@
 {
     public enum Mode
     {
-        Camera,
-        Video,
-        Library
+        NotSelected = 0,
+        Camera = 1,
+        Video = 2,
+        Library = 3
     }
 }
