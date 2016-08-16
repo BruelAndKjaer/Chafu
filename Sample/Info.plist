@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleDisplayName</key>
-	<string>Fusuma</string>
+	<string>Chafu Sample</string>
 	<key>CFBundleIdentifier</key>
 	<string>com.companyname.Sample</string>
 	<key>CFBundleShortVersionString</key>
@@ -38,5 +38,7 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>CFBundleName</key>
+	<string>Chafu Sample</string>
 </dict>
 </plist>

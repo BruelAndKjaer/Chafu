@@ -1,5 +1,5 @@
 ﻿using Cirrious.FluentLayouts.Touch;
-using Fusuma;
+using Chafu;
 using UIKit;
 
 namespace Sample
@@ -9,7 +9,7 @@ namespace Sample
         public override void ViewDidLoad()
         {
             base.ViewDidLoad();
-            Title = "Fusuma";
+            Title = "Chafu";
 
             NavigationController.NavigationBar.BarTintColor = Configuration.TintColor;
             NavigationController.NavigationBar.TintColor = Configuration.BaseTintColor;
@@ -19,7 +19,7 @@ namespace Sample
             var imageView = new UIImageView();
             imageView.BackgroundColor = UIColor.Black;
 
-            var fusumaViewController = new FusumaViewController {HasVideo = true};
+            var fusumaViewController = new ChafuViewController {HasVideo = true};
             fusumaViewController.ImageSelected += (sender, image) => imageView.Image = image;
 
             var pickerButton = new UIButton(UIButtonType.System) {

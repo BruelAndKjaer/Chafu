@@ -4,9 +4,9 @@ using CoreGraphics;
 using Foundation;
 using UIKit;
 
-namespace Fusuma
+namespace Chafu
 {
-	public class FusumaViewController : UIViewController
+	public class ChafuViewController : UIViewController
 	{
 		public event EventHandler Closed;
 		public event EventHandler<UIImage> ImageSelected;
@@ -35,7 +35,7 @@ namespace Fusuma
         /// Gets or sets the album collectionview data source. If null, it will default to show photos from phone gallery.
         /// </summary>
         /// <value>The album data source.</value>
-		public FusumaAlbumDataSource AlbumDataSource { get; set; }
+		public ChafuAlbumDataSource AlbumDataSource { get; set; }
 
         /// <summary>
         /// Gets or sets the album delegate.

@@ -7,7 +7,7 @@ using CoreMedia;
 using Foundation;
 using UIKit;
 
-namespace Fusuma
+namespace Chafu
 {
     public class VideoView : BaseCameraView, IAVCaptureFileOutputRecordingDelegate
     {

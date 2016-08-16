@@ -1,4 +1,4 @@
-﻿namespace Fusuma
+﻿namespace Chafu
 {
     public enum Mode
     {
