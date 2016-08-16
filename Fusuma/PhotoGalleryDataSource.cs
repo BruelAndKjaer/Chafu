@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using CoreFoundation;
 using CoreGraphics;
 using Foundation;
@@ -267,38 +266,27 @@ namespace Fusuma
             base.Dispose(disposing);
         }
 
-        public override Task<UIImage> GetCroppedImage(CGRect cropRect)
+        public override void GetCroppedImage(CGRect cropRect, Action<UIImage> onImage)
         {
-            var tcs = new TaskCompletionSource<UIImage>();
+			var scale = UIScreen.MainScreen.Scale;
 
-            Task.Run(() =>
-            {
-                try
-                {
-                    var options = new PHImageRequestOptions
-                    {
-                        DeliveryMode = PHImageRequestOptionsDeliveryMode.HighQualityFormat,
-                        NetworkAccessAllowed = true,
-                        NormalizedCropRect = cropRect,
-                        ResizeMode = PHImageRequestOptionsResizeMode.Exact
-                    };
+			DispatchQueue.DefaultGlobalQueue.DispatchAsync (() => {
+				var options = new PHImageRequestOptions {
+					DeliveryMode = PHImageRequestOptionsDeliveryMode.HighQualityFormat,
+					NetworkAccessAllowed = true,
+					NormalizedCropRect = cropRect,
+					ResizeMode = PHImageRequestOptionsResizeMode.Exact
+				};
 
-                    var targetWidth = Math.Floor((float)_asset.PixelWidth * cropRect.Width);
-                    var targetHeight = Math.Floor((float)_asset.PixelHeight * cropRect.Height);
-                    var dimension = Math.Max(Math.Min(targetHeight, targetWidth), 1024 * UIScreen.MainScreen.Scale);
+				var targetWidth = Math.Floor ((float)_asset.PixelWidth * cropRect.Width);
+				var targetHeight = Math.Floor ((float)_asset.PixelHeight * cropRect.Height);
+				var dimension = Math.Max (Math.Min (targetHeight, targetWidth), 1024 * scale);
 
-                    var targetSize = new CGSize(dimension, dimension);
+				var targetSize = new CGSize (dimension, dimension);
 
-                    PHImageManager.DefaultManager.RequestImageForAsset(_asset, targetSize, PHImageContentMode.AspectFill,
-                        options, (result, info) => tcs.SetResult(result));
-                }
-                catch(Exception e)
-                {
-                    tcs.TrySetException(e);
-                }
-            });
-
-            return tcs.Task;
+				PHImageManager.DefaultManager.RequestImageForAsset (_asset, targetSize, PHImageContentMode.AspectFill,
+                    options, (result, info) => DispatchQueue.MainQueue.DispatchAsync(() => onImage?.Invoke (result)));;
+			});
         }
     }
 }
