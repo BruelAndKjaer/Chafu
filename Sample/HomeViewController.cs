@@ -11,61 +11,44 @@ namespace Sample
             base.ViewDidLoad();
             Title = "Fusuma";
 
+            NavigationController.NavigationBar.BarTintColor = Configuration.TintColor;
+            NavigationController.NavigationBar.TintColor = Configuration.BaseTintColor;
+
+            View.BackgroundColor = Configuration.BackgroundColor;
+
             var imageView = new UIImageView();
-
-            var albumButton = new UIButton(UIButtonType.System);
-            albumButton.SetTitle("Album", UIControlState.Normal);
-            albumButton.TouchUpInside +=
-                (sender, args) => NavigationController.PushViewController(new AlbumViewController(), true);
-
-            var cameraButton = new UIButton(UIButtonType.System);
-            cameraButton.SetTitle("Camera", UIControlState.Normal);
-            cameraButton.TouchUpInside +=
-                (sender, args) => NavigationController.PushViewController(new CameraViewController(), true);
-
-            var videoButton = new UIButton(UIButtonType.System);
-            videoButton.SetTitle("Video", UIControlState.Normal);
-            videoButton.TouchUpInside +=
-                (sender, args) => NavigationController.PushViewController(new VideoViewController(), true);
+            imageView.BackgroundColor = UIColor.Black;
 
             var fusumaViewController = new FusumaViewController {HasVideo = true};
             fusumaViewController.ImageSelected += (sender, image) => imageView.Image = image;
-            var fullPickerButton = new UIButton(UIButtonType.System);
-            fullPickerButton.SetTitle("Full Picker", UIControlState.Normal);
-            fullPickerButton.TouchUpInside += (sender, args) =>
+
+            var pickerButton = new UIButton(UIButtonType.System) {
+                BackgroundColor = Configuration.TintColor,
+                TintColor = UIColor.Black
+            };
+            pickerButton.SetTitle("Pick Image", UIControlState.Normal);
+            pickerButton.TouchUpInside += (sender, args) =>
             {
 				NavigationController.PresentModalViewController (fusumaViewController, true);
             };
 
             Add(imageView);
-            Add(albumButton);
-            Add(cameraButton);
-            Add(videoButton);
-			Add(fullPickerButton);
+			Add(pickerButton);
 
             View.SubviewsDoNotTranslateAutoresizingMaskIntoConstraints();
 
+            EdgesForExtendedLayout = UIRectEdge.None;
+
             View.AddConstraints(
-                imageView.AtTopOf(View, 70),
-                imageView.AtLeftOf(View, 10),
-                imageView.AtRightOf(View, 10),
-                imageView.Height().EqualTo(200),
+                imageView.Width().EqualTo().HeightOf(imageView),
+                imageView.AtTopOf(View, 5),
+                imageView.AtLeftOf(View, 5),
+                imageView.AtRightOf(View, 5),
 
-                albumButton.Below(imageView, 10),
-                albumButton.WithSameWidth(imageView),
-                albumButton.Height().EqualTo(40),
-
-                cameraButton.Below(albumButton, 10),
-                cameraButton.WithSameWidth(imageView),
-                cameraButton.Height().EqualTo(40),
-
-                videoButton.Below(cameraButton, 10),
-                videoButton.WithSameWidth(imageView),
-                videoButton.Height().EqualTo(40),
-
-                fullPickerButton.Below(videoButton, 10),
-                fullPickerButton.WithSameWidth(imageView),
-                fullPickerButton.Height().EqualTo(40)
+                pickerButton.Below(imageView, 50),
+                pickerButton.AtLeftOf(View, 50),
+                pickerButton.AtRightOf(View, 50),
+                pickerButton.Height().EqualTo(70)
                 );
         }
     }
