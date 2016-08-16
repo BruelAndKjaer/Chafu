@@ -1,23 +1,34 @@
 #addin "Cake.Xamarin"
 #tool "nuget:?package=GitVersion.CommandLine"
 
-var sln = "Fusuma.sln";
-var nuspec = "nuspec/fusuma.nuspec";
+var sln = "Chafu.sln";
+var nuspec = "nuspec/chafu.nuspec";
 var target = Argument("target", "Default");
 
-Task("clean").Does(() =>
+
+Task("Clean").Does(() =>
 {
     CleanDirectories("./**/bin");
     CleanDirectories("./**/obj");
 });
 
-Task("lib").Does(() => 
-{
-    NuGetRestore(sln);
-
-    iOSBuild("./Fusuma/Fusuma.csproj", 
-        new MDToolSettings { Configuration = "Release" });
+Task("Version").Does(() => {
+	
 });
+
+Task("Restore").Does(() => {
+	NuGetRestore(sln);
+});
+
+Task("Build")
+	.IsDependentOn("Clean")
+	.IsDependentOn("Version")
+	.IsDependentOn("Restore")
+	.Does(() => 
+	{
+	    iOSBuild("./Chafu/Chafu.csproj", 
+	        new MDToolSettings { Configuration = "Release" });
+	});
 
 Task("Default").IsDependentOn("clean").IsDependentOn("lib").Does(() => {});
 
