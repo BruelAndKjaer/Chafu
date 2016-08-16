@@ -2,7 +2,6 @@
 using System.IO;
 using System.Linq;
 using AVFoundation;
-using CoreGraphics;
 using CoreMedia;
 using Foundation;
 using UIKit;

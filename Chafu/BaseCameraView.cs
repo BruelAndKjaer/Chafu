@@ -23,6 +23,8 @@ namespace Chafu
         protected AVCaptureDevice Device;
         protected AVCaptureDeviceInput VideoInput;
 
+        public event EventHandler CameraUnauthorized;
+
         protected static bool CameraAvailable
             => AVCaptureDevice.GetAuthorizationStatus(AVMediaType.Video) == AVAuthorizationStatus.Authorized;
 
@@ -165,8 +167,10 @@ namespace Chafu
             var status = AVCaptureDevice.GetAuthorizationStatus(AVMediaType.Video);
             if (status == AVAuthorizationStatus.Authorized)
                 Session?.StartRunning();
-            else if (status == AVAuthorizationStatus.Denied || status == AVAuthorizationStatus.Restricted)
+            else if (status == AVAuthorizationStatus.Denied || status == AVAuthorizationStatus.Restricted) {
+                CameraUnauthorized?.Invoke(this, EventArgs.Empty);
                 Session?.StopRunning();
+            }
         }
 
         public virtual void StopCamera()

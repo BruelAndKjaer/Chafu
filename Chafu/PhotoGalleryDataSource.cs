@@ -16,9 +16,10 @@ namespace Chafu
         private CGRect _previousPreheatRect = CGRect.Empty;
         private PHAsset _asset;
 
+        public override event EventHandler CameraRollUnauthorized;
+
         public PHFetchResult Images { get; set; }
         public PHCachingImageManager ImageManager { get; private set; }
-        public event EventHandler CameraRollUnauthorized; 
 
         public PhotoGalleryDataSource(AlbumView albumView, CGSize cellSize)
         {

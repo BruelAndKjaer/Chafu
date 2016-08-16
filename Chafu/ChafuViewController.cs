@@ -11,6 +11,8 @@ namespace Chafu
 		public event EventHandler Closed;
 		public event EventHandler<UIImage> ImageSelected;
 		public event EventHandler<NSUrl> VideoSelected;
+        public event EventHandler CameraRollUnauthorized;
+        public event EventHandler CameraUnauthorized;
 
 		private AlbumView _albumView;
 		private CameraView _cameraView;
@@ -284,6 +286,7 @@ namespace Chafu
 			if (HasVideo) {
 				_videoView.LayoutIfNeeded ();
 				_videoView.Initialize (OnVideo);
+                _videoView.CameraUnauthorized += OnCameraUnauthorized;
 			}
 
 			_libraryButton.TouchUpInside += LibraryButtonPressed;
@@ -291,6 +294,8 @@ namespace Chafu
 			_cameraButton.TouchUpInside += CameraButtonPressed;
 			_videoButton.TouchUpInside += VideoButtonPressed;
 			_doneButton.TouchUpInside += DoneButtonPressed;
+            AlbumDataSource.CameraRollUnauthorized += CameraRollUnauthoized;
+            _cameraView.CameraUnauthorized += OnCameraUnauthorized;
 
             if (_mode == Mode.Camera)
                 _cameraView?.StartCamera();
@@ -298,7 +303,7 @@ namespace Chafu
                 _videoView?.StartCamera();
 		}
 
-		public override void ViewWillDisappear (bool animated)
+        public override void ViewWillDisappear (bool animated)
 		{
 			base.ViewWillDisappear (animated);
 			StopAll ();
@@ -308,9 +313,22 @@ namespace Chafu
 			_cameraButton.TouchUpInside -= CameraButtonPressed;
 			_videoButton.TouchUpInside -= VideoButtonPressed;
 			_doneButton.TouchUpInside -= DoneButtonPressed;
+            AlbumDataSource.CameraRollUnauthorized -= CameraRollUnauthoized;
+            _cameraView.CameraUnauthorized -= OnCameraUnauthorized;
+            if (_videoView != null)
+                _videoView.CameraUnauthorized -= OnCameraUnauthorized;
 		}
 
 		public override bool PrefersStatusBarHidden () => Configuration.PreferStatusbarHidden;
+
+        private void OnCameraUnauthorized(object sender, EventArgs e){
+            CameraUnauthorized?.Invoke(this, e);
+        }
+
+        private void CameraRollUnauthoized(object sender, EventArgs e)
+        {
+            CameraRollUnauthorized?.Invoke(this, e);
+        }
 
 		private void CloseButtonPressed (object sender, EventArgs e)
 		{
