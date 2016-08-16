@@ -5,7 +5,7 @@ It has been tweaked for ease of use in a C# environment, and all views have been
 A lot of unecessary wrapping of views has been removed to simplify the code in the library + loads of bugfixes and missing features have been implemented.
 
 ## Preview
-<img src="https://raw.githubusercontent.com/Cheesebaron/Chafu/master/images/fusuma.gif" width="340px">
+<img src="https://raw.githubusercontent.com/Cheesebaron/Chafu/master/images/sample.gif" width="340px">
 
 ## Features
 
