@@ -25,8 +25,22 @@ namespace Fusuma
 		private UILabel _menuTitle;
 		private UIView _menuView;
 
+        /// <summary>
+        /// Gets or sets a value indicating whether video tab is shown.
+        /// </summary>
+        /// <value><c>true</c> if has video; otherwise, <c>false</c>.</value>
 		public bool HasVideo { get; set; } = false;
+
+        /// <summary>
+        /// Gets or sets the album collectionview data source. If null, it will default to show photos from phone gallery.
+        /// </summary>
+        /// <value>The album data source.</value>
 		public FusumaAlbumDataSource AlbumDataSource { get; set; }
+
+        /// <summary>
+        /// Gets or sets the album delegate.
+        /// </summary>
+        /// <value>The album delegate.</value>
 		public UICollectionViewDelegate AlbumDelegate { get; set; }
 
 		public override void ViewDidLoad ()
