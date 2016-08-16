@@ -1,4 +1,4 @@
-using System.Threading.Tasks;
+using System;
 using CoreGraphics;
 using UIKit;
 
@@ -6,6 +6,6 @@ namespace Fusuma
 {
     public abstract class FusumaAlbumDataSource : UICollectionViewDataSource
     {
-        public abstract Task<UIImage> GetCroppedImage(CGRect cropRect);
+		public abstract void GetCroppedImage (CGRect cropRect, Action<UIImage> onImage);
     }
 }
