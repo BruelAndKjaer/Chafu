@@ -160,7 +160,7 @@ namespace Chafu
             Hidden = false;
         }
 
-        public void StartCamera()
+        public virtual void StartCamera()
         {
             var status = AVCaptureDevice.GetAuthorizationStatus(AVMediaType.Video);
             if (status == AVAuthorizationStatus.Authorized)

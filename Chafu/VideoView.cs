@@ -31,9 +31,11 @@ namespace Chafu
             FlashButton.TouchUpInside += OnFlash;
         }
 
+        private bool _initialized;
+
         public void Initialize(Action<NSUrl> onVideoFinished, bool startCamera = true)
         {
-            if (Session != null) return;
+            if (_initialized) return;
 
             _onVideoFinished = onVideoFinished;
 
@@ -51,57 +53,61 @@ namespace Chafu
 
             Initialize();
 
-            Session = new AVCaptureSession();
-
-            Device = Configuration.ShowBackCameraFirst
-                ? AVCaptureDevice.Devices.FirstOrDefault(d => d.Position == AVCaptureDevicePosition.Back)
-                : AVCaptureDevice.Devices.FirstOrDefault(d => d.Position == AVCaptureDevicePosition.Front);
-
-            if (Device == null)
-                throw new Exception("Could not find capture device, does your device have a camera?");
-
-            try
-            {
-                NSError error;
-                VideoInput = new AVCaptureDeviceInput(Device, out error);
-
-                Session.AddInput(VideoInput);
-
-                _videoOutput = new AVCaptureMovieFileOutput();
-
-                var totalSeconds = 60L;
-                var timeScale = 30; //FPS
-
-                var maxDuration = new CMTime(totalSeconds, timeScale);
-
-                _videoOutput.MaxRecordedDuration = maxDuration;
-                _videoOutput.MinFreeDiskSpaceLimit = 1024*1024;
-
-                if (Session.CanAddOutput(_videoOutput))
-                    Session.AddOutput(_videoOutput);
-
-                var videoLayer = new AVCaptureVideoPreviewLayer(Session)
-                {
-                    Frame = PreviewContainer.Bounds,
-                    VideoGravity = AVLayerVideoGravity.ResizeAspectFill
-                };
-
-                PreviewContainer.Layer.AddSublayer(videoLayer);
-
-                Session.StartRunning();
-            }
-            catch { /* ignore */ }
-
-            FlashConfiguration(true);
-            if (startCamera)
-                StartCamera();
-
             _willEnterForegroundObserver = UIApplication.Notifications.ObserveWillEnterForeground(WillEnterForeground);
+
+            _initialized = true;
         }
 
         void WillEnterForeground(object sender, NSNotificationEventArgs e)
         {
             StartCamera();
+        }
+
+        public override void StartCamera()
+        {
+            if (Session == null) {
+                Session = new AVCaptureSession();
+
+                Device = Configuration.ShowBackCameraFirst
+                    ? AVCaptureDevice.Devices.FirstOrDefault(d => d.Position == AVCaptureDevicePosition.Back)
+                    : AVCaptureDevice.Devices.FirstOrDefault(d => d.Position == AVCaptureDevicePosition.Front);
+
+                if (Device == null)
+                    throw new Exception("Could not find capture device, does your device have a camera?");
+
+                try {
+                    NSError error;
+                    VideoInput = new AVCaptureDeviceInput(Device, out error);
+
+                    Session.AddInput(VideoInput);
+
+                    _videoOutput = new AVCaptureMovieFileOutput();
+
+                    var totalSeconds = 60L;
+                    var timeScale = 30; //FPS
+
+                    var maxDuration = new CMTime(totalSeconds, timeScale);
+
+                    _videoOutput.MaxRecordedDuration = maxDuration;
+                    _videoOutput.MinFreeDiskSpaceLimit = 1024 * 1024;
+
+                    if (Session.CanAddOutput(_videoOutput))
+                        Session.AddOutput(_videoOutput);
+
+                    var videoLayer = new AVCaptureVideoPreviewLayer(Session) {
+                        Frame = PreviewContainer.Bounds,
+                        VideoGravity = AVLayerVideoGravity.ResizeAspectFill
+                    };
+
+                    PreviewContainer.Layer.AddSublayer(videoLayer);
+
+                    Session.StartRunning();
+                } catch { /* ignore */ }
+
+                FlashConfiguration(true);
+            }
+
+            base.StartCamera();
         }
 
         public override void StopCamera()

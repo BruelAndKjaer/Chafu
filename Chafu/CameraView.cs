@@ -81,9 +81,11 @@ namespace Chafu
             });
         }
 
-        public void Initialize(Action<UIImage> onImage, bool startCamera = true)
+        private bool _initialized;
+
+        public void Initialize(Action<UIImage> onImage)
         {
-            if (Session != null)
+            if (_initialized)
                 return;
 
             _onImage = onImage;
@@ -100,43 +102,47 @@ namespace Chafu
 
             Initialize();
 
-            Session = new AVCaptureSession();
-
-            Device = Configuration.ShowBackCameraFirst
-                ? AVCaptureDevice.Devices.FirstOrDefault(d => d.Position == AVCaptureDevicePosition.Back)
-                : AVCaptureDevice.Devices.FirstOrDefault(d => d.Position == AVCaptureDevicePosition.Front);
-
-            if (Device == null)
-                throw new Exception("Could not find capture device, does your device have a camera?");
-
-            FlashButton.Hidden = !Device.HasFlash;
-
-            try
-            {
-                NSError error;
-                VideoInput = new AVCaptureDeviceInput(Device, out error);
-                Session.AddInput(VideoInput);
-
-                _imageOutput = new AVCaptureStillImageOutput();
-                Session.AddOutput(_imageOutput);
-
-                var videoLayer = new AVCaptureVideoPreviewLayer(Session)
-                {
-                    Frame = PreviewContainer.Bounds,
-                    VideoGravity = AVLayerVideoGravity.ResizeAspectFill
-                };
-
-                PreviewContainer.Layer.AddSublayer(videoLayer);
-
-                Session.StartRunning();
-            }
-            catch { /* ignored */ }
-
-            FlashConfiguration(false);
-            if (startCamera)
-                StartCamera();
-
             _willEnterForegroundObserver = UIApplication.Notifications.ObserveWillEnterForeground(WillEnterForeground);
+
+            _initialized = true;
+        }
+
+        public override void StartCamera()
+        {
+            if (Session == null) {
+                Session = new AVCaptureSession();
+
+                Device = Configuration.ShowBackCameraFirst
+                    ? AVCaptureDevice.Devices.FirstOrDefault(d => d.Position == AVCaptureDevicePosition.Back)
+                    : AVCaptureDevice.Devices.FirstOrDefault(d => d.Position == AVCaptureDevicePosition.Front);
+
+                if (Device == null)
+                    throw new Exception("Could not find capture device, does your device have a camera?");
+
+                FlashButton.Hidden = !Device.HasFlash;
+
+                try {
+                    NSError error;
+                    VideoInput = new AVCaptureDeviceInput(Device, out error);
+                    Session.AddInput(VideoInput);
+
+                    _imageOutput = new AVCaptureStillImageOutput();
+                    Session.AddOutput(_imageOutput);
+
+                    var videoLayer = new AVCaptureVideoPreviewLayer(Session) {
+                        Frame = PreviewContainer.Bounds,
+                        VideoGravity = AVLayerVideoGravity.ResizeAspectFill
+                    };
+
+                    PreviewContainer.Layer.AddSublayer(videoLayer);
+
+                    Session.StartRunning();
+                } catch { /* ignored */ }
+
+                FlashConfiguration(false);
+            }
+
+            base.StartCamera();
         }
 
         private void WillEnterForeground(object sender, NSNotificationEventArgs nsNotificationEventArgs)
