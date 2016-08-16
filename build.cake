@@ -1,4 +1,5 @@
 #addin "Cake.Xamarin"
+#tool "nuget:?package=GitVersion.CommandLine"
 
 var sln = "Fusuma.sln";
 var nuspec = "nuspec/fusuma.nuspec";
@@ -10,7 +11,7 @@ Task("clean").Does(() =>
     CleanDirectories("./**/obj");
 });
 
-Task("lib").IsDependentOn("clean").Does(() => 
+Task("lib").Does(() => 
 {
     NuGetRestore(sln);
 
@@ -18,6 +19,6 @@ Task("lib").IsDependentOn("clean").Does(() =>
         new MDToolSettings { Configuration = "Release" });
 });
 
-Task("Default").IsDependentOn("lib").Does(() => {});
+Task("Default").IsDependentOn("clean").IsDependentOn("lib").Does(() => {});
 
 RunTarget(target);
