@@ -88,7 +88,7 @@
     <Compile Include="Configuration.cs" />
     <Compile Include="DragDirection.cs" />
     <Compile Include="ChafuAlbumDataSource.cs" />
-    <Compile Include="FusumaViewController.cs" />
+    <Compile Include="ChafuViewController.cs" />
     <Compile Include="ImageCropView.cs" />
     <Compile Include="Mode.cs" />
     <Compile Include="ModeOrder.cs" />

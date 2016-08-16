@@ -1,5 +1,5 @@
-﻿using Cirrious.FluentLayouts.Touch;
-using Chafu;
+﻿using Chafu;
+using Cirrious.FluentLayouts.Touch;
 using UIKit;
 
 namespace Sample
@@ -19,8 +19,12 @@ namespace Sample
             var imageView = new UIImageView();
             imageView.BackgroundColor = UIColor.Black;
 
-            var fusumaViewController = new ChafuViewController {HasVideo = true};
-            fusumaViewController.ImageSelected += (sender, image) => imageView.Image = image;
+            var urlLabel = new UILabel();
+
+            var chafu = new ChafuViewController { HasVideo = true};
+            chafu.ImageSelected += (sender, image) => imageView.Image = image;
+            chafu.VideoSelected += (sender, videoUrl) => urlLabel.Text = videoUrl.AbsoluteString;
+            chafu.Closed += (sender, e) => { /* do stuff on closed */ };
 
             var pickerButton = new UIButton(UIButtonType.System) {
                 BackgroundColor = Configuration.TintColor,
@@ -29,10 +33,11 @@ namespace Sample
             pickerButton.SetTitle("Pick Image", UIControlState.Normal);
             pickerButton.TouchUpInside += (sender, args) =>
             {
-				NavigationController.PresentModalViewController (fusumaViewController, true);
+				NavigationController.PresentModalViewController (chafu, true);
             };
 
             Add(imageView);
+            Add(urlLabel);
 			Add(pickerButton);
 
             View.SubviewsDoNotTranslateAutoresizingMaskIntoConstraints();
@@ -45,7 +50,11 @@ namespace Sample
                 imageView.AtLeftOf(View, 5),
                 imageView.AtRightOf(View, 5),
 
-                pickerButton.Below(imageView, 50),
+                urlLabel.Below(imageView, 10),
+                urlLabel.AtLeftOf(View, 5),
+                urlLabel.AtRightOf(View, 5),
+
+                pickerButton.Below(urlLabel, 50),
                 pickerButton.AtLeftOf(View, 50),
                 pickerButton.AtRightOf(View, 50),
                 pickerButton.Height().EqualTo(70)

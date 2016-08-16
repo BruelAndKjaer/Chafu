@@ -104,11 +104,9 @@
     <Reference Include="Xamarin.iOS" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Fusuma\Fusuma.csproj">
-      <Project>{16271987-f48b-479b-a168-9bd337f2792d}</Project>
+    <ProjectReference Include="..\Chafu\Chafu.csproj">
+      <Project>{16271987-F48B-479B-A168-9BD337F2792D}</Project>
       <Name>Chafu</Name>
-      <IsAppExtension>false</IsAppExtension>
-      <IsWatchApp>false</IsWatchApp>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
