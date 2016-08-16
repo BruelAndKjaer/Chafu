@@ -225,6 +225,7 @@ namespace Chafu
 				_videoButton.TintColor = Configuration.TintColor;
 				_videoButton.AdjustsImageWhenHighlighted = false;
 				_doneButton.TintColor = Configuration.TintColor;
+                _closeButton.TintColor = Configuration.TintColor;
 			}
 
 			_cameraButton.ClipsToBounds = true;
