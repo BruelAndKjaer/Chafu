@@ -44,6 +44,12 @@ chafu.VideoSelected += (sender, videoUrl) => urlLabel.Text = videoUrl.AbsoluteSt
 
 // When ViewController is dismissed
 chafu.Closed += (sender, e) => { /* do stuff on closed */ };
+
+// When permissions to access camera roll are denied by the user
+chafu.CameraRollUnauthorized += (s, e) => { /* do stuff when Camera Roll is unauthorized */ };
+
+// when permissions to access camera are denied by the user
+chafu.CameraUnauthorized += (s, e) => { /* do stuff when Camera is unauthorized */ };
 ```
 
 ## Customization
