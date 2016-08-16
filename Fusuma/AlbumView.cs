@@ -1,7 +1,7 @@
 ﻿using System;
 using CoreGraphics;
-using Foundation;
 using UIKit;
+using Cirrious.FluentLayouts.Touch;
 
 namespace Fusuma
 {
@@ -18,7 +18,7 @@ namespace Fusuma
         public ImageCropView ImageCropView { get; private set; }
         public NSLayoutConstraint ImageCropViewConstraintTop { get; private set; }
         public NSLayoutConstraint CollectionViewConstraintHeight { get; private set; }
-        public UIView ImageCropViewContainer { get; private set; }
+        public NSLayoutConstraint CollectionViewConstraintTop { get; private set; }
         public UICollectionView CollectionView { get; private set; }
 
         public DragDirection DragDirection { get; set; }
@@ -38,75 +38,48 @@ namespace Fusuma
             CollectionView = new UICollectionView(new CGRect(0, 450, 400, 150), collectionFlowLayout)
             {
                 AccessibilityLabel = "CollectionView",
-                TranslatesAutoresizingMaskIntoConstraints = false
+                TranslatesAutoresizingMaskIntoConstraints = false,
+				BackgroundColor = Configuration.BackgroundColor
             };
+
+
+            Add(CollectionView);
+
+            ImageCropView = new ImageCropView
+            {
+                AccessibilityLabel = "ImageCropView",
+                TranslatesAutoresizingMaskIntoConstraints = false,
+				BackgroundColor = Configuration.BackgroundColor
+            };
+
+			Add (ImageCropView);
+
+			BackgroundColor = Configuration.BackgroundColor;
+
             CollectionViewConstraintHeight = NSLayoutConstraint.Create(CollectionView, NSLayoutAttribute.Height,
                 NSLayoutRelation.Equal);
             CollectionViewConstraintHeight.Constant = 150;
             CollectionView.AddConstraint(CollectionViewConstraintHeight);
 
-            var collectionViewWrapper = new UIView(new CGRect(0, 0, 400, 600)) { CollectionView };
-            collectionViewWrapper.AccessibilityLabel = "CollectionViewWrapper";
-            collectionViewWrapper.TranslatesAutoresizingMaskIntoConstraints = false;
-            Add(collectionViewWrapper);
-            collectionViewWrapper.AddConstraints(new[]
-            {
-                NSLayoutConstraint.Create(CollectionView, NSLayoutAttribute.Bottom, NSLayoutRelation.Equal,
-                    collectionViewWrapper, NSLayoutAttribute.Bottom, 1, 0),
-                NSLayoutConstraint.Create(CollectionView, NSLayoutAttribute.Trailing, NSLayoutRelation.Equal,
-                    collectionViewWrapper, NSLayoutAttribute.Trailing, 1, 0),
-                NSLayoutConstraint.Create(CollectionView, NSLayoutAttribute.Leading, NSLayoutRelation.Equal,
-                    collectionViewWrapper, NSLayoutAttribute.Leading, 1, 0)
-            });
-
-            ImageCropView = new ImageCropView
-            {
-                Frame = new CGRect(0, 0, 400, 400),
-                AccessibilityLabel = "ImageCropView",
-                TranslatesAutoresizingMaskIntoConstraints = false
-            };
-            ImageCropView.AddConstraint(NSLayoutConstraint.Create(ImageCropView, NSLayoutAttribute.Width, NSLayoutRelation.Equal,
-                ImageCropView, NSLayoutAttribute.Height, 1, 0));
-
-            ImageCropViewContainer = new UIView(new CGRect(0, 50, 400, 400)) { ImageCropView };
-            ImageCropViewContainer.BackgroundColor = UIColor.White;
-            ImageCropViewContainer.AccessibilityLabel = "ImageCropViewContainer";
-            ImageCropViewContainer.TranslatesAutoresizingMaskIntoConstraints = false;
-            Add(ImageCropViewContainer);
-            ImageCropViewContainer.AddConstraints(new[]
-            {
-                NSLayoutConstraint.Create(ImageCropView, NSLayoutAttribute.Leading, NSLayoutRelation.Equal,
-                    ImageCropViewContainer, NSLayoutAttribute.Leading, 1, 0),
-                NSLayoutConstraint.Create(ImageCropView, NSLayoutAttribute.Bottom, NSLayoutRelation.Equal,
-                    ImageCropViewContainer, NSLayoutAttribute.Bottom, 1, 0),
-                NSLayoutConstraint.Create(ImageCropView, NSLayoutAttribute.Top, NSLayoutRelation.Equal,
-                    ImageCropViewContainer, NSLayoutAttribute.Top, 1, 0),
-                NSLayoutConstraint.Create(ImageCropViewContainer, NSLayoutAttribute.Width, NSLayoutRelation.Equal,
-                    ImageCropViewContainer, NSLayoutAttribute.Height, 1, 0),
-                NSLayoutConstraint.Create(ImageCropView, NSLayoutAttribute.Trailing, NSLayoutRelation.Equal,
-                    ImageCropViewContainer, NSLayoutAttribute.Trailing, 1, 0)
-            });
-
-			BackgroundColor = Configuration.BackgroundColor;
-
             AddConstraints(new[]
             {
-                NSLayoutConstraint.Create(ImageCropViewContainer, NSLayoutAttribute.Trailing, NSLayoutRelation.Equal,
-                    this, NSLayoutAttribute.Trailing, 1, 0),
-                NSLayoutConstraint.Create(collectionViewWrapper, NSLayoutAttribute.Bottom, NSLayoutRelation.Equal,
-                    this, NSLayoutAttribute.Bottom, 1, 0),
-                NSLayoutConstraint.Create(ImageCropViewContainer, NSLayoutAttribute.Leading, NSLayoutRelation.Equal,
-                    this, NSLayoutAttribute.Leading, 1, 0),
-                NSLayoutConstraint.Create(collectionViewWrapper, NSLayoutAttribute.Trailing, NSLayoutRelation.Equal,
-                    this, NSLayoutAttribute.Trailing, 1, 0),
-                NSLayoutConstraint.Create(collectionViewWrapper, NSLayoutAttribute.Top, NSLayoutRelation.Equal,
-                    this, NSLayoutAttribute.Top, 1, 0),
                 ImageCropViewConstraintTop =
-                    NSLayoutConstraint.Create(ImageCropViewContainer, NSLayoutAttribute.Top, NSLayoutRelation.Equal,
+                    NSLayoutConstraint.Create(ImageCropView, NSLayoutAttribute.Top, NSLayoutRelation.Equal,
                         this, NSLayoutAttribute.Top, 1, 0),
-                NSLayoutConstraint.Create(collectionViewWrapper, NSLayoutAttribute.Leading, NSLayoutRelation.Equal,
-                    this, NSLayoutAttribute.Leading, 1, 0)
+                CollectionViewConstraintTop =
+                    NSLayoutConstraint.Create(CollectionView, NSLayoutAttribute.Top, NSLayoutRelation.Equal,
+                        ImageCropView, NSLayoutAttribute.Bottom, 1, 0)
             });
+
+            this.AddConstraints(
+                ImageCropView.Width().EqualTo().HeightOf(ImageCropView),
+                ImageCropView.AtLeftOf(this),
+                ImageCropView.AtRightOf(this),
+
+                CollectionView.AtBottomOf(this),
+                CollectionView.AtLeftOf(this),
+                CollectionView.AtRightOf(this)
+            );
 
             Hidden = true;
 
@@ -128,12 +101,10 @@ namespace Fusuma
             ImageCropViewConstraintTop.Constant = 50;
             DragDirection = DragDirection.Up;
 
-            ImageCropViewContainer.Layer.ShadowColor = UIColor.Black.CGColor;
-            ImageCropViewContainer.Layer.ShadowRadius = 30;
-            ImageCropViewContainer.Layer.ShadowOpacity = 0.9f;
-            ImageCropViewContainer.Layer.ShadowOffset = CGSize.Empty;
-
-            CollectionView.BackgroundColor = Configuration.BackgroundColor;
+            ImageCropView.Layer.ShadowColor = UIColor.Black.CGColor;
+            ImageCropView.Layer.ShadowRadius = 30;
+            ImageCropView.Layer.ShadowOpacity = 0.9f;
+            ImageCropView.Layer.ShadowOffset = CGSize.Empty;
 
             CollectionView.DataSource = dataSource;
             CollectionView.Delegate = @delegate;
@@ -158,7 +129,7 @@ namespace Fusuma
                 }
 
                 _dragStartPos = currentPos;
-                _cropBottomY = ImageCropViewContainer.Frame.Y + ImageCropViewContainer.Frame.Height;
+                _cropBottomY = ImageCropView.Frame.Y + ImageCropView.Frame.Height;
 
                 if (DragDirection == DragDirection.Stop)
                     DragDirection = ImageCropViewConstraintTop.Constant == ImageCropViewOriginalConstraintTop
@@ -181,22 +152,22 @@ namespace Fusuma
                 if (DragDirection == DragDirection.Up && currentPos.Y < _cropBottomY - _dragDiff)
                 {
                     ImageCropViewConstraintTop.Constant =
-                        (nfloat) Math.Max(_imageCropViewMinimalVisibleHeight - ImageCropViewContainer.Frame.Height,
-                            currentPos.Y + _dragDiff - ImageCropViewContainer.Frame.Height);
+                        (nfloat) Math.Max(_imageCropViewMinimalVisibleHeight - ImageCropView.Frame.Height,
+                            currentPos.Y + _dragDiff - ImageCropView.Frame.Height);
                     CollectionViewConstraintHeight.Constant =
                         (nfloat) Math.Min(Frame.Height - _imageCropViewMinimalVisibleHeight,
-                            Frame.Height - ImageCropViewConstraintTop.Constant - ImageCropViewContainer.Frame.Height);
+                            Frame.Height - ImageCropViewConstraintTop.Constant - ImageCropView.Frame.Height);
                 }
                 else if (DragDirection == DragDirection.Down && currentPos.Y > _cropBottomY)
                 {
                     ImageCropViewConstraintTop.Constant =
                         (nfloat) Math.Min(ImageCropViewOriginalConstraintTop,
-                            currentPos.Y - ImageCropViewContainer.Frame.Height);
+                            currentPos.Y - ImageCropView.Frame.Height);
                     CollectionViewConstraintHeight.Constant =
                         (nfloat)
                             Math.Max(
-                                Frame.Height - ImageCropViewOriginalConstraintTop - ImageCropViewContainer.Frame.Height,
-                                Frame.Height - ImageCropViewConstraintTop.Constant - ImageCropViewContainer.Frame.Height);
+                                Frame.Height - ImageCropViewOriginalConstraintTop - ImageCropView.Frame.Height,
+                                Frame.Height - ImageCropViewConstraintTop.Constant - ImageCropView.Frame.Height);
                 }
                 else if (DragDirection == DragDirection.Stop && CollectionView.ContentOffset.Y < 0)
                 {
@@ -206,13 +177,13 @@ namespace Fusuma
                 else if (DragDirection == DragDirection.Scroll)
                 {
                     ImageCropViewConstraintTop.Constant = _imageCropViewMinimalVisibleHeight -
-                                                          ImageCropViewContainer.Frame.Height + currentPos.Y -
+                                                          ImageCropView.Frame.Height + currentPos.Y -
                                                           _imaginaryCollectionViewOffsetStartPosY;
                     CollectionViewConstraintHeight.Constant =
                         (nfloat)
                             Math.Max(
-                                Frame.Height - ImageCropViewOriginalConstraintTop - ImageCropViewContainer.Frame.Height,
-                                Frame.Height - ImageCropViewConstraintTop.Constant - ImageCropViewContainer.Frame.Height);
+                                Frame.Height - ImageCropViewOriginalConstraintTop - ImageCropView.Frame.Height,
+                                Frame.Height - ImageCropViewConstraintTop.Constant - ImageCropView.Frame.Height);
                 }
             }
             else
@@ -231,8 +202,9 @@ namespace Fusuma
                     // The largest movement
                     ImageCropView.Scrollable = false;
                     ImageCropViewConstraintTop.Constant = _imageCropViewMinimalVisibleHeight -
-                                                          ImageCropViewContainer.Frame.Height;
+                                                          ImageCropView.Frame.Height;
                     CollectionViewConstraintHeight.Constant = Frame.Height - _imageCropViewMinimalVisibleHeight;
+                    CollectionViewConstraintTop.Constant = ImageCropViewOriginalConstraintTop;
 
                     AnimateNotify(0.3, 0, UIViewAnimationOptions.CurveEaseOut, LayoutIfNeeded, finished => { });
                     DragDirection = DragDirection.Down;
@@ -244,7 +216,8 @@ namespace Fusuma
 
                     ImageCropViewConstraintTop.Constant = ImageCropViewOriginalConstraintTop;
                     CollectionViewConstraintHeight.Constant = Frame.Height - ImageCropViewOriginalConstraintTop -
-                                                              ImageCropViewContainer.Frame.Height;
+                                                              ImageCropView.Frame.Height;
+                    CollectionViewConstraintTop.Constant = 0;
                     AnimateNotify(0.3, 0, UIViewAnimationOptions.CurveEaseOut, LayoutIfNeeded, finished => {});
                     DragDirection = DragDirection.Up;
                 }
