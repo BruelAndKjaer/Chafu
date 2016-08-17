@@ -47,6 +47,8 @@ Task("Package")
 	.Does(() => {
 	//GitLink("./");
 
+	EnsureDirectoryExists(outputDir);
+
 	NuGetPack(nuspec, new NuGetPackSettings{
 		Version = versionInfo.NuGetVersion,
 		Symbols = false,
