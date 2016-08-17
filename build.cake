@@ -58,7 +58,9 @@ Task("Package")
 		Version = versionInfo.NuGetVersion,
 		Symbols = false,
 		NoPackageAnalysis = true,
-		OutputDirectory = outputDir
+		OutputDirectory = outputDir,
+		BasePath = "/.",
+		Verbosity = NuGetVerbosity.Detailed,
 	});
 });
 
