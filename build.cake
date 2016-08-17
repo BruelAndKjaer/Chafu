@@ -1,9 +1,10 @@
 #tool "nuget:?package=GitVersion.CommandLine"
 #tool "nuget:?package=gitlink"
 
-var sln = "./Chafu.sln";
-var nuspec = "./chafu.nuspec";
-var outputDir = "./artifacts/";
+var sln = new FilePath("Chafu.sln");
+var project = new FilePath("Chafu/Chafu.csproj");
+var nuspec = new FilePath("chafu.nuspec");
+var outputDir = new DirectoryPath("artifacts");
 var target = Argument("target", "Default");
 
 var isRunningOnAppVeyor = AppVeyor.IsRunningOnAppVeyor;
@@ -13,6 +14,7 @@ Task("Clean").Does(() =>
 {
     CleanDirectories("./**/bin");
     CleanDirectories("./**/obj");
+	CleanDirectories(outputDir.FullPath);
 });
 
 GitVersion versionInfo = null;
@@ -36,7 +38,7 @@ Task("Build")
 	.IsDependentOn("Restore")
 	.Does(() =>  {
 	
-	DotNetBuild("./Chafu/Chafu.csproj", 
+	DotNetBuild(project, 
 		settings => settings.SetConfiguration("Release")
 							.WithTarget("Build")
 	);
@@ -45,7 +47,8 @@ Task("Build")
 Task("Package")
 	.IsDependentOn("Build")
 	.Does(() => {
-	//GitLink("./");
+	if (IsRunningOnWindows())
+		GitLink(sln.GetDirectory());
 
 	EnsureDirectoryExists(outputDir);
 
@@ -63,7 +66,9 @@ Task("UploadAppVeyorArtifact")
 	.WithCriteria(() => isRunningOnAppVeyor)
 	.Does(() => {
 
-	foreach(var file in GetFiles(outputDir)) {
+	Information("Artifacts Dir: {0}", outputDir.FullPath);
+
+	foreach(var file in GetFiles(outputDir.FullPath + "/*")) {
 		Information("Uploading {0}", file.FullPath);
 		AppVeyor.UploadArtifact(file.FullPath);
 	}
