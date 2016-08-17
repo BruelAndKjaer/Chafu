@@ -63,7 +63,7 @@ Task("Package")
 	foreach(var dll in GetFiles(dllDir)){
 	 	Information("File: {0}", dll.ToString());
 		nugetContent.Add(new NuSpecContent {
-			Target = "xamarinios",
+			Target = "xamarin.ios",
 			Source = dll.ToString()
 		});
 	}
