@@ -1,4 +1,3 @@
-#addin "Cake.Xamarin"
 #tool "nuget:?package=GitVersion.CommandLine"
 #tool "nuget:?package=gitlink"
 
@@ -7,7 +6,7 @@ var nuspec = "./chafu.nuspec";
 var outputDir = "./artifacts/";
 var target = Argument("target", "Default");
 
-var isRunningOnAppVeyor = AppVeyor.isRunningOnAppVeyor;
+var isRunningOnAppVeyor = AppVeyor.IsRunningOnAppVeyor;
 var isPullRequest = AppVeyor.Environment.PullRequest.IsPullRequest;
 
 Task("Clean").Does(() =>
@@ -37,8 +36,10 @@ Task("Build")
 	.IsDependentOn("Restore")
 	.Does(() =>  {
 	
-	MDToolBuild("./Chafu/Chafu.csproj", 
-		s => s.Configuration = "Release");
+	DotNetBuild("./Chafu/Chafu.csproj", 
+		settings => settings.SetConfiguration("Release")
+							.WithTarget("Build")
+	);
 });
 
 Task("Package")
@@ -62,7 +63,7 @@ Task("UploadAppVeyorArtifact")
 
 	foreach(var file in GetFiles(outputDir)) {
 		Information("Uploading {0}", file.FullPath);
-		AppVeyor.UploadAppVeyorArtifact(file.FullPath);
+		AppVeyor.UploadArtifact(file.FullPath);
 	}
 });
 
