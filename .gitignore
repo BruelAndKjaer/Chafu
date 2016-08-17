@@ -244,5 +244,6 @@ tools/Addins/
 tools/gitlink/
 tools/GitVersion.CommandLine/
 tools/nuget.exe
+tools/packages.config.md5sum
 artifacts/
 *.nupkg
