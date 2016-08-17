@@ -49,7 +49,7 @@ Task("Package")
 	.Does(() => {
 	if (IsRunningOnWindows())
 		GitLink(sln.GetDirectory(), new GitLinkSettings {
-			ArgumentCustomization = args => args.Append("-exclude Sample")
+			ArgumentCustomization = args => args.Append("-ignore Sample")
 		});
 
 	EnsureDirectoryExists(outputDir);
