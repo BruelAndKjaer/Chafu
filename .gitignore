@@ -236,3 +236,13 @@ DerivedData
 #CocoaPods
 Pods
 nuspec/nuget.exe
+
+#Build
+project.lock.json
+tools/Cake/
+tools/Addins/
+tools/gitlink/
+tools/GitVersion.CommandLine/
+tools/nuget.exe
+artifacts/
+*.nupkg
