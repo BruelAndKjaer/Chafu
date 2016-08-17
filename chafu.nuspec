@@ -16,7 +16,7 @@
     <language>en-US</language>
     <dependencies>
       <group targetFramework="Xamarin.iOS10">
-        <dependency id="Cirrous.FluentLayout" version="2.5.0" />
+        <dependency id="Cirrious.FluentLayout" version="2.5.0" />
       </group>
     </dependencies>
   </metadata>

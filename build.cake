@@ -47,7 +47,7 @@ Task("Build")
 Task("Package")
 	.IsDependentOn("Build")
 	.Does(() => {
-	if (IsRunningOnWindows())
+	if (IsRunningOnWindows()) //pdbstr.exe and costura are not xplat currently
 		GitLink(sln.GetDirectory(), new GitLinkSettings {
 			ArgumentCustomization = args => args.Append("-ignore Sample")
 		});
