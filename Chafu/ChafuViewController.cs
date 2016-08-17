@@ -194,11 +194,11 @@ namespace Chafu
 			var closeImage = Configuration.CloseImage ?? UIImage.FromBundle ("ic_close");
 
 			if (Configuration.TintIcons) {
-				albumImage = albumImage.ImageWithRenderingMode (UIImageRenderingMode.AlwaysTemplate);
-				cameraImage = cameraImage.ImageWithRenderingMode (UIImageRenderingMode.AlwaysTemplate);
-				videoImage = videoImage.ImageWithRenderingMode (UIImageRenderingMode.AlwaysTemplate);
-				checkImage = checkImage.ImageWithRenderingMode (UIImageRenderingMode.AlwaysTemplate);
-				closeImage = closeImage.ImageWithRenderingMode (UIImageRenderingMode.AlwaysTemplate);
+				albumImage = albumImage?.ImageWithRenderingMode (UIImageRenderingMode.AlwaysTemplate);
+				cameraImage = cameraImage?.ImageWithRenderingMode (UIImageRenderingMode.AlwaysTemplate);
+				videoImage = videoImage?.ImageWithRenderingMode (UIImageRenderingMode.AlwaysTemplate);
+				checkImage = checkImage?.ImageWithRenderingMode (UIImageRenderingMode.AlwaysTemplate);
+				closeImage = closeImage?.ImageWithRenderingMode (UIImageRenderingMode.AlwaysTemplate);
 			}
 
 			_libraryButton.SetImage (albumImage, UIControlState.Normal);
