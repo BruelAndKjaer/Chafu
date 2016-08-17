@@ -1,10 +1,13 @@
 #addin "Cake.Xamarin"
 #tool "nuget:?package=GitVersion.CommandLine"
+#tool "nuget:?package=gitlink"
 
-var sln = "Chafu.sln";
-var nuspec = "nuspec/chafu.nuspec";
+var sln = "./Chafu.sln";
+var nuspec = "./chafu.nuspec";
+var outputDir = "./artifacts/";
 var target = Argument("target", "Default");
 
+var isPullRequest = AppVeyor.Environment.PullRequest.IsPullRequest;
 
 Task("Clean").Does(() =>
 {
@@ -12,8 +15,15 @@ Task("Clean").Does(() =>
     CleanDirectories("./**/obj");
 });
 
+GitVersion versionInfo = null;
 Task("Version").Does(() => {
-	
+	GitVersion(new GitVersionSettings {
+		UpdateAssemblyInfo = true,
+		OutputType = GitVersionOutput.BuildServer
+	});
+
+	versionInfo = GitVersion(new GitVersionSettings{ OutputType = GitVersionOutput.Json });
+	Information("VI:\t{0}", versionInfo.FullSemVer);
 });
 
 Task("Restore").Does(() => {
@@ -24,12 +34,32 @@ Task("Build")
 	.IsDependentOn("Clean")
 	.IsDependentOn("Version")
 	.IsDependentOn("Restore")
-	.Does(() => 
-	{
-	    iOSBuild("./Chafu/Chafu.csproj", 
-	        new MDToolSettings { Configuration = "Release" });
+	.Does(() =>  {
+	
+	MDToolBuild("./Chafu/Chafu.csproj", 
+		s => s.Configuration = "Release");
+});
+
+Task("Package")
+	.IsDependentOn("Build")
+	.WithCriteria(() => !isPullRequest)
+	.Does(() => {
+	//GitLink("./");
+
+	NuGetPack(nuspec, new NuGetPackSettings{
+		Version = versionInfo.NuGetVersion,
+		Symbols = false,
+		NoPackageAnalysis = true,
+		OutputDirectory = outputDir
 	});
 
-Task("Default").IsDependentOn("clean").IsDependentOn("lib").Does(() => {});
+	if (AppVeyor.IsRunningOnAppVeyor)
+	{
+		foreach(var file in GetFiles(outputDir + "**/*"))
+			AppVeyor.UploadArtifact(file.FullPath);
+	}
+});
+
+Task("Default").IsDependentOn("Package").Does(() => {});
 
 RunTarget(target);
