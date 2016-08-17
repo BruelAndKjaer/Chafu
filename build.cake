@@ -60,8 +60,10 @@ Task("UploadAppVeyorArtifact")
 	.WithCriteria(() => isRunningOnAppVeyor)
 	.Does(() => {
 
-	foreach(var file in GetFiles(outputDir))
+	foreach(var file in GetFiles(outputDir)) {
+		Information("Uploading {0}", file.FullPath);
 		AppVeyor.UploadAppVeyorArtifact(file.FullPath);
+	}
 });
 
 Task("Default").IsDependentOn("UploadAppVeyorArtifact").Does(() => {});
