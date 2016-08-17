@@ -1,8 +1,11 @@
 # Chafu
 
+[![Build status](https://ci.appveyor.com/api/projects/status/k4nhuf35dnwr42av?svg=true)](https://ci.appveyor.com/project/Cheesebaron/chafu)
+
 Chafu is a photo browser and camera library for Xamarin.iOS. It is heavily inspired from [Fusuma][1], which is a Swift library written by [ytakzk][2].
-It has been tweaked for ease of use in a C# environment, and all views have been converted from xibs to typed out programatically.
-A lot of unecessary wrapping of views has been removed to simplify the code in the library + loads of bugfixes and missing features have been implemented.
+
+It has been tweaked for ease of use in a C# environment, all xibs converted to C# code and unnecessary wrapper views have been removed. The library
+has been simplified and loads of unfixed Fusuma bugs and features have been fixed in this library.
 
 ## Preview
 <img src="https://raw.githubusercontent.com/Cheesebaron/Chafu/master/images/sample.gif" width="340px">
@@ -68,9 +71,9 @@ Configuration.TintIcons = true;
 Explore the class for more configuration.
 
 ## Thanks to
-Many thanks to [ytakzk][2] for his initial [Fusuma][1] implementation, which this component initially started as.
+Many thanks to [ytakzk][2] for his initial [Fusuma][1] implementation, which this library started as.
 
-## What does chafu mean?
+## What does Chafu mean?
 Fusuma means bran in Japanese, Chafu in Japanese means chaff. Chaff is sometimes confused with bran.
 
 ## License
