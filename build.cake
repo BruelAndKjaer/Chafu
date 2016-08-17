@@ -63,7 +63,7 @@ Task("Package")
 	foreach(var dll in GetFiles(dllDir)){
 	 	Information("File: {0}", dll.ToString());
 		nugetContent.Add(new NuSpecContent {
-			Target = "Xamarin.iOS10",
+			Target = "lib/Xamarin.iOS10",
 			Source = dll.ToString()
 		});
 	}
