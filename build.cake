@@ -7,6 +7,7 @@ var nuspec = "./chafu.nuspec";
 var outputDir = "./artifacts/";
 var target = Argument("target", "Default");
 
+var isRunningOnAppVeyor = AppVeyor.isRunningOnAppVeyor;
 var isPullRequest = AppVeyor.Environment.PullRequest.IsPullRequest;
 
 Task("Clean").Does(() =>
@@ -42,7 +43,6 @@ Task("Build")
 
 Task("Package")
 	.IsDependentOn("Build")
-	.WithCriteria(() => !isPullRequest)
 	.Does(() => {
 	//GitLink("./");
 
@@ -52,14 +52,18 @@ Task("Package")
 		NoPackageAnalysis = true,
 		OutputDirectory = outputDir
 	});
-
-	if (AppVeyor.IsRunningOnAppVeyor)
-	{
-		foreach(var file in GetFiles(outputDir + "**/*"))
-			AppVeyor.UploadArtifact(file.FullPath);
-	}
 });
 
-Task("Default").IsDependentOn("Package").Does(() => {});
+Task("UploadAppVeyorArtifact")
+	.IsDependentOn("Package")
+	.WithCriteria(() => !isPullRequest)
+	.WithCriteria(() => isRunningOnAppVeyor)
+	.Does(() => {
+
+	foreach(var file in GetFiles(outputDir))
+		AppVeyor.UploadAppVeyorArtifact(file.FullPath);
+});
+
+Task("Default").IsDependentOn("UploadAppVeyorArtifact").Does(() => {});
 
 RunTarget(target);
