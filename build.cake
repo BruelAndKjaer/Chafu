@@ -3,6 +3,7 @@
 
 var sln = new FilePath("Chafu.sln");
 var project = new FilePath("Chafu/Chafu.csproj");
+var binDir = new DirectoryPath("Chafu/bin/Release");
 var nuspec = new FilePath("chafu.nuspec");
 var outputDir = new DirectoryPath("artifacts");
 var target = Argument("target", "Default");
@@ -54,13 +55,38 @@ Task("Package")
 
 	EnsureDirectoryExists(outputDir);
 
-	NuGetPack(nuspec, new NuGetPackSettings{
+	var dllDir = binDir + "/Chafu.*";
+
+	Information("Dll Dir: {0}", dllDir);
+
+	var nugetContent = new List<NuSpecContent>();
+	foreach(var dll in GetFiles(dllDir)){
+	 	Information("File: {0}", dll.ToString());
+		nugetContent.Add(new NuSpecContent {
+			Target = "xamarinios",
+			Source = dll.ToString()
+		});
+	}
+
+	Information("File Count {0}", nugetContent.Count);
+
+	NuGetPack(nuspec, new NuGetPackSettings {
+		Authors = new [] { "Tomasz Cielecki" },
+		Owners = new [] { "Tomasz Cielecki" },
+		IconUrl = new Uri("http://i.imgur.com/V3983YY.png"),
+		ProjectUrl = new Uri("https://github.com/Cheesebaron/Chafu"),
+		LicenseUrl = new Uri("https://github.com/Cheesebaron/Chafu/blob/master/LICENSE"),
+		Copyright = "Copyright (c) Tomasz Cielecki",
+		RequireLicenseAcceptance = false,
+		Tags = new [] {"fusuma", "photo", "media", "video", "picker", "browser", "mobile",
+			"xamarin", "ios"},
 		Version = versionInfo.NuGetVersion,
 		Symbols = false,
 		NoPackageAnalysis = true,
 		OutputDirectory = outputDir,
-		BasePath = "/.",
 		Verbosity = NuGetVerbosity.Detailed,
+		Files = nugetContent,
+		BasePath = "/."
 	});
 });
 

@@ -4,23 +4,11 @@
     <id>Chafu</id>
     <title>Chafu</title>
     <version>$version$</version>
-    <authors>Tomasz Cielecki</authors>
-    <owners>Tomasz Cielecki</owners>
-    <licenseUrl>https://github.com/Cheesebaron/Chafu/blob/master/LICENSE</licenseUrl>
-    <projectUrl>https://github.com/Cheesebaron/Chafu</projectUrl>
-    <iconUrl>http://i.imgur.com/V3983YY.png</iconUrl>
-    <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>A configurable photo browser for Xamarin.iOS</description>
-    <copyright>Copyright 2016</copyright>
-    <tags>fusuma photo media video picker browser mobile xamarin ios</tags>
-    <language>en-US</language>
     <dependencies>
       <group targetFramework="Xamarin.iOS10">
         <dependency id="Cirrious.FluentLayout" version="2.5.0" />
       </group>
     </dependencies>
   </metadata>
-  <files>
-    <file src="Chafu/bin/Release/Chafu.*" target="lib/Xamarin.iOS10" />
-  </files>
 </package>
