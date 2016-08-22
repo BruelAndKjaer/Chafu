@@ -14,6 +14,8 @@ namespace Chafu
         private NSObject _willEnterForegroundObserver;
         private Action<UIImage> _onImage;
 
+        public event EventHandler<NSError> SaveToPhotosAlbumError;
+
         public CameraView(IntPtr handle) 
             : base(handle) { CreateView(); }
         public CameraView() { CreateView(); }
@@ -65,10 +67,12 @@ namespace Chafu
                         if (Configuration.CropImage)
                         {
                             var resizedImage = new UIImage(imageRef, previewWidth/imageWidth, image.Orientation);
+                            SaveToPhotosAlbum(resizedImage);
                             _onImage?.Invoke(resizedImage);
                         }
                         else
                         {
+                            SaveToPhotosAlbum(image);
                             _onImage?.Invoke(image);
                         }
 
@@ -78,6 +82,17 @@ namespace Chafu
                         _imageOutput = null;
                     });
                 });
+            });
+        }
+
+        private void SaveToPhotosAlbum(UIImage image)
+        {
+            if (!Configuration.SaveToPhotosAlbum) return;
+
+            image.SaveToPhotosAlbum((uiImage, nsError) =>
+            {
+                if (nsError != null)
+                    SaveToPhotosAlbumError?.Invoke(this, nsError);
             });
         }
 

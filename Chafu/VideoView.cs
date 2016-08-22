@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using AssetsLibrary;
 using AVFoundation;
 using CoreMedia;
 using Foundation;
@@ -18,6 +19,7 @@ namespace Chafu
 
         NSObject _willEnterForegroundObserver;
 
+        public event EventHandler<NSError> SaveToPhotosAlbumError;
 
         public VideoView(IntPtr handle) 
             : base(handle) { CreateView(); }
@@ -173,6 +175,16 @@ namespace Chafu
         public void FinishedRecording(AVCaptureFileOutput captureOutput, NSUrl outputFileUrl, NSObject[] connections, 
             NSError error)
         {
+            if (Configuration.SaveToPhotosAlbum)
+            {
+                var al = new ALAssetsLibrary();
+                al.WriteVideoToSavedPhotosAlbum(outputFileUrl, (url, nsError) =>
+                {
+                    if (nsError != null)
+                        SaveToPhotosAlbumError?.Invoke(this, nsError);
+                });
+            }
+            
             _onVideoFinished?.Invoke(outputFileUrl);
         }
 

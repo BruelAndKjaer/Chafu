@@ -141,5 +141,11 @@ namespace Chafu
         /// </summary>
         /// <value><c>true</c> if show square; otherwise, <c>false</c>.</value>
         public static bool ShowSquare { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets whether to save newly taken photos with the camera to Photos Album.
+        /// </summary>
+        /// <value><c>true</c> if save to Photos Album; otherwise, <c>false</c>.</value>
+        public static bool SaveToPhotosAlbum { get; set; } = false;
     }
 }
