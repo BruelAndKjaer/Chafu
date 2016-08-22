@@ -14,7 +14,6 @@ namespace Chafu
         public event EventHandler CameraRollUnauthorized;
         public event EventHandler CameraUnauthorized;
 
-		private AlbumView _albumView;
 		private CameraView _cameraView;
 		private VideoView _videoView;
 
@@ -26,6 +25,11 @@ namespace Chafu
 		private UIButton _cameraButton;
 		private UILabel _menuTitle;
 		private UIView _menuView;
+
+        /// <summary>
+        /// Gets the AlbumView
+        /// </summary>
+        public AlbumView AlbumView { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether video tab is shown.
@@ -131,12 +135,12 @@ namespace Chafu
 				BackgroundColor = Configuration.BackgroundColor,
 				TranslatesAutoresizingMaskIntoConstraints = false
 			};
-			_albumView = new AlbumView {
+			AlbumView = new AlbumView {
 				BackgroundColor = Configuration.BackgroundColor,
 				TranslatesAutoresizingMaskIntoConstraints = false
 			};
 
-			View.AddSubviews (_cameraView, _albumView);
+			View.AddSubviews (_cameraView, AlbumView);
 
 			View.AddConstraints (
 				_menuView.Height ().EqualTo (50),
@@ -159,13 +163,13 @@ namespace Chafu
 				_doneButton.Height ().EqualTo (40),
 				_doneButton.AtRightOf (View, 8),
 
-				_albumView.AtTopOf (View),
-				_albumView.AtLeftOf (View),
-				_albumView.AtRightOf (View),
+				AlbumView.AtTopOf (View),
+				AlbumView.AtLeftOf (View),
+				AlbumView.AtRightOf (View),
 
 				_cameraView.AtTopOf (View),
-				_cameraView.WithSameLeft (_albumView),
-				_cameraView.WithSameRight (_albumView),
+				_cameraView.WithSameLeft (AlbumView),
+				_cameraView.WithSameRight (AlbumView),
 
 				_libraryButton.AtLeftOf (View),
 				_libraryButton.AtBottomOf (View),
@@ -178,7 +182,7 @@ namespace Chafu
 
 				_cameraButton.WithSameWidth (_libraryButton),
 
-				_albumView.Above (_libraryButton),
+				AlbumView.Above (_libraryButton),
 				_cameraView.Above (_libraryButton)
 			);
 
@@ -244,8 +248,8 @@ namespace Chafu
 
 				View.AddConstraints (
 					_videoView.AtTopOf (View),
-					_videoView.WithSameLeft (_albumView),
-					_videoView.WithSameRight (_albumView),
+					_videoView.WithSameLeft (AlbumView),
+					_videoView.WithSameRight (AlbumView),
 
 					_videoButton.ToRightOf (_cameraButton),
 					_videoButton.AtBottomOf (View),
@@ -271,16 +275,16 @@ namespace Chafu
 		{
 			base.ViewDidAppear (animated);
 
-			_albumView.LayoutIfNeeded ();
+			AlbumView.LayoutIfNeeded ();
 			_cameraView.LayoutIfNeeded ();
 
 			if (AlbumDataSource == null && AlbumDelegate == null) {
 				Console.WriteLine ("DataSource and Delegate are null for AlbumView, using default.");
-				AlbumDataSource = new PhotoGalleryDataSource (_albumView, new CGSize (100, 100));
-				AlbumDelegate = new PhotoGalleryDelegate (_albumView, (PhotoGalleryDataSource)AlbumDataSource);
+				AlbumDataSource = new PhotoGalleryDataSource (AlbumView, new CGSize (100, 100));
+				AlbumDelegate = new PhotoGalleryDelegate (AlbumView, (PhotoGalleryDataSource)AlbumDataSource);
 			}
 
-			_albumView.Initialize (AlbumDataSource, AlbumDelegate);
+			AlbumView.Initialize (AlbumDataSource, AlbumDelegate);
 			_cameraView.Initialize (OnImage);
 
 			if (HasVideo) {
@@ -354,7 +358,7 @@ namespace Chafu
 
 		private void DoneButtonPressed (object sender, EventArgs e)
 		{
-			var view = _albumView.ImageCropView;
+			var view = AlbumView.ImageCropView;
 
 			if (Configuration.CropImage) {
 				var normalizedX = view.ContentOffset.X / view.ContentSize.Width;
@@ -410,7 +414,7 @@ namespace Chafu
 
 			switch (mode) {
     			case Mode.Library:
-    				_albumView.Hidden = false;
+    				AlbumView.Hidden = false;
     				_cameraView.Hidden = true;
     				if (_videoView != null)
     					_videoView.Hidden = true;
@@ -418,10 +422,10 @@ namespace Chafu
     				_menuTitle.Text = Configuration.CameraRollTitle;
 
     				HighlightButton (_libraryButton);
-    				View.BringSubviewToFront (_albumView);
+    				View.BringSubviewToFront (AlbumView);
     				break;
     			case Mode.Camera:
-    				_albumView.Hidden = true;
+    				AlbumView.Hidden = true;
     				_cameraView.Hidden = false;
     				if (_videoView != null)
     					_videoView.Hidden = true;
@@ -434,7 +438,7 @@ namespace Chafu
     				    _cameraView.StartCamera ();
     				break;
     			case Mode.Video:
-    				_albumView.Hidden = true;
+    				AlbumView.Hidden = true;
     				_cameraView.Hidden = true;
     				_videoView.Hidden = false;
                     _doneButton.Hidden = true;
