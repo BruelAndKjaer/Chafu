@@ -458,8 +458,7 @@ namespace Chafu
 			var buttons = new [] { _cameraButton, _videoButton, _libraryButton };
 
 			foreach (var button in buttons) {
-				if (button == null) continue;
-				if (button.Layer.Sublayers == null) continue;
+			    if (button?.Layer.Sublayers == null) continue;
 				if (button.Layer.Sublayers.Length <= 1) continue;
 
 				foreach (var layer in button.Layer.Sublayers) {
