@@ -4,7 +4,7 @@ using UIKit;
 
 namespace Chafu
 {
-    public class PhotoGalleryDelegate : ChafuBaseGalleryDelegate
+    public class PhotoGalleryDelegate : ChafuAlbumDelegate
     {
         private readonly AlbumView _albumView;
         private readonly PhotoGalleryDataSource _dataSource;

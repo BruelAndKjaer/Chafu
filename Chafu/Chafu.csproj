@@ -85,6 +85,7 @@
     <Compile Include="AlbumViewCell.cs" />
     <Compile Include="BaseCameraView.cs" />
     <Compile Include="CameraView.cs" />
+    <Compile Include="ChafuAlbumDelegate.cs" />
     <Compile Include="Configuration.cs" />
     <Compile Include="DragDirection.cs" />
     <Compile Include="ChafuAlbumDataSource.cs" />
