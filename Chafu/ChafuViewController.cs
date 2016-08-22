@@ -43,7 +43,7 @@ namespace Chafu
         /// Gets or sets the album delegate.
         /// </summary>
         /// <value>The album delegate.</value>
-		public UICollectionViewDelegate AlbumDelegate { get; set; }
+		public ChafuAlbumDelegate AlbumDelegate { get; set; }
 
 		public override void ViewDidLoad ()
 		{

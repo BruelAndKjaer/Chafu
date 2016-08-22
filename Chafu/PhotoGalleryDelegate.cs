@@ -4,12 +4,13 @@ using UIKit;
 
 namespace Chafu
 {
-    public class PhotoGalleryDelegate : UICollectionViewDelegate
+    public class PhotoGalleryDelegate : ChafuBaseGalleryDelegate
     {
         private readonly AlbumView _albumView;
         private readonly PhotoGalleryDataSource _dataSource;
 
         public PhotoGalleryDelegate(AlbumView albumView, PhotoGalleryDataSource dataSource)
+            : base(albumView)
         {
             _albumView = albumView;
             _dataSource = dataSource;
@@ -19,17 +20,8 @@ namespace Chafu
         {
             _dataSource.ChangeImage(_dataSource.Images[indexPath.Row] as PHAsset);
 
-            _albumView.ImageCropView.Scrollable = true;
-            _albumView.ImageCropViewConstraintTop.Constant = AlbumView.ImageCropViewOriginalConstraintTop;
-            _albumView.CollectionViewConstraintHeight.Constant = _albumView.Frame.Height -
-                AlbumView.ImageCropViewOriginalConstraintTop - _albumView.ImageCropView.Frame.Height;
-            _albumView.CollectionViewConstraintTop.Constant = 0;
-
-            UIView.AnimateNotify(0.2, 0.0, UIViewAnimationOptions.CurveEaseOut, () => _albumView.LayoutIfNeeded(),
-                finished => { });
-
-            _albumView.DragDirection = DragDirection.Up;
-            _albumView.CollectionView.ScrollToItem(indexPath, UICollectionViewScrollPosition.Top, true);
+            // animations and stuff
+            base.ItemSelected(collectionView, indexPath);
         }
 
         public override void Scrolled(UIScrollView scrollView)
