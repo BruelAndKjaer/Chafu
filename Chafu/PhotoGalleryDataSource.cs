@@ -57,15 +57,9 @@ namespace Chafu
             return cell;
         }
 
-        public override nint NumberOfSections(UICollectionView collectionView)
-        {
-            return 1;
-        }
+        public override nint NumberOfSections(UICollectionView collectionView) => 1;
 
-        public override nint GetItemsCount(UICollectionView collectionView, nint section)
-        {
-            return Images?.Count ?? 0;
-        }
+        public override nint GetItemsCount(UICollectionView collectionView, nint section) => Images?.Count ?? 0;
 
         public void PhotoLibraryDidChange(PHChange changeInstance)
         {
