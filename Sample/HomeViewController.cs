@@ -1,5 +1,8 @@
-﻿using Chafu;
+﻿using System;
+using System.IO;
+using Chafu;
 using Cirrious.FluentLayouts.Touch;
+using CoreFoundation;
 using UIKit;
 
 namespace Sample
@@ -21,7 +24,30 @@ namespace Sample
             var urlLabel = new UILabel();
 
             var chafu = new ChafuViewController { HasVideo = true};
-            chafu.ImageSelected += (sender, image) => imageView.Image = image;
+            chafu.ImageSelected += (sender, image) =>
+            {
+                DispatchQueue.MainQueue.DispatchAsync(() =>
+                {
+                    imageView.Image = image;
+                });
+
+                DispatchQueue.DefaultGlobalQueue.DispatchAsync(() =>
+                {
+                    var dirPath = TempPath();
+                    var fileName = $"{Guid.NewGuid().ToString("N")}.jpg";
+                    var tempPath = Path.Combine(dirPath, fileName);
+
+                    if (!Directory.Exists(dirPath))
+                        Directory.CreateDirectory(dirPath);
+
+                    using (var stream = image.AsJPEG().AsStream())
+                    using (var fileStream = File.Create(tempPath))
+                    {
+                        stream.Seek(0, SeekOrigin.Begin);
+                        stream.CopyTo(fileStream);
+                    }
+                });
+            };
             chafu.VideoSelected += (sender, videoUrl) => urlLabel.Text = videoUrl.AbsoluteString;
             chafu.Closed += (sender, e) => { /* do stuff on closed */ };
 
@@ -35,7 +61,12 @@ namespace Sample
 				NavigationController.PresentModalViewController (chafu, true);
             };
 
-            var albumViewController = new AlbumViewController();
+            var albumViewController = new AlbumViewController
+            {
+                LazyDataSource = (view, size) => new LocalFilesDataSource(view, TempPath(), size),
+                LazyDelegate = (view, source) => new LocalFilesDelegate(view, (LocalFilesDataSource) source)
+            };
+
             albumViewController.ImageSelected += (sender, image) =>
             {
                 imageView.Image = image;
@@ -49,6 +80,7 @@ namespace Sample
             albumButton.SetTitle("Show Album", UIControlState.Normal);
             albumButton.TouchUpInside += (sender, args) =>
             {
+                ((LocalFilesDataSource)albumViewController.AlbumDataSource)?.UpdateImageSource(TempPath());
                 NavigationController.PresentModalViewController(albumViewController, true);
             };
 
@@ -81,6 +113,13 @@ namespace Sample
                 albumButton.AtRightOf(View, 50),
                 albumButton.Height().EqualTo(70)
                 );
+        }
+
+        public string TempPath()
+        {
+            var documents = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            var ret = Path.Combine(documents, "..", "tmp");
+            return ret;
         }
     }
 }

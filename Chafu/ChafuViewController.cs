@@ -204,11 +204,6 @@ namespace Chafu
 					_cameraButton.AtRightOf (View)
 				);
 			}
-
-            if (Configuration.ModeOrder == ModeOrder.LibraryFirst)
-                ChangeMode(Mode.Library, false);
-            else
-                ChangeMode(Mode.Camera, false);
 		}
 
 		public override void ViewDidAppear (bool animated)
@@ -241,10 +236,8 @@ namespace Chafu
             AlbumDataSource.CameraRollUnauthorized += CameraRollUnauthoized;
             _cameraView.CameraUnauthorized += OnCameraUnauthorized;
 
-            if (_mode == Mode.Camera)
-                _cameraView?.StartCamera();
-            if (_mode == Mode.Video)
-                _videoView?.StartCamera();
+		    ChangeMode(Configuration.ModeOrder == ModeOrder.LibraryFirst ? 
+                Mode.Library : Mode.Camera);
 		}
 
         public override void ViewWillDisappear (bool animated)
