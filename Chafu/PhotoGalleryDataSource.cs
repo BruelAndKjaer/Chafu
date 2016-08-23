@@ -225,16 +225,20 @@ namespace Chafu
         public void ChangeImage(PHAsset asset)
         {
             if (asset == null) return;
+            if (_albumView?.ImageCropView == null) return;
 
-            _albumView.ImageCropView.Image = null;
-            _asset = asset;
+            DispatchQueue.MainQueue.DispatchAsync(() =>
+            {
+                _albumView.ImageCropView.Image = null;
+                _asset = asset;
+            });
 
             DispatchQueue.DefaultGlobalQueue.DispatchAsync(() =>
             {
                 var options = new PHImageRequestOptions { NetworkAccessAllowed = true };
                 var assetSize = new CGSize(asset.PixelWidth, asset.PixelHeight);
 
-                ImageManager.RequestImageForAsset(asset, assetSize,
+                ImageManager?.RequestImageForAsset(asset, assetSize,
                     PHImageContentMode.AspectFill, options,
                     (result, info) =>
                     {
