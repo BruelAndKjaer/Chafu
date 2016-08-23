@@ -38,18 +38,24 @@ namespace Chafu
 		public bool HasVideo { get; set; } = false;
 
         /// <summary>
-        /// Gets or sets the album collectionview data source. If null, it will default to show photos from phone gallery.
+        /// Gets the album collectionview data source. Use <see cref="LazyDataSource"/> to create your own Data Source.
         /// </summary>
         /// <value>The album data source.</value>
-		public ChafuAlbumDataSource AlbumDataSource { get; set; }
+		public ChafuAlbumDataSource AlbumDataSource { get; private set; }
 
         /// <summary>
-        /// Gets or sets the album delegate.
+        /// Gets the album delegate. Use <see cref="LazyDelegate"/> to create your own Delegate.
         /// </summary>
         /// <value>The album delegate.</value>
-		public ChafuAlbumDelegate AlbumDelegate { get; set; }
+		public ChafuAlbumDelegate AlbumDelegate { get; private set; }
 
-		public override void ViewDidLoad ()
+	    public Func<AlbumView, CGSize, ChafuAlbumDataSource> LazyDataSource { get; set; } =
+	        (view, size) => new PhotoGalleryDataSource(view, size);
+
+	    public Func<AlbumView, ChafuAlbumDataSource, ChafuAlbumDelegate> LazyDelegate { get; set; } =
+	        (view, source) => new PhotoGalleryDelegate(view, (PhotoGalleryDataSource)source);
+
+        public override void ViewDidLoad ()
 		{
 			base.ViewDidLoad ();
 
@@ -278,11 +284,10 @@ namespace Chafu
 			AlbumView.LayoutIfNeeded ();
 			_cameraView.LayoutIfNeeded ();
 
-			if (AlbumDataSource == null && AlbumDelegate == null) {
-				Console.WriteLine ("DataSource and Delegate are null for AlbumView, using default.");
-				AlbumDataSource = new PhotoGalleryDataSource (AlbumView, new CGSize (100, 100));
-				AlbumDelegate = new PhotoGalleryDelegate (AlbumView, (PhotoGalleryDataSource)AlbumDataSource);
-			}
+		    var albumDataSource = LazyDataSource(AlbumView, new CGSize(100, 100));
+		    var albumDelegate = LazyDelegate(AlbumView, albumDataSource);
+		    AlbumDataSource = albumDataSource;
+		    AlbumDelegate = albumDelegate;
 
 			AlbumView.Initialize (AlbumDataSource, AlbumDelegate);
 			_cameraView.Initialize (OnImage);
