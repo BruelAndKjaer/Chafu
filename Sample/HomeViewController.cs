@@ -16,8 +16,7 @@ namespace Sample
 
             View.BackgroundColor = Configuration.BackgroundColor;
 
-            var imageView = new UIImageView();
-            imageView.BackgroundColor = UIColor.Black;
+            var imageView = new UIImageView {BackgroundColor = UIColor.Black};
 
             var urlLabel = new UILabel();
 
@@ -36,9 +35,27 @@ namespace Sample
 				NavigationController.PresentModalViewController (chafu, true);
             };
 
+            var albumViewController = new AlbumViewController();
+            albumViewController.ImageSelected += (sender, image) =>
+            {
+                imageView.Image = image;
+            };
+            
+            var albumButton = new UIButton(UIButtonType.System)
+            {
+                BackgroundColor = Configuration.TintColor,
+                TintColor = UIColor.Black
+            };
+            albumButton.SetTitle("Show Album", UIControlState.Normal);
+            albumButton.TouchUpInside += (sender, args) =>
+            {
+                NavigationController.PresentModalViewController(albumViewController, true);
+            };
+
             Add(imageView);
             Add(urlLabel);
 			Add(pickerButton);
+            Add(albumButton);
 
             View.SubviewsDoNotTranslateAutoresizingMaskIntoConstraints();
 
@@ -57,7 +74,12 @@ namespace Sample
                 pickerButton.Below(urlLabel, 50),
                 pickerButton.AtLeftOf(View, 50),
                 pickerButton.AtRightOf(View, 50),
-                pickerButton.Height().EqualTo(70)
+                pickerButton.Height().EqualTo(70),
+
+                albumButton.Below(pickerButton, 20),
+                albumButton.AtLeftOf(View, 50),
+                albumButton.AtRightOf(View, 50),
+                albumButton.Height().EqualTo(70)
                 );
         }
     }
