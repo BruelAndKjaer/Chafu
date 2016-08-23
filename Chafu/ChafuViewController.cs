@@ -403,7 +403,6 @@ namespace Chafu
 
 			foreach (var button in buttons) {
 			    if (button?.Layer.Sublayers == null) continue;
-				if (button.Layer.Sublayers.Length <= 1) continue;
 
 				foreach (var layer in button.Layer.Sublayers) {
 					if (layer.Name == UiKitExtensions.BorderLayerName)
