@@ -64,7 +64,7 @@ namespace Chafu
                 _menu.AtRightOf(View),
                 _menu.Height().EqualTo(50),
 
-                _album.AtTopOf(View),
+                _album.Below(_menu),
                 _album.AtBottomOf(View),
                 _album.AtLeftOf(View),
                 _album.AtRightOf(View)

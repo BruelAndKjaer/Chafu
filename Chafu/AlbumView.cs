@@ -13,7 +13,7 @@ namespace Chafu
         private float _imageCropViewMinimalVisibleHeight = 100;
         private nfloat _imaginaryCollectionViewOffsetStartPosY;
 
-        public static readonly int ImageCropViewOriginalConstraintTop = 50;
+        public static readonly int ImageCropViewOriginalConstraintTop = 0;
 
         public ImageCropView ImageCropView { get; private set; }
         public NSLayoutConstraint ImageCropViewConstraintTop { get; private set; }
@@ -58,7 +58,7 @@ namespace Chafu
 
             CollectionViewConstraintHeight = NSLayoutConstraint.Create(CollectionView, NSLayoutAttribute.Height,
                 NSLayoutRelation.Equal);
-            CollectionViewConstraintHeight.Constant = 150;
+            CollectionViewConstraintHeight.Constant = 0;
             CollectionView.AddConstraint(CollectionViewConstraintHeight);
 
             AddConstraints(new[]
@@ -98,7 +98,7 @@ namespace Chafu
 
             CollectionViewConstraintHeight.Constant = Frame.Height - ImageCropView.Frame.Height -
                                                       ImageCropViewOriginalConstraintTop;
-            ImageCropViewConstraintTop.Constant = 50;
+            ImageCropViewConstraintTop.Constant = ImageCropViewOriginalConstraintTop;
             DragDirection = DragDirection.Up;
 
             ImageCropView.Layer.ShadowColor = UIColor.Black.CGColor;
@@ -122,7 +122,9 @@ namespace Chafu
                 var loc = sender.LocationInView(view);
                 var subView = view?.HitTest(loc, null);
 
-                if (subView != null && subView.Equals(ImageCropView) &&
+                var isImageCropView = subView?.Equals(ImageCropView);
+
+                if (isImageCropView.HasValue && isImageCropView.Value &&
                     ImageCropViewConstraintTop.Constant == ImageCropViewOriginalConstraintTop)
                 {
                     return;
@@ -132,9 +134,11 @@ namespace Chafu
                 _cropBottomY = ImageCropView.Frame.Y + ImageCropView.Frame.Height;
 
                 if (DragDirection == DragDirection.Stop)
+                {
                     DragDirection = ImageCropViewConstraintTop.Constant == ImageCropViewOriginalConstraintTop
                         ? DragDirection.Up
                         : DragDirection.Down;
+                }
 
                 if ((DragDirection == DragDirection.Up && _dragStartPos.Y < _cropBottomY + _dragDiff) ||
                     (DragDirection == DragDirection.Down && _dragStartPos.Y > _cropBottomY))
@@ -188,7 +192,7 @@ namespace Chafu
             }
             else
             {
-                _imageCropViewMinimalVisibleHeight = 0;
+                _imaginaryCollectionViewOffsetStartPosY = 0;
 
                 if (sender.State == UIGestureRecognizerState.Ended && DragDirection == DragDirection.Stop)
                 {
@@ -201,6 +205,7 @@ namespace Chafu
                 {
                     // The largest movement
                     ImageCropView.Scrollable = false;
+
                     ImageCropViewConstraintTop.Constant = _imageCropViewMinimalVisibleHeight -
                                                           ImageCropView.Frame.Height;
                     CollectionViewConstraintHeight.Constant = Frame.Height - _imageCropViewMinimalVisibleHeight;
@@ -213,7 +218,6 @@ namespace Chafu
                 {
                     // Get back to the original position
                     ImageCropView.Scrollable = true;
-
                     ImageCropViewConstraintTop.Constant = ImageCropViewOriginalConstraintTop;
                     CollectionViewConstraintHeight.Constant = Frame.Height - ImageCropViewOriginalConstraintTop -
                                                               ImageCropView.Frame.Height;

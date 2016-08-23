@@ -118,15 +118,15 @@ namespace Chafu
 				_menuView.AtLeftOf (View),
 				_menuView.AtRightOf (View),
 
-				AlbumView.AtTopOf (View),
 				AlbumView.AtLeftOf (View),
 				AlbumView.AtRightOf (View),
+                AlbumView.Below(_menuView),
 
-				_cameraView.AtTopOf (View),
 				_cameraView.WithSameLeft (AlbumView),
 				_cameraView.WithSameRight (AlbumView),
+                _cameraView.Below(_menuView),
 
-				_libraryButton.AtLeftOf (View),
+                _libraryButton.AtLeftOf (View),
 				_libraryButton.AtBottomOf (View),
 
 				_cameraButton.ToRightOf (_libraryButton),
@@ -187,11 +187,11 @@ namespace Chafu
 				View.AddSubviews (_videoView, _videoButton);
 
 				View.AddConstraints (
-					_videoView.AtTopOf (View),
 					_videoView.WithSameLeft (AlbumView),
 					_videoView.WithSameRight (AlbumView),
+                    _videoView.Below(_menuView),
 
-					_videoButton.ToRightOf (_cameraButton),
+                    _videoButton.ToRightOf (_cameraButton),
 					_videoButton.AtBottomOf (View),
 					_videoButton.AtRightOf (View),
 					_videoButton.WithSameWidth (_cameraButton),

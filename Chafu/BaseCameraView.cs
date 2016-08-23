@@ -104,7 +104,7 @@ namespace Chafu
             }
 
             this.AddConstraints(
-                PreviewContainer.AtTopOf(this, 50),
+                PreviewContainer.AtTopOf(this),
                 PreviewContainer.AtLeftOf(this),
                 PreviewContainer.AtRightOf(this),
 
