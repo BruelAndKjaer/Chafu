@@ -83,6 +83,7 @@
   <ItemGroup>
     <Compile Include="AlbumView.cs" />
     <Compile Include="AlbumViewCell.cs" />
+    <Compile Include="AlbumViewController.cs" />
     <Compile Include="BaseCameraView.cs" />
     <Compile Include="CameraView.cs" />
     <Compile Include="ChafuAlbumDelegate.cs" />
