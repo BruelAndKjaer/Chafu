@@ -6,7 +6,7 @@ using UIKit;
 
 namespace Chafu
 {
-	public class ChafuViewController : UIViewController
+    public class ChafuViewController : UIViewController
 	{
 		public event EventHandler Closed;
 		public event EventHandler<UIImage> ImageSelected;
@@ -19,12 +19,9 @@ namespace Chafu
 
         private Mode _mode = Mode.NotSelected;
 		private UIButton _libraryButton;
-		private UIButton _doneButton;
-		private UIButton _closeButton;
 		private UIButton _videoButton;
 		private UIButton _cameraButton;
-		private UILabel _menuTitle;
-		private UIView _menuView;
+		private ChafuMenuView _menuView;
 
         /// <summary>
         /// Gets the AlbumView
@@ -55,55 +52,21 @@ namespace Chafu
 	    public Func<AlbumView, ChafuAlbumDataSource, ChafuAlbumDelegate> LazyDelegate { get; set; } =
 	        (view, source) => new PhotoGalleryDelegate(view, (PhotoGalleryDataSource)source);
 
+        public CGSize CellSize { get; set; } = new CGSize(100, 100);
+
         public override void ViewDidLoad ()
 		{
 			base.ViewDidLoad ();
 
-			_menuView = new UIView {
-				TranslatesAutoresizingMaskIntoConstraints = false,
-				Opaque = false,
-				AccessibilityLabel = "MenuView"
-			};
-
-			View.AddSubviews (_menuView);
-
-			_closeButton = new UIButton {
-				TranslatesAutoresizingMaskIntoConstraints = false,
-				LineBreakMode = UILineBreakMode.MiddleTruncation,
-				VerticalAlignment = UIControlContentVerticalAlignment.Center,
-				HorizontalAlignment = UIControlContentHorizontalAlignment.Center,
-				ContentMode = UIViewContentMode.ScaleToFill,
-				Opaque = false,
-				ContentEdgeInsets = new UIEdgeInsets (6, 6, 6, 6),
-				AccessibilityLabel = "CloseButton"
-			};
-
-			_doneButton = new UIButton {
-				TranslatesAutoresizingMaskIntoConstraints = false,
-				LineBreakMode = UILineBreakMode.MiddleTruncation,
-				VerticalAlignment = UIControlContentVerticalAlignment.Center,
-				HorizontalAlignment = UIControlContentHorizontalAlignment.Center,
-				ContentMode = UIViewContentMode.ScaleToFill,
-				Opaque = false,
-				ContentEdgeInsets = new UIEdgeInsets (8, 8, 8, 8),
-				AccessibilityLabel = "DoneButton"
-			};
-
-			_menuTitle = new UILabel {
-				TranslatesAutoresizingMaskIntoConstraints = false,
-				ContentMode = UIViewContentMode.Left,
-				TextAlignment = UITextAlignment.Center,
-				UserInteractionEnabled = false,
-				Opaque = false,
-				BaselineAdjustment = UIBaselineAdjustment.AlignBaselines,
-				AdjustsFontSizeToFitWidth = false,
-				LineBreakMode = UILineBreakMode.TailTruncation,
-				Text = Configuration.CameraRollTitle,
-				TextColor = UIColor.White,
-				AccessibilityLabel = "MenuTitle"
-			};
-
-			_menuView.AddSubviews (_closeButton, _doneButton, _menuTitle);
+            _menuView = new ChafuMenuView
+            {
+                BackgroundColor = Configuration.BackgroundColor,
+                TranslatesAutoresizingMaskIntoConstraints = false,
+                Opaque = false,
+                AccessibilityLabel = "MenuView"
+            };
+            _menuView.AddBottomBorder(UIColor.Black, 1);
+            View.AddSubviews (_menuView);
 
 			_libraryButton = new UIButton {
 				TranslatesAutoresizingMaskIntoConstraints = false,
@@ -143,8 +106,9 @@ namespace Chafu
 			};
 			AlbumView = new AlbumView {
 				BackgroundColor = Configuration.BackgroundColor,
-				TranslatesAutoresizingMaskIntoConstraints = false
-			};
+				TranslatesAutoresizingMaskIntoConstraints = false,
+                CellSize = CellSize
+            };
 
 			View.AddSubviews (_cameraView, AlbumView);
 
@@ -153,21 +117,6 @@ namespace Chafu
 				_menuView.AtTopOf (View),
 				_menuView.AtLeftOf (View),
 				_menuView.AtRightOf (View),
-
-				_closeButton.AtLeftOf (_menuView, 8),
-				_closeButton.AtTopOf (_menuView, 8),
-				_closeButton.Width ().EqualTo (40),
-				_closeButton.Height ().EqualTo (40),
-
-				_menuTitle.WithSameCenterY (_menuView).Plus (2),
-				_menuTitle.ToRightOf (_closeButton, 8),
-				_menuTitle.Height ().EqualTo (21),
-
-				_doneButton.ToRightOf (_menuTitle, 8),
-				_doneButton.AtTopOf (_menuView, 8),
-				_doneButton.Width ().EqualTo (40),
-				_doneButton.Height ().EqualTo (40),
-				_doneButton.AtRightOf (View, 8),
 
 				AlbumView.AtTopOf (View),
 				AlbumView.AtLeftOf (View),
@@ -193,22 +142,15 @@ namespace Chafu
 			);
 
 			View.BackgroundColor = Configuration.BackgroundColor;
-			_menuView.BackgroundColor = Configuration.BackgroundColor;
-			_menuView.AddBottomBorder (UIColor.Black, 1);
-			_menuTitle.TextColor = Configuration.BaseTintColor;
 
 			var albumImage = Configuration.AlbumImage ?? UIImage.FromBundle ("ic_insert_photo");
 			var cameraImage = Configuration.CameraImage ?? UIImage.FromBundle ("ic_photo_camera");
 			var videoImage = Configuration.VideoImage ?? UIImage.FromBundle ("ic_videocam");
-			var checkImage = Configuration.CheckImage ?? UIImage.FromBundle ("ic_check");
-			var closeImage = Configuration.CloseImage ?? UIImage.FromBundle ("ic_close");
 
 			if (Configuration.TintIcons) {
 				albumImage = albumImage?.ImageWithRenderingMode (UIImageRenderingMode.AlwaysTemplate);
 				cameraImage = cameraImage?.ImageWithRenderingMode (UIImageRenderingMode.AlwaysTemplate);
 				videoImage = videoImage?.ImageWithRenderingMode (UIImageRenderingMode.AlwaysTemplate);
-				checkImage = checkImage?.ImageWithRenderingMode (UIImageRenderingMode.AlwaysTemplate);
-				closeImage = closeImage?.ImageWithRenderingMode (UIImageRenderingMode.AlwaysTemplate);
 			}
 
 			_libraryButton.SetImage (albumImage, UIControlState.Normal);
@@ -223,12 +165,6 @@ namespace Chafu
 			_videoButton.SetImage (videoImage, UIControlState.Highlighted);
 			_videoButton.SetImage (videoImage, UIControlState.Selected);
 
-			_closeButton.SetImage (closeImage, UIControlState.Normal);
-			_closeButton.SetImage (closeImage, UIControlState.Highlighted);
-			_closeButton.SetImage (closeImage, UIControlState.Selected);
-
-			_doneButton.SetImage (checkImage, UIControlState.Normal);
-
 			if (Configuration.TintIcons) {
 				_libraryButton.TintColor = Configuration.TintColor;
 				_libraryButton.AdjustsImageWhenHighlighted = false;
@@ -236,8 +172,6 @@ namespace Chafu
 				_cameraButton.AdjustsImageWhenHighlighted = false;
 				_videoButton.TintColor = Configuration.TintColor;
 				_videoButton.AdjustsImageWhenHighlighted = false;
-				_doneButton.TintColor = Configuration.TintColor;
-                _closeButton.TintColor = Configuration.TintColor;
 			}
 
 			_cameraButton.ClipsToBounds = true;
@@ -284,7 +218,7 @@ namespace Chafu
 			AlbumView.LayoutIfNeeded ();
 			_cameraView.LayoutIfNeeded ();
 
-		    var albumDataSource = LazyDataSource(AlbumView, new CGSize(100, 100));
+		    var albumDataSource = LazyDataSource(AlbumView, AlbumView.CellSize);
 		    var albumDelegate = LazyDelegate(AlbumView, albumDataSource);
 		    AlbumDataSource = albumDataSource;
 		    AlbumDelegate = albumDelegate;
@@ -299,10 +233,11 @@ namespace Chafu
 			}
 
 			_libraryButton.TouchUpInside += LibraryButtonPressed;
-			_closeButton.TouchUpInside += CloseButtonPressed;
-			_cameraButton.TouchUpInside += CameraButtonPressed;
+		    _menuView.Closed += CloseButtonPressed;
+		    _menuView.Done += DoneButtonPressed;
+            _cameraButton.TouchUpInside += CameraButtonPressed;
 			_videoButton.TouchUpInside += VideoButtonPressed;
-			_doneButton.TouchUpInside += DoneButtonPressed;
+			
             AlbumDataSource.CameraRollUnauthorized += CameraRollUnauthoized;
             _cameraView.CameraUnauthorized += OnCameraUnauthorized;
 
@@ -318,10 +253,10 @@ namespace Chafu
 			StopAll ();
 
 			_libraryButton.TouchUpInside -= LibraryButtonPressed;
-			_closeButton.TouchUpInside -= CloseButtonPressed;
-			_cameraButton.TouchUpInside -= CameraButtonPressed;
+            _menuView.Closed -= CloseButtonPressed;
+            _menuView.Done -= DoneButtonPressed;
+            _cameraButton.TouchUpInside -= CameraButtonPressed;
 			_videoButton.TouchUpInside -= VideoButtonPressed;
-			_doneButton.TouchUpInside -= DoneButtonPressed;
             AlbumDataSource.CameraRollUnauthorized -= CameraRollUnauthoized;
             _cameraView.CameraUnauthorized -= OnCameraUnauthorized;
             if (_videoView != null)
@@ -423,8 +358,8 @@ namespace Chafu
     				_cameraView.Hidden = true;
     				if (_videoView != null)
     					_videoView.Hidden = true;
-                    _doneButton.Hidden = false;
-    				_menuTitle.Text = Configuration.CameraRollTitle;
+                    _menuView.DoneButtonHidden = false;
+    				_menuView.Title = Configuration.CameraRollTitle;
 
     				HighlightButton (_libraryButton);
     				View.BringSubviewToFront (AlbumView);
@@ -434,8 +369,8 @@ namespace Chafu
     				_cameraView.Hidden = false;
     				if (_videoView != null)
     					_videoView.Hidden = true;
-                    _doneButton.Hidden = true;
-    				_menuTitle.Text = Configuration.CameraTitle;
+                    _menuView.DoneButtonHidden = true;
+                    _menuView.Title = Configuration.CameraTitle;
 
     				HighlightButton (_cameraButton);
     				View.BringSubviewToFront (_cameraView);
@@ -446,8 +381,8 @@ namespace Chafu
     				AlbumView.Hidden = true;
     				_cameraView.Hidden = true;
     				_videoView.Hidden = false;
-                    _doneButton.Hidden = true;
-    				_menuTitle.Text = Configuration.VideoTitle;
+                    _menuView.DoneButtonHidden = true;
+                    _menuView.Title = Configuration.VideoTitle;
 
     				HighlightButton (_videoButton);
     				View.BringSubviewToFront (_videoView);
