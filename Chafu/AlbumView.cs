@@ -72,7 +72,7 @@ namespace Chafu
             });
 
             this.AddConstraints(
-                ImageCropView.Width().EqualTo().HeightOf(ImageCropView),
+                ImageCropView.Height().EqualTo().WidthOf(ImageCropView),
                 ImageCropView.AtLeftOf(this),
                 ImageCropView.AtRightOf(this),
 
