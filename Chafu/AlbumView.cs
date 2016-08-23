@@ -14,12 +14,13 @@ namespace Chafu
         private nfloat _imaginaryCollectionViewOffsetStartPosY;
 
         public static readonly int ImageCropViewOriginalConstraintTop = 50;
-        
+
         public ImageCropView ImageCropView { get; private set; }
         public NSLayoutConstraint ImageCropViewConstraintTop { get; private set; }
         public NSLayoutConstraint CollectionViewConstraintHeight { get; private set; }
         public NSLayoutConstraint CollectionViewConstraintTop { get; private set; }
         public UICollectionView CollectionView { get; private set; }
+        public CGSize CellSize { get; set; } = new CGSize(100, 100);
 
         public DragDirection DragDirection { get; set; }
 
@@ -29,7 +30,7 @@ namespace Chafu
             {
                 MinimumInteritemSpacing = 1,
                 MinimumLineSpacing = 1,
-                ItemSize = new CGSize(60, 60),
+                ItemSize = CellSize,
                 HeaderReferenceSize = new CGSize(0, 0),
                 FooterReferenceSize = new CGSize(0, 0),
                 SectionInset = new UIEdgeInsets(0, 0, 0, 0)
@@ -41,7 +42,6 @@ namespace Chafu
                 TranslatesAutoresizingMaskIntoConstraints = false,
 				BackgroundColor = Configuration.BackgroundColor
             };
-
 
             Add(CollectionView);
 
