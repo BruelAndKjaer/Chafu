@@ -72,11 +72,11 @@ Task("Package")
 
 	NuGetPack(nuspec, new NuGetPackSettings {
 		Authors = new [] { "Tomasz Cielecki" },
-		Owners = new [] { "Tomasz Cielecki" },
+		Owners = new [] { "Brüel & Kjær" },
 		IconUrl = new Uri("http://i.imgur.com/V3983YY.png"),
-		ProjectUrl = new Uri("https://github.com/Cheesebaron/Chafu"),
-		LicenseUrl = new Uri("https://github.com/Cheesebaron/Chafu/blob/master/LICENSE"),
-		Copyright = "Copyright (c) Tomasz Cielecki",
+		ProjectUrl = new Uri("https://github.com/BruelAndKjaer/Chafu"),
+		LicenseUrl = new Uri("https://github.com/BruelAndKjaer/Chafu/blob/master/LICENSE"),
+		Copyright = "Copyright (c) Brüel & Kjær",
 		RequireLicenseAcceptance = false,
 		Tags = new [] {"fusuma", "photo", "media", "video", "picker", "browser", "mobile",
 			"xamarin", "ios"},
