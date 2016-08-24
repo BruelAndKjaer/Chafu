@@ -1,11 +1,17 @@
 ﻿using System;
 using UIKit;
+using Cirrious.FluentLayouts.Touch;
 
 namespace Chafu
 {
     public sealed class AlbumViewCell : UICollectionViewCell
     {
         private UIImageView _imageView;
+        private UIImageView _videoImage;
+        private UILabel _timeStamp;
+
+        private bool _isVideo;
+        private double _duration;
 
         public override bool Selected
         {
@@ -27,6 +33,35 @@ namespace Chafu
             set { _imageView.Image = value; }
         }
 
+        
+        public double Duration
+        {
+            get { return _duration; }
+            set
+            {
+                _duration = value;
+                UpdateTimestamp(_duration);
+            }
+        }
+
+        private void UpdateTimestamp(double duration)
+        {
+            var time = TimeSpan.FromSeconds(duration);
+            var timestamp = $"{time.Minutes:00}:{time.Seconds:00}";
+            _timeStamp.Text = timestamp;
+        }
+
+        public bool IsVideo
+        {
+            get { return _isVideo; }
+            set
+            {
+                _isVideo = value;
+                _timeStamp.Hidden = !_isVideo;
+                _videoImage.Hidden = !_isVideo;
+            }
+        }
+
         public AlbumViewCell()
         {
             CreateView();
@@ -39,19 +74,41 @@ namespace Chafu
 
         private void CreateView()
         {
-            _imageView = new UIImageView { TranslatesAutoresizingMaskIntoConstraints = false };
+            _imageView = new UIImageView {TranslatesAutoresizingMaskIntoConstraints = false};
+            _videoImage = new UIImageView
+            {
+                TranslatesAutoresizingMaskIntoConstraints = false,
+                Hidden = true,
+                TintColor = UIColor.White,
+                Image = Configuration.VideoImage ?? UIImage.FromBundle("ic_videocam")
+            };
+
+            _timeStamp = new UILabel
+            {
+                TranslatesAutoresizingMaskIntoConstraints = false,
+                Hidden = true,
+                TextColor = UIColor.White,
+                TextAlignment = UITextAlignment.Right
+            };
+
             Add(_imageView);
+            Add(_videoImage);
+            Add(_timeStamp);
 
-            var bottomConstraint = NSLayoutConstraint.Create(_imageView, NSLayoutAttribute.Bottom, NSLayoutRelation.Equal,
-                this, NSLayoutAttribute.Bottom, 1, 0);
-            var leadingConstraint = NSLayoutConstraint.Create(_imageView, NSLayoutAttribute.Leading,
-                NSLayoutRelation.Equal, this, NSLayoutAttribute.Leading, 1, 0);
-            var trailingConstraint = NSLayoutConstraint.Create(_imageView, NSLayoutAttribute.Trailing,
-                NSLayoutRelation.Equal, this, NSLayoutAttribute.Trailing, 1, 0);
-            var topConstraint = NSLayoutConstraint.Create(_imageView, NSLayoutAttribute.Top, NSLayoutRelation.Equal, this,
-                NSLayoutAttribute.Top, 1, 0);
-
-            AddConstraints(new[] { bottomConstraint, topConstraint, leadingConstraint, trailingConstraint });
+            this.AddConstraints(
+                _imageView.AtBottomOf(this),
+                _imageView.AtTopOf(this),
+                _imageView.AtLeftOf(this),
+                _imageView.AtRightOf(this),
+                
+                _videoImage.AtLeftOf(this, 2f),
+                _videoImage.AtBottomOf(this, 2f),
+                _videoImage.ToLeftOf(_timeStamp),
+                _videoImage.Width().EqualTo().HeightOf(_videoImage),
+                _videoImage.Height().EqualTo().HeightOf(_timeStamp),
+                
+                _timeStamp.AtRightOf(this, 2f),
+                _timeStamp.AtBottomOf(this, 2f));
         }
     }
 }
