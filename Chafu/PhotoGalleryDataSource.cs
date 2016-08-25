@@ -18,7 +18,10 @@ namespace Chafu
 
         public override event EventHandler CameraRollUnauthorized;
 
+        public PHFetchResult Videos { get; set; }
+
         public PHFetchResult Images { get; set; }
+        public List<PHAsset> AllAssets { get; } = new List<PHAsset>();
         public PHCachingImageManager ImageManager { get; private set; }
 
         public PhotoGalleryDataSource(AlbumView albumView, CGSize cellSize)
@@ -34,10 +37,17 @@ namespace Chafu
             };
 
             Images = PHAsset.FetchAssets(PHAssetMediaType.Image, options);
+            Videos = PHAsset.FetchAssets(PHAssetMediaType.Video, options);
 
-            if (Images.Any())
+            AllAssets.AddRange(Images.OfType<PHAsset>());
+            AllAssets.AddRange(Videos.OfType<PHAsset>());
+
+            if (AllAssets.Any())
             {
-                ChangeImage(Images.First() as PHAsset);
+                AllAssets.Sort((a, b) => (int)a.CreationDate.Compare(b.CreationDate));
+                AllAssets.Reverse();
+
+                ChangeAsset(AllAssets.First());
                 albumView.CollectionView.ReloadData();
                 albumView.CollectionView.SelectItem(NSIndexPath.FromRowSection(0,0), false, UICollectionViewScrollPosition.None);
             }
@@ -50,8 +60,17 @@ namespace Chafu
             var cell = collectionView.DequeueReusableCell("AlbumViewCell", indexPath) as AlbumViewCell ??
                        new AlbumViewCell();
 
-            var asset = Images?[indexPath.Item] as PHAsset;
-            ImageManager?.RequestImageForAsset(asset, _cellSize, PHImageContentMode.AspectFill, null,
+            if (ImageManager == null) return cell;
+
+            if (cell.Tag != 0)
+                ImageManager.CancelImageRequest((int)cell.Tag);
+
+            var asset = AllAssets[(int)indexPath.Item];
+
+            cell.IsVideo = asset.MediaType == PHAssetMediaType.Video;
+            cell.Duration = asset.Duration;
+
+            cell.Tag = ImageManager.RequestImageForAsset(asset, _cellSize, PHImageContentMode.AspectFill, null,
                 (result, info) => cell.Image = result);
 
             return cell;
@@ -59,7 +78,7 @@ namespace Chafu
 
         public override nint NumberOfSections(UICollectionView collectionView) => 1;
 
-        public override nint GetItemsCount(UICollectionView collectionView, nint section) => Images?.Count ?? 0;
+        public override nint GetItemsCount(UICollectionView collectionView, nint section) => AllAssets?.Count ?? 0;
 
         public void PhotoLibraryDidChange(PHChange changeInstance)
         {
@@ -200,7 +219,7 @@ namespace Chafu
             var paths = indexPaths.ToArray();
             return !paths.Any() ? 
                 new PHAsset[0] : 
-                paths.Select(path => Images[path.Item]).OfType<PHAsset>().ToArray();
+                paths.Select(path => AllAssets[(int)path.Item]).ToArray();
         }
 
         public void CheckPhotoAuthorization()
@@ -215,40 +234,47 @@ namespace Chafu
                         break;
                     case PHAuthorizationStatus.Authorized:
                         ImageManager = new PHCachingImageManager();
-                        if (Images != null && Images.Any())
-                            ChangeImage(Images.First() as PHAsset);
+                        if (AllAssets != null && AllAssets.Any())
+                            ChangeAsset(AllAssets.First());
                         break;
                 }
             });
         }
 
-        public void ChangeImage(PHAsset asset)
+        public void ChangeAsset(PHAsset asset)
         {
             if (asset == null) return;
             if (_albumView?.ImageCropView == null) return;
 
-            DispatchQueue.MainQueue.DispatchAsync(() =>
+            if (asset.MediaType == PHAssetMediaType.Image)
             {
-                _albumView.ImageCropView.Image = null;
-                _asset = asset;
-            });
+                DispatchQueue.MainQueue.DispatchAsync(() =>
+                {
+                    _albumView.ImageCropView.Image = null;
+                    _asset = asset;
+                });
 
-            DispatchQueue.DefaultGlobalQueue.DispatchAsync(() =>
-            {
-                var options = new PHImageRequestOptions { NetworkAccessAllowed = true };
-                var assetSize = new CGSize(asset.PixelWidth, asset.PixelHeight);
+                DispatchQueue.DefaultGlobalQueue.DispatchAsync(() =>
+                {
+                    var options = new PHImageRequestOptions { NetworkAccessAllowed = true };
+                    var assetSize = new CGSize(asset.PixelWidth, asset.PixelHeight);
 
-                ImageManager?.RequestImageForAsset(asset, assetSize,
-                    PHImageContentMode.AspectFill, options,
-                    (result, info) =>
-                    {
-                        DispatchQueue.MainQueue.DispatchAsync(() =>
+                    ImageManager?.RequestImageForAsset(asset, assetSize,
+                        PHImageContentMode.AspectFill, options,
+                        (result, info) =>
                         {
-                            _albumView.ImageCropView.ImageSize = assetSize;
-                            _albumView.ImageCropView.Image = result;
+                            DispatchQueue.MainQueue.DispatchAsync(() =>
+                            {
+                                _albumView.ImageCropView.ImageSize = assetSize;
+                                _albumView.ImageCropView.Image = result;
+                            });
                         });
-                    });
-            });
+                });
+            }
+            else if (asset.MediaType == PHAssetMediaType.Video)
+            {
+                //_albumView.ImageCropView.Hidden = true;
+            }
         }
 
         protected override void Dispose(bool disposing)

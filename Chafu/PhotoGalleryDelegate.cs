@@ -18,7 +18,7 @@ namespace Chafu
 
         public override void ItemSelected(UICollectionView collectionView, NSIndexPath indexPath)
         {
-            _dataSource.ChangeImage(_dataSource.Images[indexPath.Row] as PHAsset);
+            _dataSource.ChangeAsset(_dataSource.AllAssets[indexPath.Row]);
 
             // animations and stuff
             base.ItemSelected(collectionView, indexPath);

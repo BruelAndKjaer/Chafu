@@ -1,6 +1,7 @@
 ﻿using System;
 using CoreAnimation;
 using CoreGraphics;
+using CoreMedia;
 using UIKit;
 
 namespace Chafu
@@ -121,6 +122,21 @@ namespace Chafu
             var scaledImage = UIGraphics.GetImageFromCurrentImageContext();
             UIGraphics.EndImageContext();
             return scaledImage;
+        }
+
+
+        public static double ToDouble(this CMTime duration)
+        {
+            if (duration.IsIndefinite)
+                return double.NaN;
+
+            if (duration.IsNegativeInfinity)
+                return double.NegativeInfinity;
+
+            if (duration.IsPositiveInfinity)
+                return double.PositiveInfinity;
+
+            return duration.Seconds;
         }
     }
 }
