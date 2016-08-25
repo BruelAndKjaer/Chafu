@@ -99,6 +99,7 @@
     <Compile Include="PhotoGalleryDelegate.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UiKitExtensions.cs" />
+    <Compile Include="VideoPlayerView.cs" />
     <Compile Include="VideoView.cs" />
   </ItemGroup>
   <ItemGroup>
