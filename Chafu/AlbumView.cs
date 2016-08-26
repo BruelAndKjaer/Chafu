@@ -2,6 +2,7 @@
 using CoreGraphics;
 using UIKit;
 using Cirrious.FluentLayouts.Touch;
+using MediaPlayer;
 
 namespace Chafu
 {
@@ -15,8 +16,11 @@ namespace Chafu
 
         public static readonly int ImageCropViewOriginalConstraintTop = 0;
 
+        public MPMoviePlayerController MoviePlayerController { get; private set; }
+        public UIView MovieView { get; private set; }
         public ImageCropView ImageCropView { get; private set; }
         public NSLayoutConstraint ImageCropViewConstraintTop { get; private set; }
+        public NSLayoutConstraint MovieViewConstraintTop { get; private set; }
         public NSLayoutConstraint CollectionViewConstraintHeight { get; private set; }
         public NSLayoutConstraint CollectionViewConstraintTop { get; private set; }
         public UICollectionView CollectionView { get; private set; }
@@ -26,6 +30,21 @@ namespace Chafu
 
         private void CreateView()
         {
+            MoviePlayerController = new MPMoviePlayerController
+            {
+                AllowsAirPlay = false,
+                ScalingMode = MPMovieScalingMode.AspectFit,
+                ControlStyle = MPMovieControlStyle.Embedded,
+                ShouldAutoplay = false,
+                BackgroundColor = UIColor.Black
+            };
+
+            MovieView = MoviePlayerController.View;
+            MovieView.TranslatesAutoresizingMaskIntoConstraints = false;
+            MovieView.Hidden = true;
+
+            Add(MovieView);
+
             var collectionFlowLayout = new UICollectionViewFlowLayout
             {
                 MinimumInteritemSpacing = 1,
@@ -66,6 +85,9 @@ namespace Chafu
                 ImageCropViewConstraintTop =
                     NSLayoutConstraint.Create(ImageCropView, NSLayoutAttribute.Top, NSLayoutRelation.Equal,
                         this, NSLayoutAttribute.Top, 1, 0),
+                MovieViewConstraintTop =
+                    NSLayoutConstraint.Create(MovieView, NSLayoutAttribute.Top, NSLayoutRelation.Equal,
+                        this, NSLayoutAttribute.Top, 1, 0),
                 CollectionViewConstraintTop =
                     NSLayoutConstraint.Create(CollectionView, NSLayoutAttribute.Top, NSLayoutRelation.Equal,
                         ImageCropView, NSLayoutAttribute.Bottom, 1, 0)
@@ -75,6 +97,10 @@ namespace Chafu
                 ImageCropView.Height().EqualTo().WidthOf(ImageCropView),
                 ImageCropView.AtLeftOf(this),
                 ImageCropView.AtRightOf(this),
+
+                MovieView.Height().EqualTo().WidthOf(MovieView),
+                MovieView.AtLeftOf(this),
+                MovieView.AtRightOf(this),
 
                 CollectionView.AtBottomOf(this),
                 CollectionView.AtLeftOf(this),
@@ -98,7 +124,7 @@ namespace Chafu
 
             CollectionViewConstraintHeight.Constant = Frame.Height - ImageCropView.Frame.Height -
                                                       ImageCropViewOriginalConstraintTop;
-            ImageCropViewConstraintTop.Constant = ImageCropViewOriginalConstraintTop;
+            MovieViewConstraintTop.Constant = ImageCropViewConstraintTop.Constant = ImageCropViewOriginalConstraintTop;
             DragDirection = DragDirection.Up;
 
             ImageCropView.Layer.ShadowColor = UIColor.Black.CGColor;
@@ -155,7 +181,7 @@ namespace Chafu
             {
                 if (DragDirection == DragDirection.Up && currentPos.Y < _cropBottomY - _dragDiff)
                 {
-                    ImageCropViewConstraintTop.Constant =
+                    MovieViewConstraintTop.Constant = ImageCropViewConstraintTop.Constant =
                         (nfloat) Math.Max(_imageCropViewMinimalVisibleHeight - ImageCropView.Frame.Height,
                             currentPos.Y + _dragDiff - ImageCropView.Frame.Height);
                     CollectionViewConstraintHeight.Constant =
@@ -164,7 +190,7 @@ namespace Chafu
                 }
                 else if (DragDirection == DragDirection.Down && currentPos.Y > _cropBottomY)
                 {
-                    ImageCropViewConstraintTop.Constant =
+                    MovieViewConstraintTop.Constant = ImageCropViewConstraintTop.Constant =
                         (nfloat) Math.Min(ImageCropViewOriginalConstraintTop,
                             currentPos.Y - ImageCropView.Frame.Height);
                     CollectionViewConstraintHeight.Constant =
@@ -180,7 +206,7 @@ namespace Chafu
                 }
                 else if (DragDirection == DragDirection.Scroll)
                 {
-                    ImageCropViewConstraintTop.Constant = _imageCropViewMinimalVisibleHeight -
+                    MovieViewConstraintTop.Constant = ImageCropViewConstraintTop.Constant = _imageCropViewMinimalVisibleHeight -
                                                           ImageCropView.Frame.Height + currentPos.Y -
                                                           _imaginaryCollectionViewOffsetStartPosY;
                     CollectionViewConstraintHeight.Constant =
@@ -206,7 +232,7 @@ namespace Chafu
                     // The largest movement
                     ImageCropView.Scrollable = false;
 
-                    ImageCropViewConstraintTop.Constant = _imageCropViewMinimalVisibleHeight -
+                    MovieViewConstraintTop.Constant = ImageCropViewConstraintTop.Constant = _imageCropViewMinimalVisibleHeight -
                                                           ImageCropView.Frame.Height;
                     CollectionViewConstraintHeight.Constant = Frame.Height - _imageCropViewMinimalVisibleHeight;
                     CollectionViewConstraintTop.Constant = ImageCropViewOriginalConstraintTop;
@@ -218,7 +244,7 @@ namespace Chafu
                 {
                     // Get back to the original position
                     ImageCropView.Scrollable = true;
-                    ImageCropViewConstraintTop.Constant = ImageCropViewOriginalConstraintTop;
+                    MovieViewConstraintTop.Constant = ImageCropViewConstraintTop.Constant = ImageCropViewOriginalConstraintTop;
                     CollectionViewConstraintHeight.Constant = Frame.Height - ImageCropViewOriginalConstraintTop -
                                                               ImageCropView.Frame.Height;
                     CollectionViewConstraintTop.Constant = 0;

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using AVFoundation;
 using CoreFoundation;
 using CoreGraphics;
 using Foundation;
@@ -246,14 +247,14 @@ namespace Chafu
             if (asset == null) return;
             if (_albumView?.ImageCropView == null) return;
 
+            DispatchQueue.MainQueue.DispatchAsync(() =>
+            {
+                _albumView.ImageCropView.Image = null;
+                _asset = asset;
+            });
+
             if (asset.MediaType == PHAssetMediaType.Image)
             {
-                DispatchQueue.MainQueue.DispatchAsync(() =>
-                {
-                    _albumView.ImageCropView.Image = null;
-                    _asset = asset;
-                });
-
                 DispatchQueue.DefaultGlobalQueue.DispatchAsync(() =>
                 {
                     var options = new PHImageRequestOptions { NetworkAccessAllowed = true };
@@ -265,6 +266,9 @@ namespace Chafu
                         {
                             DispatchQueue.MainQueue.DispatchAsync(() =>
                             {
+                                CurrentMediaType = ChafuMediaType.Image;
+                                _albumView.ImageCropView.Hidden = false;
+                                _albumView.MovieView.Hidden = true;
                                 _albumView.ImageCropView.ImageSize = assetSize;
                                 _albumView.ImageCropView.Image = result;
                             });
@@ -273,7 +277,25 @@ namespace Chafu
             }
             else if (asset.MediaType == PHAssetMediaType.Video)
             {
-                //_albumView.ImageCropView.Hidden = true;
+                DispatchQueue.DefaultGlobalQueue.DispatchAsync(() =>
+                {
+                    var options = new PHVideoRequestOptions { NetworkAccessAllowed = true };
+                    ImageManager?.RequestAvAsset(asset, options,
+                        (ass, mix, info) =>
+                        {
+                            DispatchQueue.MainQueue.DispatchAsync(() =>
+                            {
+                                CurrentMediaType = ChafuMediaType.Video;
+                                _albumView.ImageCropView.Hidden = true;
+                                _albumView.MovieView.Hidden = false;
+
+                                var urlAsset = ass as AVUrlAsset;
+                                if (urlAsset == null) return;
+                                _albumView.MoviePlayerController.ContentUrl = urlAsset.Url;
+                                _albumView.MoviePlayerController.PrepareToPlay();
+                            });
+                        });
+                });
             }
         }
 
@@ -313,5 +335,7 @@ namespace Chafu
                     options, (result, info) => DispatchQueue.MainQueue.DispatchAsync(() => onImage?.Invoke (result)));;
 			});
         }
+
+        public override ChafuMediaType CurrentMediaType { get; set; }
     }
 }

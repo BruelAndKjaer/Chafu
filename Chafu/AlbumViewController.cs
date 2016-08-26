@@ -1,6 +1,7 @@
 using System;
 using Cirrious.FluentLayouts.Touch;
 using CoreGraphics;
+using Foundation;
 using UIKit;
 
 namespace Chafu
@@ -8,6 +9,7 @@ namespace Chafu
     public class AlbumViewController : UIViewController
     {
         public event EventHandler<UIImage> ImageSelected;
+        public event EventHandler<NSUrl> VideoSelected;
         public event EventHandler Closed;
 
         private AlbumView _album;
@@ -96,30 +98,39 @@ namespace Chafu
 
         private void OnDone(object sender, EventArgs e)
         {
-            var view = _album.ImageCropView;
-
-            if (Configuration.CropImage)
+            if (AlbumDataSource.CurrentMediaType == ChafuMediaType.Image)
             {
-                var normalizedX = view.ContentOffset.X / view.ContentSize.Width;
-                var normalizedY = view.ContentOffset.Y / view.ContentSize.Height;
+                var view = _album.ImageCropView;
 
-                var normalizedWidth = view.Frame.Width / view.ContentSize.Width;
-                var normalizedHeight = view.Frame.Height / view.ContentSize.Height;
+                if (Configuration.CropImage)
+                {
+                    var normalizedX = view.ContentOffset.X / view.ContentSize.Width;
+                    var normalizedY = view.ContentOffset.Y / view.ContentSize.Height;
 
-                var cropRect = new CGRect(normalizedX, normalizedY, normalizedWidth, normalizedHeight);
+                    var normalizedWidth = view.Frame.Width / view.ContentSize.Width;
+                    var normalizedHeight = view.Frame.Height / view.ContentSize.Height;
 
-                Console.WriteLine("Cropping image before handing it over");
-                AlbumDataSource.GetCroppedImage(cropRect, (croppedImage) => {
-                                                                                ImageSelected?.Invoke(this, croppedImage);
-                                                                                DismissViewController(true, () => Closed?.Invoke(this, EventArgs.Empty));
-                });
+                    var cropRect = new CGRect(normalizedX, normalizedY, normalizedWidth, normalizedHeight);
+
+                    Console.WriteLine("Cropping image before handing it over");
+                    AlbumDataSource.GetCroppedImage(cropRect, croppedImage => {
+                        ImageSelected?.Invoke(this, croppedImage);
+                    });
+                }
+                else
+                {
+                    Console.WriteLine("Not cropping image");
+                    ImageSelected?.Invoke(this, view.Image);
+                }
             }
-            else
+
+            if (AlbumDataSource.CurrentMediaType == ChafuMediaType.Video)
             {
-                Console.WriteLine("Not cropping image");
-                ImageSelected?.Invoke(this, view.Image);
-                DismissViewController(true, () => Closed?.Invoke(this, EventArgs.Empty));
+                var url = _album.MoviePlayerController.ContentUrl;
+                VideoSelected?.Invoke(this, url);
             }
+
+            DismissViewController(true, () => Closed?.Invoke(this, EventArgs.Empty));
         }
 
         public override UIInterfaceOrientationMask GetSupportedInterfaceOrientations() => UIInterfaceOrientationMask.Portrait;

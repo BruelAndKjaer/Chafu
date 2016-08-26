@@ -78,6 +78,8 @@ namespace Sample
             throw new NotImplementedException();
         }
 
+        public override ChafuMediaType CurrentMediaType { get; set; }
+
         public override event EventHandler CameraRollUnauthorized;
 
         private static UIImage ScaledImage(UIImage image, CGSize size)
