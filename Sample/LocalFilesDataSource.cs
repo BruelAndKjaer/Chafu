@@ -165,6 +165,7 @@ namespace Sample
 
         public override void GetCroppedImage(Action<UIImage> onImage)
         {
+            // todo fix this :(
             var view = _albumView?.ImageCropView;
             var image = view?.Image;
 
