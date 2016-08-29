@@ -3,6 +3,7 @@ using System.IO;
 using Chafu;
 using Cirrious.FluentLayouts.Touch;
 using CoreFoundation;
+using Foundation;
 using UIKit;
 
 namespace Sample
@@ -18,6 +19,7 @@ namespace Sample
             NavigationController.NavigationBar.TintColor = Configuration.BaseTintColor;
 
             View.BackgroundColor = Configuration.BackgroundColor;
+            Configuration.CropImage = true;
 
             var imageView = new UIImageView {BackgroundColor = UIColor.Black};
 
@@ -31,24 +33,13 @@ namespace Sample
                     imageView.Image = image;
                 });
 
-                DispatchQueue.DefaultGlobalQueue.DispatchAsync(() =>
-                {
-                    var dirPath = TempPath();
-                    var fileName = $"{Guid.NewGuid().ToString("N")}.jpg";
-                    var tempPath = Path.Combine(dirPath, fileName);
-
-                    if (!Directory.Exists(dirPath))
-                        Directory.CreateDirectory(dirPath);
-
-                    using (var stream = image.AsJPEG().AsStream())
-                    using (var fileStream = File.Create(tempPath))
-                    {
-                        stream.Seek(0, SeekOrigin.Begin);
-                        stream.CopyTo(fileStream);
-                    }
-                });
+                CopyImageToLocalFolder(image);
             };
-            chafu.VideoSelected += (sender, videoUrl) => urlLabel.Text = videoUrl.AbsoluteString;
+            chafu.VideoSelected += (sender, videoUrl) =>
+            {
+                urlLabel.Text = videoUrl.AbsoluteString;
+                CopyVideoToLocalFolder(videoUrl);
+            };
             chafu.Closed += (sender, e) => { /* do stuff on closed */ };
 
             var pickerButton = new UIButton(UIButtonType.System) {
@@ -63,8 +54,15 @@ namespace Sample
 
             var albumViewController = new AlbumViewController
             {
-                LazyDataSource = (view, size) => new LocalFilesDataSource(view, TempPath(), size),
-                LazyDelegate = (view, source) => new LocalFilesDelegate(view, (LocalFilesDataSource) source)
+                LazyDataSource = (view, size) => new LocalFilesDataSource(view, size) {ImagesPath = TempPath()},
+                LazyDelegate = (view, source) => new LocalFilesDelegate(view, (LocalFilesDataSource) source),
+                ShowExtraButton = true
+            };
+
+            albumViewController.Extra += (sender, args) =>
+            {
+                albumViewController.Dismiss();
+                NavigationController.PresentModalViewController(chafu, true);
             };
 
             albumViewController.ImageSelected += (sender, image) =>
@@ -113,6 +111,41 @@ namespace Sample
                 albumButton.AtRightOf(View, 50),
                 albumButton.Height().EqualTo(70)
                 );
+        }
+
+        private void CopyImageToLocalFolder(UIImage image)
+        {
+            DispatchQueue.DefaultGlobalQueue.DispatchAsync(() =>
+            {
+                var dirPath = TempPath();
+                var fileName = $"{Guid.NewGuid().ToString("N")}.jpg";
+                var tempPath = Path.Combine(dirPath, fileName);
+
+                if (!Directory.Exists(dirPath))
+                    Directory.CreateDirectory(dirPath);
+
+                using (var stream = image.AsJPEG().AsStream())
+                using (var fileStream = File.Create(tempPath))
+                {
+                    stream.Seek(0, SeekOrigin.Begin);
+                    stream.CopyTo(fileStream);
+                }
+            });
+        }
+
+        private void CopyVideoToLocalFolder(NSUrl videoUrl)
+        {
+            DispatchQueue.DefaultGlobalQueue.DispatchAsync(() =>
+            {
+                var dirPath = TempPath();
+                var fileName = $"{Guid.NewGuid().ToString("N")}.mov";
+                var tempPath = Path.Combine(dirPath, fileName);
+
+                if (!Directory.Exists(dirPath))
+                    Directory.CreateDirectory(dirPath);
+
+                File.Copy(videoUrl.RelativePath, tempPath);
+            });
         }
 
         public string TempPath()
