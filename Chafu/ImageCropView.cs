@@ -4,7 +4,7 @@ using UIKit;
 
 namespace Chafu
 {
-    public class ImageCropView : UIScrollView, IUIScrollViewDelegate
+    public class ImageCropView : UIScrollView
     {
         private readonly UIImageView _imageView = new UIImageView();
         private UIImage _image;
@@ -90,7 +90,7 @@ namespace Chafu
             BouncesZoom = true;
             Bounces = true;
 
-            Delegate = this;
+            Delegate = new ScrollViewDelegate(this);
         }
 
         public bool Scrollable
@@ -99,32 +99,42 @@ namespace Chafu
             set { ScrollEnabled = value; }
         }
 
-        public new void DidZoom(UIScrollView scrollView)
+        public class ScrollViewDelegate : UIScrollViewDelegate
         {
-            var boundsSize = scrollView.Bounds.Size;
-            var contentsFrame = _imageView.Frame;
+            private readonly ImageCropView _view;
 
-            if (contentsFrame.Size.Width < boundsSize.Width)
-                contentsFrame.X = (boundsSize.Width - contentsFrame.Size.Width)/2.0f;
-            else
-                contentsFrame.X = 0.0f;
+            public ScrollViewDelegate(ImageCropView view)
+            {
+                _view = view;
+            }
 
-            if (contentsFrame.Size.Height < boundsSize.Height)
-                contentsFrame.Y = (boundsSize.Height - contentsFrame.Size.Height)/2.0f;
-            else
-                contentsFrame.Y = 0.0f;
+            public override void DidZoom(UIScrollView scrollView)
+            {
+                var boundsSize = scrollView.Bounds.Size;
+                var contentsFrame = _view._imageView.Frame;
 
-            _imageView.Frame = contentsFrame;
-        }
+                if (contentsFrame.Size.Width < boundsSize.Width)
+                    contentsFrame.X = (boundsSize.Width - contentsFrame.Size.Width) / 2.0f;
+                else
+                    contentsFrame.X = 0.0f;
 
-        public new void ZoomingEnded(UIScrollView scrollView, UIView withView, nfloat atScale)
-        {
-            ContentSize = new CGSize(_imageView.Frame.Width + 1, _imageView.Frame.Height + 1);
-        }
+                if (contentsFrame.Size.Height < boundsSize.Height)
+                    contentsFrame.Y = (boundsSize.Height - contentsFrame.Size.Height) / 2.0f;
+                else
+                    contentsFrame.Y = 0.0f;
 
-        public new UIView ViewForZoomingInScrollView(UIScrollView scrollView)
-        {
-            return _imageView;
+                _view._imageView.Frame = contentsFrame;
+            }
+
+            public override void ZoomingEnded(UIScrollView scrollView, UIView withView, nfloat atScale)
+            {
+                _view.ContentSize = new CGSize(_view._imageView.Frame.Width + 1, _view._imageView.Frame.Height + 1);
+            }
+
+            public override UIView ViewForZoomingInScrollView(UIScrollView scrollView)
+            {
+                return _view._imageView;
+            }
         }
     }
 }
