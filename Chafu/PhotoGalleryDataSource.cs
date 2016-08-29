@@ -64,7 +64,11 @@ namespace Chafu
             cell.Duration = asset.Duration;
 
             cell.Tag = ImageManager.RequestImageForAsset(asset, _cellSize, PHImageContentMode.AspectFill, null,
-                (result, info) => cell.Image = result);
+                (result, info) =>
+                {
+                    cell.Image = result;
+                    cell.Tag = 0;
+                });
 
             return cell;
         }
