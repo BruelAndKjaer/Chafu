@@ -293,27 +293,16 @@ namespace Chafu
 		{
 			if (AlbumDataSource.CurrentMediaType == ChafuMediaType.Image)
 			{
-				var view = AlbumView.ImageCropView;
-
-				if (Configuration.CropImage)
-				{
-					var normalizedX = view.ContentOffset.X / view.ContentSize.Width;
-					var normalizedY = view.ContentOffset.Y / view.ContentSize.Height;
-
-					var normalizedWidth = view.Frame.Width / view.ContentSize.Width;
-					var normalizedHeight = view.Frame.Height / view.ContentSize.Height;
-
-					var cropRect = new CGRect(normalizedX, normalizedY, normalizedWidth, normalizedHeight);
-
+				if (Configuration.CropImage) {
 					Console.WriteLine("Cropping image before handing it over");
-					AlbumDataSource.GetCroppedImage(cropRect, (croppedImage) =>
+					AlbumDataSource.GetCroppedImage(croppedImage =>
 					{
 						ImageSelected?.Invoke(this, croppedImage);
 					});
 				}
 				else {
-					Console.WriteLine("Not cropping image");
-					ImageSelected?.Invoke(this, view.Image);
+                    Console.WriteLine("Not cropping image");
+					ImageSelected?.Invoke(this, AlbumView.ImageCropView.Image);
 				}
 			}
 

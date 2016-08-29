@@ -16,7 +16,7 @@ namespace Sample
 
         public override void ItemSelected(UICollectionView collectionView, NSIndexPath indexPath)
         {
-            _dataSource.ChangeImage(_dataSource.Images[indexPath.Row]);
+            _dataSource.ChangeImage(_dataSource.Files[indexPath.Row]);
 
             base.ItemSelected(collectionView, indexPath);
         }

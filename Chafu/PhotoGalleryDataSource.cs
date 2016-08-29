@@ -43,15 +43,7 @@ namespace Chafu
             AllAssets.AddRange(Images.OfType<PHAsset>());
             AllAssets.AddRange(Videos.OfType<PHAsset>());
 
-            if (AllAssets.Any())
-            {
-                AllAssets.Sort((a, b) => (int)a.CreationDate.Compare(b.CreationDate));
-                AllAssets.Reverse();
-
-                ChangeAsset(AllAssets.First());
-                albumView.CollectionView.ReloadData();
-                albumView.CollectionView.SelectItem(NSIndexPath.FromRowSection(0,0), false, UICollectionViewScrollPosition.None);
-            }
+            ShowFirstImage();
 
             PHPhotoLibrary.SharedPhotoLibrary.RegisterChangeObserver(this);
         }
@@ -313,11 +305,21 @@ namespace Chafu
             base.Dispose(disposing);
         }
 
-        public override void GetCroppedImage(CGRect cropRect, Action<UIImage> onImage)
+        public override void GetCroppedImage(Action<UIImage> onImage)
         {
 			var scale = UIScreen.MainScreen.Scale;
 
-			DispatchQueue.DefaultGlobalQueue.DispatchAsync (() => {
+            var view = _albumView.ImageCropView;
+
+            var normalizedX = view.ContentOffset.X / view.ContentSize.Width;
+            var normalizedY = view.ContentOffset.Y / view.ContentSize.Height;
+
+            var normalizedWidth = view.Frame.Width / view.ContentSize.Width;
+            var normalizedHeight = view.Frame.Height / view.ContentSize.Height;
+
+            var cropRect = new CGRect(normalizedX, normalizedY, normalizedWidth, normalizedHeight);
+
+            DispatchQueue.DefaultGlobalQueue.DispatchAsync (() => {
 				var options = new PHImageRequestOptions {
 					DeliveryMode = PHImageRequestOptionsDeliveryMode.HighQualityFormat,
 					NetworkAccessAllowed = true,
@@ -337,5 +339,17 @@ namespace Chafu
         }
 
         public override ChafuMediaType CurrentMediaType { get; set; }
+        public override void ShowFirstImage()
+        {
+            if (AllAssets.Any())
+            {
+                AllAssets.Sort((a, b) => (int)a.CreationDate.Compare(b.CreationDate));
+                AllAssets.Reverse();
+
+                ChangeAsset(AllAssets.First());
+                _albumView.CollectionView.ReloadData();
+                _albumView.CollectionView.SelectItem(NSIndexPath.FromRowSection(0, 0), false, UICollectionViewScrollPosition.None);
+            }
+        }
     }
 }

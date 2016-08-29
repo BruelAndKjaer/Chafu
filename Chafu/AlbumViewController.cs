@@ -11,9 +11,11 @@ namespace Chafu
         public event EventHandler<UIImage> ImageSelected;
         public event EventHandler<NSUrl> VideoSelected;
         public event EventHandler Closed;
+        public event EventHandler Extra;
 
         private AlbumView _album;
         private ChafuMenuView _menu;
+        private bool _showExtraButton;
 
         /// <summary>
         /// Gets the album collectionview data source. Use <see cref="LazyDataSource"/> to create your own Data Source.
@@ -34,6 +36,17 @@ namespace Chafu
             (view, @delegate) => new PhotoGalleryDelegate(view, (PhotoGalleryDataSource)@delegate);
 
         public CGSize CellSize { get; set; } = new CGSize(100, 100);
+
+        public bool ShowExtraButton
+        {
+            get { return _showExtraButton; }
+            set
+            {
+                _showExtraButton = value;
+                if (_menu != null)
+                    _menu.ExtraButtonHidden = !_showExtraButton;
+            }
+        }
 
         public override void ViewDidLoad()
         {
@@ -73,6 +86,8 @@ namespace Chafu
                 );
 
             View.BringSubviewToFront(_menu);
+
+            _menu.ExtraButtonHidden = !ShowExtraButton;
         }
 
         public override void ViewDidAppear(bool animated)
@@ -81,46 +96,48 @@ namespace Chafu
 
             _menu.Done += OnDone;
             _menu.Closed += OnClosed;
+            _menu.Extra += OnExtra;
+
+            AlbumDataSource.ShowFirstImage();
         }
 
         public override void ViewDidDisappear(bool animated)
         {
-            base.ViewDidDisappear(animated);
-
             _menu.Done -= OnDone;
             _menu.Closed -= OnClosed;
+            _menu.Extra -= OnExtra;
+
+            base.ViewDidDisappear(animated);
+        }
+
+        public void Dismiss()
+        {
+            DismissViewController(true, () => Closed?.Invoke(this, EventArgs.Empty));
         }
 
         private void OnClosed(object sender, EventArgs eventArgs)
         {
-            DismissViewController(true, () => Closed?.Invoke(this, EventArgs.Empty));
+            Dismiss();
+        }
+
+        private void OnExtra(object sender, EventArgs eventArgs)
+        {
+            Extra?.Invoke(this, EventArgs.Empty);
         }
 
         private void OnDone(object sender, EventArgs e)
         {
             if (AlbumDataSource.CurrentMediaType == ChafuMediaType.Image)
             {
-                var view = _album.ImageCropView;
-
-                if (Configuration.CropImage)
-                {
-                    var normalizedX = view.ContentOffset.X / view.ContentSize.Width;
-                    var normalizedY = view.ContentOffset.Y / view.ContentSize.Height;
-
-                    var normalizedWidth = view.Frame.Width / view.ContentSize.Width;
-                    var normalizedHeight = view.Frame.Height / view.ContentSize.Height;
-
-                    var cropRect = new CGRect(normalizedX, normalizedY, normalizedWidth, normalizedHeight);
-
+                if (Configuration.CropImage) {
                     Console.WriteLine("Cropping image before handing it over");
-                    AlbumDataSource.GetCroppedImage(cropRect, croppedImage => {
+                    AlbumDataSource.GetCroppedImage(croppedImage => {
                         ImageSelected?.Invoke(this, croppedImage);
                     });
                 }
-                else
-                {
+                else {
                     Console.WriteLine("Not cropping image");
-                    ImageSelected?.Invoke(this, view.Image);
+                    ImageSelected?.Invoke(this, _album.ImageCropView.Image);
                 }
             }
 
@@ -130,7 +147,7 @@ namespace Chafu
                 VideoSelected?.Invoke(this, url);
             }
 
-            DismissViewController(true, () => Closed?.Invoke(this, EventArgs.Empty));
+            Dismiss();
         }
 
         public override UIInterfaceOrientationMask GetSupportedInterfaceOrientations() => UIInterfaceOrientationMask.Portrait;
