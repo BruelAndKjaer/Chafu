@@ -8,6 +8,7 @@ namespace Chafu
     {
         public event EventHandler Closed;
         public event EventHandler Done;
+        public event EventHandler Extra;
 
         public string Title
         {
@@ -27,8 +28,15 @@ namespace Chafu
             set { CloseButton.Hidden = value; }
         }
 
+        public bool ExtraButtonHidden
+        {
+            get { return ExtraButton.Hidden; }
+            set { ExtraButton.Hidden = value; }
+        }
+
         public UIButton DoneButton { get; }
         public UIButton CloseButton { get; }
+        public UIButton ExtraButton { get; }
         public UILabel MenuTitle { get; }
 
         public ChafuMenuView()
@@ -41,7 +49,7 @@ namespace Chafu
                 HorizontalAlignment = UIControlContentHorizontalAlignment.Center,
                 ContentMode = UIViewContentMode.ScaleToFill,
                 Opaque = false,
-                ContentEdgeInsets = new UIEdgeInsets(6, 6, 6, 6),
+                ContentEdgeInsets = new UIEdgeInsets(8, 8, 8, 8),
                 AccessibilityLabel = "CloseButton"
             };
 
@@ -55,6 +63,18 @@ namespace Chafu
                 Opaque = false,
                 ContentEdgeInsets = new UIEdgeInsets(8, 8, 8, 8),
                 AccessibilityLabel = "DoneButton"
+            };
+
+            ExtraButton = new UIButton
+            {
+                TranslatesAutoresizingMaskIntoConstraints = false,
+                LineBreakMode = UILineBreakMode.MiddleTruncation,
+                VerticalAlignment = UIControlContentVerticalAlignment.Center,
+                HorizontalAlignment = UIControlContentHorizontalAlignment.Center,
+                ContentMode = UIViewContentMode.ScaleToFill,
+                Opaque = false,
+                ContentEdgeInsets = new UIEdgeInsets(8, 8, 8, 8),
+                AccessibilityLabel = "ExtraButton"
             };
 
             MenuTitle = new UILabel
@@ -74,33 +94,43 @@ namespace Chafu
 
             Add(CloseButton);
             Add(DoneButton);
+            Add(ExtraButton);
             Add(MenuTitle);
 
             this.AddConstraints(
                 CloseButton.AtLeftOf(this, 8),
                 CloseButton.AtTopOf(this, 8),
-                CloseButton.Width().EqualTo(40),
+                CloseButton.Width().EqualTo().HeightOf(CloseButton),
                 CloseButton.Height().EqualTo(40),
 
                 MenuTitle.WithSameCenterY(this).Plus(2),
                 MenuTitle.ToRightOf(CloseButton, 8),
                 MenuTitle.Height().EqualTo(21),
 
-                DoneButton.ToRightOf(MenuTitle, 8),
+                
                 DoneButton.AtTopOf(this, 8),
-                DoneButton.Width().EqualTo(40),
+                DoneButton.Width().EqualTo().HeightOf(DoneButton),
                 DoneButton.Height().EqualTo(40),
-                DoneButton.AtRightOf(this, 8));
+                DoneButton.AtRightOf(this, 8),
+
+                ExtraButton.ToRightOf(MenuTitle, 8),
+                ExtraButton.Width().EqualTo().HeightOf(ExtraButton),
+                ExtraButton.Height().EqualTo(40),
+                ExtraButton.ToLeftOf(DoneButton, 8),
+                ExtraButton.AtTopOf(this, 8));
 
             var checkImage = Configuration.CheckImage ?? UIImage.FromBundle("ic_check");
             var closeImage = Configuration.CloseImage ?? UIImage.FromBundle("ic_close");
+            var extraImage = Configuration.ExtraImage ?? UIImage.FromBundle("ic_add");
 
             if (Configuration.TintIcons)
             {
                 checkImage = checkImage?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
                 closeImage = closeImage?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
+                extraImage = extraImage?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
                 DoneButton.TintColor = Configuration.TintColor;
                 CloseButton.TintColor = Configuration.TintColor;
+                ExtraButton.TintColor = Configuration.TintColor;
             }
 
             CloseButton.SetImage(closeImage, UIControlState.Normal);
@@ -109,10 +139,17 @@ namespace Chafu
 
             DoneButton.SetImage(checkImage, UIControlState.Normal);
 
+            ExtraButton.SetImage(extraImage, UIControlState.Normal);
+
             MenuTitle.TextColor = Configuration.BaseTintColor;
 
             CloseButton.TouchUpInside += OnClose;
             DoneButton.TouchUpInside += OnDone;
+            ExtraButton.TouchUpInside += OnExtra;
+
+            CloseButtonHidden = false;
+            DoneButtonHidden = false;
+            ExtraButtonHidden = true;
         }
 
         private void OnDone(object sender, EventArgs e)
@@ -125,12 +162,18 @@ namespace Chafu
             Closed?.Invoke(sender, e);
         }
 
+        private void OnExtra(object sender, EventArgs e)
+        {
+            Extra?.Invoke(sender, e);
+        }
+
         protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
                 CloseButton.TouchUpInside -= OnClose;
                 DoneButton.TouchUpInside -= OnDone;
+                ExtraButton.TouchUpInside -= OnExtra;
             }
 
             base.Dispose(disposing);
