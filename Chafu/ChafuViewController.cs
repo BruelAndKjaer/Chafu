@@ -291,27 +291,39 @@ namespace Chafu
 
 		private void DoneButtonPressed (object sender, EventArgs e)
 		{
-			var view = AlbumView.ImageCropView;
+			if (AlbumDataSource.CurrentMediaType == ChafuMediaType.Image)
+			{
+				var view = AlbumView.ImageCropView;
 
-			if (Configuration.CropImage) {
-				var normalizedX = view.ContentOffset.X / view.ContentSize.Width;
-				var normalizedY = view.ContentOffset.Y / view.ContentSize.Height;
+				if (Configuration.CropImage)
+				{
+					var normalizedX = view.ContentOffset.X / view.ContentSize.Width;
+					var normalizedY = view.ContentOffset.Y / view.ContentSize.Height;
 
-				var normalizedWidth = view.Frame.Width / view.ContentSize.Width;
-				var normalizedHeight = view.Frame.Height / view.ContentSize.Height;
+					var normalizedWidth = view.Frame.Width / view.ContentSize.Width;
+					var normalizedHeight = view.Frame.Height / view.ContentSize.Height;
 
-				var cropRect = new CGRect (normalizedX, normalizedY, normalizedWidth, normalizedHeight);
+					var cropRect = new CGRect(normalizedX, normalizedY, normalizedWidth, normalizedHeight);
 
-				Console.WriteLine ("Cropping image before handing it over");
-				AlbumDataSource.GetCroppedImage (cropRect, (croppedImage) => {
-					ImageSelected?.Invoke (this, croppedImage);
-					DismissViewController (true, () => Closed?.Invoke (this, EventArgs.Empty));
-				});
-			} else {
-				Console.WriteLine ("Not cropping image");
-				ImageSelected?.Invoke (this, view.Image);
-				DismissViewController (true, () => Closed?.Invoke (this, EventArgs.Empty));
+					Console.WriteLine("Cropping image before handing it over");
+					AlbumDataSource.GetCroppedImage(cropRect, (croppedImage) =>
+					{
+						ImageSelected?.Invoke(this, croppedImage);
+					});
+				}
+				else {
+					Console.WriteLine("Not cropping image");
+					ImageSelected?.Invoke(this, view.Image);
+				}
 			}
+
+			if (AlbumDataSource.CurrentMediaType == ChafuMediaType.Video)
+			{
+				var url = AlbumView.MoviePlayerController.ContentUrl;
+				VideoSelected?.Invoke(this, url);
+			}
+
+			DismissViewController(true, () => Closed?.Invoke(this, EventArgs.Empty));
 		}
 
 		private void OnVideo (NSUrl nsUrl)
