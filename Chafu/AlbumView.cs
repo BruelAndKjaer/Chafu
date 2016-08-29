@@ -120,7 +120,7 @@ namespace Chafu
             {
                 ShouldRecognizeSimultaneously = (recognizer, gestureRecognizer) => true
             };
-            AddGestureRecognizer(panGesture);
+            CollectionView.AddGestureRecognizer(panGesture);
 
             CollectionViewConstraintHeight.Constant = Frame.Height - ImageCropView.Frame.Height -
                                                       ImageCropViewOriginalConstraintTop;
@@ -237,7 +237,6 @@ namespace Chafu
                     CollectionViewConstraintHeight.Constant = Frame.Height - _imageCropViewMinimalVisibleHeight;
                     CollectionViewConstraintTop.Constant = ImageCropViewOriginalConstraintTop;
 
-                    AnimateNotify(0.3, 0, UIViewAnimationOptions.CurveEaseOut, LayoutIfNeeded, finished => { });
                     DragDirection = DragDirection.Down;
                 }
                 else
@@ -248,10 +247,11 @@ namespace Chafu
                     CollectionViewConstraintHeight.Constant = Frame.Height - ImageCropViewOriginalConstraintTop -
                                                               ImageCropView.Frame.Height;
                     CollectionViewConstraintTop.Constant = 0;
-                    AnimateNotify(0.3, 0, UIViewAnimationOptions.CurveEaseOut, LayoutIfNeeded, finished => {});
                     DragDirection = DragDirection.Up;
                 }
             }
+
+            AnimateNotify(0.3, 0, UIViewAnimationOptions.CurveEaseOut, LayoutIfNeeded, finished => { });
         }
 
         public AlbumView() { CreateView(); }
