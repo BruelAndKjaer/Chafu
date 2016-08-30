@@ -14,25 +14,25 @@ namespace Chafu
         public event EventHandler Extra;
 
         private AlbumView _album;
-        private ChafuMenuView _menu;
+        private MenuView _menu;
         private bool _showExtraButton;
 
         /// <summary>
         /// Gets the album collectionview data source. Use <see cref="LazyDataSource"/> to create your own Data Source.
         /// </summary>
         /// <value>The album data source.</value>
-        public ChafuAlbumDataSource AlbumDataSource { get; private set; }
+        public BaseAlbumDataSource AlbumDataSource { get; private set; }
 
         /// <summary>
         /// Gets the album delegate. Use <see cref="LazyDelegate"/> to create your own Delegate.
         /// </summary>
         /// <value>The album delegate.</value>
-        public ChafuAlbumDelegate AlbumDelegate { get; private set; }
+        public BaseAlbumDelegate AlbumDelegate { get; private set; }
 
-        public Func<AlbumView, CGSize, ChafuAlbumDataSource> LazyDataSource { get; set; } =
+        public Func<AlbumView, CGSize, BaseAlbumDataSource> LazyDataSource { get; set; } =
             (view, size) => new PhotoGalleryDataSource(view, size);
 
-        public Func<AlbumView, ChafuAlbumDataSource, ChafuAlbumDelegate> LazyDelegate { get; set; } =
+        public Func<AlbumView, BaseAlbumDataSource, BaseAlbumDelegate> LazyDelegate { get; set; } =
             (view, @delegate) => new PhotoGalleryDelegate(view, (PhotoGalleryDataSource)@delegate);
 
         public CGSize CellSize { get; set; } = new CGSize(100, 100);
@@ -64,7 +64,7 @@ namespace Chafu
             AlbumDelegate = LazyDelegate(_album, AlbumDataSource);
             _album.Initialize(AlbumDataSource, AlbumDelegate);
 
-            _menu = new ChafuMenuView
+            _menu = new MenuView
             {
                 TranslatesAutoresizingMaskIntoConstraints = false,
                 BackgroundColor = Configuration.BackgroundColor

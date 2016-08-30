@@ -10,7 +10,7 @@ using UIKit;
 
 namespace Chafu
 {
-    public class PhotoGalleryDataSource : ChafuAlbumDataSource, IPHPhotoLibraryChangeObserver
+    public class PhotoGalleryDataSource : BaseAlbumDataSource, IPHPhotoLibraryChangeObserver
     {
         private readonly AlbumView _albumView;
         private readonly CGSize _cellSize;

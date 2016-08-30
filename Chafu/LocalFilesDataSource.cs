@@ -18,7 +18,7 @@ namespace Sample
         public string Path { get; set; }
     }
 
-    public class LocalFilesDataSource : ChafuAlbumDataSource
+    public class LocalFilesDataSource : BaseAlbumDataSource
     {
         private readonly AlbumView _albumView;
         private readonly CGSize _cellSize;

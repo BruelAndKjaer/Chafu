@@ -3,11 +3,11 @@ using UIKit;
 
 namespace Chafu
 {
-    public abstract class ChafuAlbumDelegate : UICollectionViewDelegate
+    public abstract class BaseAlbumDelegate : UICollectionViewDelegate
     {
         private readonly AlbumView _albumView;
 
-        protected ChafuAlbumDelegate(AlbumView albumView)
+        protected BaseAlbumDelegate(AlbumView albumView)
         {
             _albumView = albumView;
         }

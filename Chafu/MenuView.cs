@@ -4,7 +4,7 @@ using UIKit;
 
 namespace Chafu
 {
-    public class ChafuMenuView : UIView
+    public class MenuView : UIView
     {
         public event EventHandler Closed;
         public event EventHandler Done;
@@ -39,7 +39,7 @@ namespace Chafu
         public UIButton ExtraButton { get; }
         public UILabel MenuTitle { get; }
 
-        public ChafuMenuView()
+        public MenuView()
         {
             CloseButton = new UIButton
             {

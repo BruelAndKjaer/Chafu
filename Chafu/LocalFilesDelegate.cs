@@ -4,7 +4,7 @@ using UIKit;
 
 namespace Sample
 {
-    public class LocalFilesDelegate : ChafuAlbumDelegate
+    public class LocalFilesDelegate : BaseAlbumDelegate
     {
         private readonly LocalFilesDataSource _dataSource;
 

@@ -9,7 +9,7 @@ namespace Chafu
         Video
     }
 
-    public abstract class ChafuAlbumDataSource : UICollectionViewDataSource
+    public abstract class BaseAlbumDataSource : UICollectionViewDataSource
     {
         public abstract event EventHandler CameraRollUnauthorized;
         public abstract void GetCroppedImage (Action<UIImage> onImage);
