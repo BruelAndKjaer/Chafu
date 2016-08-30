@@ -19,7 +19,11 @@ namespace Chafu
         public bool DoneButtonHidden
         {
             get { return DoneButton.Hidden; }
-            set { DoneButton.Hidden = value; }
+            set
+            {
+                DoneButton.Hidden = value;
+                AdjustDoneButtonConstraints();
+            }
         }
 
         public bool CloseButtonHidden
@@ -165,6 +169,23 @@ namespace Chafu
         private void OnExtra(object sender, EventArgs e)
         {
             Extra?.Invoke(sender, e);
+        }
+
+        private void AdjustDoneButtonConstraints()
+        {
+            foreach (var constraint in Constraints)
+            {
+                if (Equals(constraint.FirstItem, DoneButton) && 
+                    constraint.FirstAttribute == NSLayoutAttribute.Width)
+                {
+                    RemoveConstraint(constraint);
+                    break;
+                }
+            }
+
+            this.AddConstraints(DoneButtonHidden
+                ? DoneButton.Width().EqualTo(0)
+                : DoneButton.Width().EqualTo().HeightOf(DoneButton));
         }
 
         protected override void Dispose(bool disposing)
