@@ -269,10 +269,15 @@ namespace Chafu
 
 		private void CloseButtonPressed (object sender, EventArgs e)
 		{
-			DismissViewController (true, () => {
-				Closed?.Invoke (this, EventArgs.Empty);
-			});
+			Dismiss();
 		}
+
+        public void Dismiss(bool animated = true)
+        {
+            DismissViewController(animated, () => {
+                Closed?.Invoke(this, EventArgs.Empty);
+            });
+        }
 
 		private void LibraryButtonPressed (object sender, EventArgs eventArgs)
 		{

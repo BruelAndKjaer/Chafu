@@ -110,9 +110,9 @@ namespace Chafu
             base.ViewDidDisappear(animated);
         }
 
-        public void Dismiss()
+        public void Dismiss(bool animated = true)
         {
-            DismissViewController(true, () => Closed?.Invoke(this, EventArgs.Empty));
+            DismissViewController(animated, () => Closed?.Invoke(this, EventArgs.Empty));
         }
 
         private void OnClosed(object sender, EventArgs eventArgs)
