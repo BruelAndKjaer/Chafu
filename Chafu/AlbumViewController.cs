@@ -16,6 +16,7 @@ namespace Chafu
         private AlbumView _album;
         private MenuView _menu;
         private bool _showExtraButton;
+        private bool _showDoneButton;
 
         /// <summary>
         /// Gets the album collectionview data source. Use <see cref="LazyDataSource"/> to create your own Data Source.
@@ -45,6 +46,17 @@ namespace Chafu
                 _showExtraButton = value;
                 if (_menu != null)
                     _menu.ExtraButtonHidden = !_showExtraButton;
+            }
+        }
+
+        public bool ShowDoneButton
+        {
+            get { return _showDoneButton; }
+            set
+            {
+                _showDoneButton = value;
+                if (_menu != null)
+                    _menu.DoneButtonHidden = !_showDoneButton;
             }
         }
 
@@ -88,6 +100,7 @@ namespace Chafu
             View.BringSubviewToFront(_menu);
 
             _menu.ExtraButtonHidden = !ShowExtraButton;
+            _menu.DoneButtonHidden = !ShowDoneButton;
         }
 
         public override void ViewDidAppear(bool animated)
