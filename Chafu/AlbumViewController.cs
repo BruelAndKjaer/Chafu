@@ -133,11 +133,13 @@ namespace Chafu
                     Console.WriteLine("Cropping image before handing it over");
                     AlbumDataSource.GetCroppedImage(croppedImage => {
                         ImageSelected?.Invoke(this, croppedImage);
+                        Dismiss();
                     });
                 }
                 else {
                     Console.WriteLine("Not cropping image");
                     ImageSelected?.Invoke(this, _album.ImageCropView.Image);
+                    Dismiss();
                 }
             }
 
@@ -145,9 +147,8 @@ namespace Chafu
             {
                 var url = _album.MoviePlayerController.ContentUrl;
                 VideoSelected?.Invoke(this, url);
+                Dismiss();
             }
-
-            Dismiss();
         }
 
         public override UIInterfaceOrientationMask GetSupportedInterfaceOrientations() => UIInterfaceOrientationMask.Portrait;
