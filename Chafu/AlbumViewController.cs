@@ -1,6 +1,7 @@
 using System;
 using Cirrious.FluentLayouts.Touch;
 using CoreGraphics;
+using Foundation;
 using UIKit;
 
 namespace Chafu
@@ -8,30 +9,44 @@ namespace Chafu
     public class AlbumViewController : UIViewController
     {
         public event EventHandler<UIImage> ImageSelected;
+        public event EventHandler<NSUrl> VideoSelected;
         public event EventHandler Closed;
+        public event EventHandler Extra;
 
         private AlbumView _album;
-        private ChafuMenuView _menu;
+        private MenuView _menu;
+        private bool _showExtraButton;
 
         /// <summary>
         /// Gets the album collectionview data source. Use <see cref="LazyDataSource"/> to create your own Data Source.
         /// </summary>
         /// <value>The album data source.</value>
-        public ChafuAlbumDataSource AlbumDataSource { get; private set; }
+        public BaseAlbumDataSource AlbumDataSource { get; private set; }
 
         /// <summary>
         /// Gets the album delegate. Use <see cref="LazyDelegate"/> to create your own Delegate.
         /// </summary>
         /// <value>The album delegate.</value>
-        public ChafuAlbumDelegate AlbumDelegate { get; private set; }
+        public BaseAlbumDelegate AlbumDelegate { get; private set; }
 
-        public Func<AlbumView, CGSize, ChafuAlbumDataSource> LazyDataSource { get; set; } =
+        public Func<AlbumView, CGSize, BaseAlbumDataSource> LazyDataSource { get; set; } =
             (view, size) => new PhotoGalleryDataSource(view, size);
 
-        public Func<AlbumView, ChafuAlbumDataSource, ChafuAlbumDelegate> LazyDelegate { get; set; } =
+        public Func<AlbumView, BaseAlbumDataSource, BaseAlbumDelegate> LazyDelegate { get; set; } =
             (view, @delegate) => new PhotoGalleryDelegate(view, (PhotoGalleryDataSource)@delegate);
 
         public CGSize CellSize { get; set; } = new CGSize(100, 100);
+
+        public bool ShowExtraButton
+        {
+            get { return _showExtraButton; }
+            set
+            {
+                _showExtraButton = value;
+                if (_menu != null)
+                    _menu.ExtraButtonHidden = !_showExtraButton;
+            }
+        }
 
         public override void ViewDidLoad()
         {
@@ -49,7 +64,7 @@ namespace Chafu
             AlbumDelegate = LazyDelegate(_album, AlbumDataSource);
             _album.Initialize(AlbumDataSource, AlbumDelegate);
 
-            _menu = new ChafuMenuView
+            _menu = new MenuView
             {
                 TranslatesAutoresizingMaskIntoConstraints = false,
                 BackgroundColor = Configuration.BackgroundColor
@@ -71,6 +86,8 @@ namespace Chafu
                 );
 
             View.BringSubviewToFront(_menu);
+
+            _menu.ExtraButtonHidden = !ShowExtraButton;
         }
 
         public override void ViewDidAppear(bool animated)
@@ -79,47 +96,58 @@ namespace Chafu
 
             _menu.Done += OnDone;
             _menu.Closed += OnClosed;
+            _menu.Extra += OnExtra;
+
+            AlbumDataSource.ShowFirstImage();
         }
 
         public override void ViewDidDisappear(bool animated)
         {
-            base.ViewDidDisappear(animated);
-
             _menu.Done -= OnDone;
             _menu.Closed -= OnClosed;
+            _menu.Extra -= OnExtra;
+
+            base.ViewDidDisappear(animated);
         }
 
-        private void OnClosed(object sender, EventArgs eventArgs)
+        public void Dismiss()
         {
             DismissViewController(true, () => Closed?.Invoke(this, EventArgs.Empty));
         }
 
+        private void OnClosed(object sender, EventArgs eventArgs)
+        {
+            Dismiss();
+        }
+
+        private void OnExtra(object sender, EventArgs eventArgs)
+        {
+            Extra?.Invoke(this, EventArgs.Empty);
+        }
+
         private void OnDone(object sender, EventArgs e)
         {
-            var view = _album.ImageCropView;
-
-            if (Configuration.CropImage)
+            if (AlbumDataSource.CurrentMediaType == ChafuMediaType.Image)
             {
-                var normalizedX = view.ContentOffset.X / view.ContentSize.Width;
-                var normalizedY = view.ContentOffset.Y / view.ContentSize.Height;
-
-                var normalizedWidth = view.Frame.Width / view.ContentSize.Width;
-                var normalizedHeight = view.Frame.Height / view.ContentSize.Height;
-
-                var cropRect = new CGRect(normalizedX, normalizedY, normalizedWidth, normalizedHeight);
-
-                Console.WriteLine("Cropping image before handing it over");
-                AlbumDataSource.GetCroppedImage(cropRect, (croppedImage) => {
-                                                                                ImageSelected?.Invoke(this, croppedImage);
-                                                                                DismissViewController(true, () => Closed?.Invoke(this, EventArgs.Empty));
-                });
+                if (Configuration.CropImage) {
+                    Console.WriteLine("Cropping image before handing it over");
+                    AlbumDataSource.GetCroppedImage(croppedImage => {
+                        ImageSelected?.Invoke(this, croppedImage);
+                    });
+                }
+                else {
+                    Console.WriteLine("Not cropping image");
+                    ImageSelected?.Invoke(this, _album.ImageCropView.Image);
+                }
             }
-            else
+
+            if (AlbumDataSource.CurrentMediaType == ChafuMediaType.Video)
             {
-                Console.WriteLine("Not cropping image");
-                ImageSelected?.Invoke(this, view.Image);
-                DismissViewController(true, () => Closed?.Invoke(this, EventArgs.Empty));
+                var url = _album.MoviePlayerController.ContentUrl;
+                VideoSelected?.Invoke(this, url);
             }
+
+            Dismiss();
         }
 
         public override UIInterfaceOrientationMask GetSupportedInterfaceOrientations() => UIInterfaceOrientationMask.Portrait;

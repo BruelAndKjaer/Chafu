@@ -3,11 +3,11 @@ using UIKit;
 
 namespace Chafu
 {
-    public abstract class ChafuAlbumDelegate : UICollectionViewDelegate
+    public abstract class BaseAlbumDelegate : UICollectionViewDelegate
     {
         private readonly AlbumView _albumView;
 
-        protected ChafuAlbumDelegate(AlbumView albumView)
+        protected BaseAlbumDelegate(AlbumView albumView)
         {
             _albumView = albumView;
         }
@@ -17,7 +17,8 @@ namespace Chafu
             UIView.AnimateNotify(0.2, 0.0, UIViewAnimationOptions.CurveEaseOut, () =>
             {
                 _albumView.ImageCropView.Scrollable = true;
-                _albumView.ImageCropViewConstraintTop.Constant = AlbumView.ImageCropViewOriginalConstraintTop;
+                _albumView.MovieViewConstraintTop.Constant =
+                    _albumView.ImageCropViewConstraintTop.Constant = AlbumView.ImageCropViewOriginalConstraintTop;
                 _albumView.CollectionViewConstraintHeight.Constant =
                     _albumView.Frame.Height - AlbumView.ImageCropViewOriginalConstraintTop -
                     _albumView.ImageCropView.Frame.Height;

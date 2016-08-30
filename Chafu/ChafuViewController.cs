@@ -21,7 +21,7 @@ namespace Chafu
 		private UIButton _libraryButton;
 		private UIButton _videoButton;
 		private UIButton _cameraButton;
-		private ChafuMenuView _menuView;
+		private MenuView _menuView;
 
         /// <summary>
         /// Gets the AlbumView
@@ -38,18 +38,18 @@ namespace Chafu
         /// Gets the album collectionview data source. Use <see cref="LazyDataSource"/> to create your own Data Source.
         /// </summary>
         /// <value>The album data source.</value>
-		public ChafuAlbumDataSource AlbumDataSource { get; private set; }
+		public BaseAlbumDataSource AlbumDataSource { get; private set; }
 
         /// <summary>
         /// Gets the album delegate. Use <see cref="LazyDelegate"/> to create your own Delegate.
         /// </summary>
         /// <value>The album delegate.</value>
-		public ChafuAlbumDelegate AlbumDelegate { get; private set; }
+		public BaseAlbumDelegate AlbumDelegate { get; private set; }
 
-	    public Func<AlbumView, CGSize, ChafuAlbumDataSource> LazyDataSource { get; set; } =
+	    public Func<AlbumView, CGSize, BaseAlbumDataSource> LazyDataSource { get; set; } =
 	        (view, size) => new PhotoGalleryDataSource(view, size);
 
-	    public Func<AlbumView, ChafuAlbumDataSource, ChafuAlbumDelegate> LazyDelegate { get; set; } =
+	    public Func<AlbumView, BaseAlbumDataSource, BaseAlbumDelegate> LazyDelegate { get; set; } =
 	        (view, source) => new PhotoGalleryDelegate(view, (PhotoGalleryDataSource)source);
 
         public CGSize CellSize { get; set; } = new CGSize(100, 100);
@@ -58,7 +58,7 @@ namespace Chafu
 		{
 			base.ViewDidLoad ();
 
-            _menuView = new ChafuMenuView
+            _menuView = new MenuView
             {
                 BackgroundColor = Configuration.BackgroundColor,
                 TranslatesAutoresizingMaskIntoConstraints = false,
@@ -291,27 +291,28 @@ namespace Chafu
 
 		private void DoneButtonPressed (object sender, EventArgs e)
 		{
-			var view = AlbumView.ImageCropView;
-
-			if (Configuration.CropImage) {
-				var normalizedX = view.ContentOffset.X / view.ContentSize.Width;
-				var normalizedY = view.ContentOffset.Y / view.ContentSize.Height;
-
-				var normalizedWidth = view.Frame.Width / view.ContentSize.Width;
-				var normalizedHeight = view.Frame.Height / view.ContentSize.Height;
-
-				var cropRect = new CGRect (normalizedX, normalizedY, normalizedWidth, normalizedHeight);
-
-				Console.WriteLine ("Cropping image before handing it over");
-				AlbumDataSource.GetCroppedImage (cropRect, (croppedImage) => {
-					ImageSelected?.Invoke (this, croppedImage);
-					DismissViewController (true, () => Closed?.Invoke (this, EventArgs.Empty));
-				});
-			} else {
-				Console.WriteLine ("Not cropping image");
-				ImageSelected?.Invoke (this, view.Image);
-				DismissViewController (true, () => Closed?.Invoke (this, EventArgs.Empty));
+			if (AlbumDataSource.CurrentMediaType == ChafuMediaType.Image)
+			{
+				if (Configuration.CropImage) {
+					Console.WriteLine("Cropping image before handing it over");
+					AlbumDataSource.GetCroppedImage(croppedImage =>
+					{
+						ImageSelected?.Invoke(this, croppedImage);
+					});
+				}
+				else {
+                    Console.WriteLine("Not cropping image");
+					ImageSelected?.Invoke(this, AlbumView.ImageCropView.Image);
+				}
 			}
+
+			if (AlbumDataSource.CurrentMediaType == ChafuMediaType.Video)
+			{
+				var url = AlbumView.MoviePlayerController.ContentUrl;
+				VideoSelected?.Invoke(this, url);
+			}
+
+			DismissViewController(true, () => Closed?.Invoke(this, EventArgs.Empty));
 		}
 
 		private void OnVideo (NSUrl nsUrl)

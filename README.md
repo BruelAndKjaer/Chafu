@@ -14,9 +14,10 @@ has been simplified and loads of unfixed Fusuma bugs and features have been fixe
 ## Features
 
 - [x] UIImagePickerController alternative
-- [x] Camera roll
+- [x] Camera roll (images and video)
+- [x] Album view to show images and video from folder
 - [x] Camera for capturing both photos and video
-- [x] Cropping of photos and video into squares
+- [x] Cropping of photos into squares
 - [x] Toggling of flash when capturing photos and video
 - [x] Supports front and back cameras
 - [x] Customizable
@@ -36,6 +37,24 @@ var chafu = new ChafuViewController();
 chafu.HasVideo = true; // add video tab
 PresentViewController(chafu, true);
 ```
+
+or if you only want to show gallery:
+
+```
+var gallery = new AlbumViewController();
+PresentViewController(gallery, true);
+```
+
+Both accept custom data source which will be instantiated lazily:
+
+```
+var chafu = new AlbumViewController {
+    LazyDataSource = (view, size) => new LocalFilesDataSource(view, size) {ImagesPath = path},
+    LazyDelegate = (view, source) => new LocalFilesDelegate(view, (LocalFilesDataSource) source),
+};
+```
+
+where `path` is a directory the App has access to.
 
 ## Events
 

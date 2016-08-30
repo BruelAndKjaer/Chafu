@@ -4,7 +4,7 @@ using UIKit;
 
 namespace Chafu
 {
-    public class PhotoGalleryDelegate : ChafuAlbumDelegate
+    public class PhotoGalleryDelegate : BaseAlbumDelegate
     {
         private readonly AlbumView _albumView;
         private readonly PhotoGalleryDataSource _dataSource;
@@ -18,7 +18,7 @@ namespace Chafu
 
         public override void ItemSelected(UICollectionView collectionView, NSIndexPath indexPath)
         {
-            _dataSource.ChangeImage(_dataSource.Images[indexPath.Row] as PHAsset);
+            _dataSource.ChangeAsset(_dataSource.AllAssets[indexPath.Row]);
 
             // animations and stuff
             base.ItemSelected(collectionView, indexPath);

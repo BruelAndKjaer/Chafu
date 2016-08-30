@@ -86,13 +86,15 @@
     <Compile Include="AlbumViewController.cs" />
     <Compile Include="BaseCameraView.cs" />
     <Compile Include="CameraView.cs" />
-    <Compile Include="ChafuAlbumDelegate.cs" />
-    <Compile Include="ChafuMenuView.cs" />
+    <Compile Include="BaseAlbumDelegate.cs" />
+    <Compile Include="MenuView.cs" />
     <Compile Include="Configuration.cs" />
     <Compile Include="DragDirection.cs" />
-    <Compile Include="ChafuAlbumDataSource.cs" />
+    <Compile Include="BaseAlbumDataSource.cs" />
     <Compile Include="ChafuViewController.cs" />
     <Compile Include="ImageCropView.cs" />
+    <Compile Include="LocalFilesDataSource.cs" />
+    <Compile Include="LocalFilesDelegate.cs" />
     <Compile Include="Mode.cs" />
     <Compile Include="ModeOrder.cs" />
     <Compile Include="PhotoGalleryDataSource.cs" />
@@ -202,6 +204,15 @@
   </ItemGroup>
   <ItemGroup>
     <BundleResource Include="Resources\video_button_rec%403x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="Resources\ic_add.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="Resources\ic_add%402x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="Resources\ic_add%403x.png" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
 </Project>

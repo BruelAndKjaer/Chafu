@@ -131,6 +131,12 @@ namespace Chafu
         public static UIImage CloseImage { get; set; }
 
         /// <summary>
+        /// Gets or sets the extra image.
+        /// </summary>
+        /// <value>The extra image.</value>
+        public static UIImage ExtraImage { get; set; }
+
+        /// <summary>
         /// Gets or sets whether Statusbar should be hidden.
         /// </summary>
         /// <value><c>true</c> if prefer statusbar hidden; otherwise, <c>false</c>.</value>
