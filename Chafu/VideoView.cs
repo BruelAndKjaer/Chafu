@@ -82,15 +82,7 @@ namespace Chafu
 
                     Session.AddInput(VideoInput);
 
-                    _videoOutput = new AVCaptureMovieFileOutput();
-
-                    var totalSeconds = 60L;
-                    var timeScale = 30; //FPS
-
-                    var maxDuration = new CMTime(totalSeconds, timeScale);
-
-                    _videoOutput.MaxRecordedDuration = maxDuration;
-                    _videoOutput.MinFreeDiskSpaceLimit = 1024 * 1024;
+                    _videoOutput = new AVCaptureMovieFileOutput {MinFreeDiskSpaceLimit = 1024*1024};
 
                     if (Session.CanAddOutput(_videoOutput))
                         Session.AddOutput(_videoOutput);
