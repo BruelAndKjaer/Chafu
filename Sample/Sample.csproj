@@ -85,8 +85,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="HomeViewController.cs" />
-    <Compile Include="LocalFilesDataSource.cs" />
-    <Compile Include="LocalFilesDelegate.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="AppDelegate.cs" />
     <None Include="Info.plist" />

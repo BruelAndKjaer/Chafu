@@ -93,6 +93,8 @@
     <Compile Include="ChafuAlbumDataSource.cs" />
     <Compile Include="ChafuViewController.cs" />
     <Compile Include="ImageCropView.cs" />
+    <Compile Include="LocalFilesDataSource.cs" />
+    <Compile Include="LocalFilesDelegate.cs" />
     <Compile Include="Mode.cs" />
     <Compile Include="ModeOrder.cs" />
     <Compile Include="PhotoGalleryDataSource.cs" />
