@@ -3,14 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using AVFoundation;
-using Chafu;
 using CoreFoundation;
 using CoreGraphics;
 using CoreMedia;
 using Foundation;
 using UIKit;
 
-namespace Sample
+namespace Chafu
 {
     public class MediaItem
     {
@@ -26,6 +25,8 @@ namespace Sample
         private string _imagesPath;
 
         public override ChafuMediaType CurrentMediaType { get; set; }
+
+        public string CurrentMediaPath { get; private set; }
 
         public string ImagesPath
         {
@@ -141,6 +142,7 @@ namespace Sample
             {
                 _albumView.ImageCropView.Image = null;
                 _albumView.MoviePlayerController.ContentUrl = null;
+                CurrentMediaPath = item.Path;
                 CurrentMediaType = item.MediaType;
 
                 if (item.MediaType == ChafuMediaType.Image)

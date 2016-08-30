@@ -1,8 +1,7 @@
-using Chafu;
 using Foundation;
 using UIKit;
 
-namespace Sample
+namespace Chafu
 {
     public class LocalFilesDelegate : BaseAlbumDelegate
     {
