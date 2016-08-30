@@ -36,6 +36,9 @@ namespace Sample
             }
         }
 
+        public static string[] MovieFileExtensions { get; set; } = {".mov", ".mp4"};
+        public static string[] ImageFileExtensions { get; set; } = { ".jpg", ".jpeg", ".png" };
+
         public LocalFilesDataSource(AlbumView albumView, CGSize cellSize = default(CGSize))
         {
             _albumView = albumView;
@@ -53,14 +56,14 @@ namespace Sample
             var files = Directory.GetFiles(imagesPath);
 
             Files.Clear();
-            var items = files.Where(f => f.EndsWith(".jpg") || f.EndsWith(".mov")).Select(file =>
+            var items = files.Select(file =>
             {
-                if (file.EndsWith(".mov"))
+                if (MovieFileExtensions.Any(ex => file.ToLower().EndsWith(ex)))
                     return new MediaItem {MediaType = ChafuMediaType.Video, Path = "file://" + file};
-                if (file.EndsWith(".jpg"))
-                    return new MediaItem { MediaType = ChafuMediaType.Image, Path = file };
+                if (ImageFileExtensions.Any(ex => file.ToLower().EndsWith(ex)))
+                    return new MediaItem {MediaType = ChafuMediaType.Image, Path = file};
                 return null;
-            });
+            }).Where(f => f != null);
 
             Files.AddRange(items);
 
