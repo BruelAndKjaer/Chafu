@@ -165,7 +165,6 @@ namespace Sample
 
         public override void GetCroppedImage(Action<UIImage> onImage)
         {
-            // todo fix this :(
             var view = _albumView?.ImageCropView;
             var image = view?.Image;
 
@@ -175,36 +174,28 @@ namespace Sample
                 return;
             }
 
-            var widthScale = view.Frame.Width / image.Size.Width;
-            var heightScale = view.Frame.Height / image.Size.Height;
+            var scale = UIScreen.MainScreen.Scale;
+            var offset = view.ContentOffset;
+            var size = view.Bounds.Size;
 
-            CGRect cropRect;
-
-            if (widthScale < heightScale)
+            DispatchQueue.DefaultGlobalQueue.DispatchAsync(() =>
             {
-                var offset = (view.Bounds.Height - image.Size.Height*widthScale)/2;
-                cropRect = new CGRect(
-                    x: view.Frame.X/widthScale,
-                    y: (view.Frame.Y - offset) /widthScale,
-                    width: view.Frame.Width/widthScale,
-                    height: view.Frame.Height/widthScale
-                    );
-            }
-            else
-            {
-                var offset = (view.Bounds.Width - image.Size.Width * heightScale) / 2;
-                cropRect = new CGRect(
-                    x: (view.Frame.X - offset) / heightScale,
-                    y: view.Frame.Y / heightScale,
-                    width: view.Frame.Width / heightScale,
-                    height: view.Frame.Height / heightScale
-                    );
-            }
-
-            var imageRef = image.CGImage.WithImageInRect(cropRect);
+                UIGraphics.BeginImageContextWithOptions(size, true, scale);
                 
-            var result = new UIImage(imageRef, image.CurrentScale, image.Orientation);
-            onImage?.Invoke(result);
+                using (var context = UIGraphics.GetCurrentContext())
+                {
+                    context.TranslateCTM(-offset.X, -offset.Y);
+                    view.Layer.RenderInContext(context);
+
+                    var result = UIGraphics.GetImageFromCurrentImageContext();
+
+                    DispatchQueue.MainQueue.DispatchAsync(() =>
+                    {
+                        onImage?.Invoke(result);
+                    });
+                }
+                UIGraphics.EndImageContext();
+            });
         }
 
         public override void ShowFirstImage()
