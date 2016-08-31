@@ -54,7 +54,9 @@ namespace Chafu
             if (!Directory.Exists(imagesPath))
                 throw new InvalidOperationException($"Cannot load images from non-existing Directory: {imagesPath}");
 
-            var files = Directory.GetFiles(imagesPath);
+            var dirInfo = new DirectoryInfo(imagesPath);
+            var fileInfo = dirInfo.GetFiles();
+            var files = fileInfo.OrderByDescending(f => f.CreationTime).Select(f => f.FullName).Distinct();
 
             Files.Clear();
             var items = files.Select(file =>
@@ -140,6 +142,12 @@ namespace Chafu
 
             DispatchQueue.MainQueue.DispatchAsync(() =>
             {
+                if (CurrentMediaType == ChafuMediaType.Video && 
+                    _albumView.MoviePlayerController.ContentUrl != null)
+                {
+                    _albumView.MoviePlayerController.Stop();
+                }
+
                 _albumView.ImageCropView.Image = null;
                 _albumView.MoviePlayerController.ContentUrl = null;
                 CurrentMediaPath = item.Path;
