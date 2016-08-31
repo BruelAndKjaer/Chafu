@@ -15,15 +15,31 @@ namespace Sample
             base.ViewDidLoad();
             Title = "Chafu";
 
+            var deleteAll = new UIBarButtonItem(UIBarButtonSystemItem.Trash) {TintColor = Configuration.BackgroundColor};
+            deleteAll.Clicked += (sender, args) => DeleteAllStuff();
+
             NavigationController.NavigationBar.BarTintColor = Configuration.TintColor;
             NavigationController.NavigationBar.TintColor = Configuration.BaseTintColor;
+            NavigationItem.RightBarButtonItem = deleteAll;
 
             View.BackgroundColor = Configuration.BackgroundColor;
+
             Configuration.CropImage = true;
 
             var imageView = new UIImageView {BackgroundColor = UIColor.Black};
-
             var urlLabel = new UILabel();
+            var pickerButton = new UIButton(UIButtonType.System)
+            {
+                BackgroundColor = Configuration.TintColor,
+                TintColor = UIColor.Black
+            };
+            pickerButton.SetTitle("Pick Image", UIControlState.Normal);
+            var albumButton = new UIButton(UIButtonType.System)
+            {
+                BackgroundColor = Configuration.TintColor,
+                TintColor = UIColor.Black
+            };
+            albumButton.SetTitle("Show Album", UIControlState.Normal);
 
             var chafu = new ChafuViewController { HasVideo = true};
             chafu.ImageSelected += (sender, image) =>
@@ -41,12 +57,7 @@ namespace Sample
                 CopyVideoToLocalFolder(videoUrl);
             };
             chafu.Closed += (sender, e) => { /* do stuff on closed */ };
-
-            var pickerButton = new UIButton(UIButtonType.System) {
-                BackgroundColor = Configuration.TintColor,
-                TintColor = UIColor.Black
-            };
-            pickerButton.SetTitle("Pick Image", UIControlState.Normal);
+            
             pickerButton.TouchUpInside += (sender, args) =>
             {
 				NavigationController.PresentModalViewController (chafu, true);
@@ -56,7 +67,8 @@ namespace Sample
             {
                 LazyDataSource = (view, size) => new LocalFilesDataSource(view, size) {ImagesPath = TempPath()},
                 LazyDelegate = (view, source) => new LocalFilesDelegate(view, (LocalFilesDataSource) source),
-                ShowExtraButton = true
+                ShowExtraButton = true,
+                ShowDoneButton = false
             };
 
             albumViewController.Extra += (sender, args) =>
@@ -70,12 +82,6 @@ namespace Sample
                 imageView.Image = image;
             };
             
-            var albumButton = new UIButton(UIButtonType.System)
-            {
-                BackgroundColor = Configuration.TintColor,
-                TintColor = UIColor.Black
-            };
-            albumButton.SetTitle("Show Album", UIControlState.Normal);
             albumButton.TouchUpInside += (sender, args) =>
             {
                 ((LocalFilesDataSource)albumViewController.AlbumDataSource)?.UpdateImageSource(TempPath());
@@ -96,20 +102,21 @@ namespace Sample
                 imageView.AtTopOf(View, 5),
                 imageView.AtLeftOf(View, 5),
                 imageView.AtRightOf(View, 5),
+                imageView.Above(urlLabel, 10),
 
-                urlLabel.Below(imageView, 10),
                 urlLabel.AtLeftOf(View, 5),
                 urlLabel.AtRightOf(View, 5),
+                urlLabel.Above(pickerButton, 10),
 
-                pickerButton.Below(urlLabel, 50),
                 pickerButton.AtLeftOf(View, 50),
                 pickerButton.AtRightOf(View, 50),
-                pickerButton.Height().EqualTo(70),
+                pickerButton.Height().EqualTo(50),
+                pickerButton.Above(albumButton, 20),
 
-                albumButton.Below(pickerButton, 20),
                 albumButton.AtLeftOf(View, 50),
                 albumButton.AtRightOf(View, 50),
-                albumButton.Height().EqualTo(70)
+                albumButton.Height().EqualTo(50),
+                albumButton.AtBottomOf(View, 10f)
                 );
         }
 
@@ -145,13 +152,25 @@ namespace Sample
                     Directory.CreateDirectory(dirPath);
 
                 File.Copy(videoUrl.RelativePath, tempPath);
+                File.Delete(videoUrl.RelativePath);
+            });
+        }
+
+        private void DeleteAllStuff()
+        {
+            DispatchQueue.DefaultGlobalQueue.DispatchAsync(() =>
+            {
+                var dirPath = TempPath();
+                if (!Directory.Exists(dirPath)) return;
+
+                Directory.Delete(dirPath, true);
+                Directory.CreateDirectory(dirPath);
             });
         }
 
         public string TempPath()
         {
-            var documents = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            var ret = Path.Combine(documents, "..", "tmp");
+            var ret = Path.Combine(Path.GetTempPath(), "Chafu");
             return ret;
         }
     }
