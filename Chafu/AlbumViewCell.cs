@@ -6,6 +6,8 @@ namespace Chafu
 {
     public sealed class AlbumViewCell : UICollectionViewCell
     {
+        public const string Key = "AlbumViewCell";
+
         private UIImageView _imageView;
         private UIImageView _videoImage;
         private UILabel _timeStamp;
