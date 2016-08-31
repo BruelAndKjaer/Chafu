@@ -21,8 +21,10 @@ namespace Chafu
             get { return DoneButton.Hidden; }
             set
             {
+                if (DoneButton.Hidden == value) return;
+
                 DoneButton.Hidden = value;
-                AdjustDoneButtonConstraints();
+                UpdateConstraints();
             }
         }
 
@@ -35,7 +37,13 @@ namespace Chafu
         public bool ExtraButtonHidden
         {
             get { return ExtraButton.Hidden; }
-            set { ExtraButton.Hidden = value; }
+            set
+            {
+                if (ExtraButton.Hidden == value) return;
+
+                ExtraButton.Hidden = value;
+                UpdateConstraints();
+            }
         }
 
         public UIButton DoneButton { get; }
@@ -101,28 +109,6 @@ namespace Chafu
             Add(ExtraButton);
             Add(MenuTitle);
 
-            this.AddConstraints(
-                CloseButton.AtLeftOf(this, 8),
-                CloseButton.AtTopOf(this, 8),
-                CloseButton.Width().EqualTo().HeightOf(CloseButton),
-                CloseButton.Height().EqualTo(40),
-
-                MenuTitle.WithSameCenterY(this).Plus(2),
-                MenuTitle.ToRightOf(CloseButton, 8),
-                MenuTitle.Height().EqualTo(21),
-
-                
-                DoneButton.AtTopOf(this, 8),
-                DoneButton.Width().EqualTo().HeightOf(DoneButton),
-                DoneButton.Height().EqualTo(40),
-                DoneButton.AtRightOf(this, 8),
-
-                ExtraButton.ToRightOf(MenuTitle, 8),
-                ExtraButton.Width().EqualTo().HeightOf(ExtraButton),
-                ExtraButton.Height().EqualTo(40),
-                ExtraButton.ToLeftOf(DoneButton, 8),
-                ExtraButton.AtTopOf(this, 8));
-
             var checkImage = Configuration.CheckImage ?? UIImage.FromBundle("ic_check");
             var closeImage = Configuration.CloseImage ?? UIImage.FromBundle("ic_close");
             var extraImage = Configuration.ExtraImage ?? UIImage.FromBundle("ic_add");
@@ -171,21 +157,37 @@ namespace Chafu
             Extra?.Invoke(sender, e);
         }
 
-        private void AdjustDoneButtonConstraints()
+        public override void UpdateConstraints()
         {
-            foreach (var constraint in Constraints)
-            {
-                if (Equals(constraint.FirstItem, DoneButton) && 
-                    constraint.FirstAttribute == NSLayoutAttribute.Width)
-                {
-                    RemoveConstraint(constraint);
-                    break;
-                }
-            }
+            RemoveConstraints(Constraints);
 
-            this.AddConstraints(DoneButtonHidden
-                ? DoneButton.Width().EqualTo(0)
-                : DoneButton.Width().EqualTo().HeightOf(DoneButton));
+            this.AddConstraints(
+                CloseButton.AtLeftOf(this, 8),
+                CloseButton.AtTopOf(this, 8),
+                CloseButton.Width().EqualTo(40),
+                CloseButton.Height().EqualTo(40),
+
+                MenuTitle.WithSameCenterY(this).Plus(2),
+                MenuTitle.WithSameCenterX(this),
+                MenuTitle.Height().EqualTo(21),
+
+                DoneButton.AtTopOf(this, 8),
+                DoneButton.Height().EqualTo(40),
+                DoneButton.AtRightOf(this, 8),
+                DoneButtonHidden
+                    ? DoneButton.Width().EqualTo(0)
+                    : DoneButton.Width().EqualTo(40),
+
+                ExtraButton.ToRightOf(MenuTitle, 8),
+                ExtraButton.Height().EqualTo(40),
+                ExtraButton.ToLeftOf(DoneButton, 8),
+                ExtraButton.AtTopOf(this, 8),
+                ExtraButtonHidden
+                    ? ExtraButton.Width().EqualTo(0)
+                    : ExtraButton.Width().EqualTo(40)
+                );
+
+            base.UpdateConstraints();
         }
 
         protected override void Dispose(bool disposing)
