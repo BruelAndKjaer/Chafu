@@ -3,7 +3,6 @@ using System.IO;
 using System.Linq;
 using AssetsLibrary;
 using AVFoundation;
-using CoreMedia;
 using Foundation;
 using UIKit;
 
@@ -74,7 +73,11 @@ namespace Chafu
                     : AVCaptureDevice.Devices.FirstOrDefault(d => d.Position == AVCaptureDevicePosition.Front);
 
                 if (Device == null)
-                    throw new Exception("Could not find capture device, does your device have a camera?");
+                {
+                    NoCameraAvailable();
+                    Console.WriteLine("Could not find capture device, does your device have a camera?");
+                    return;
+                }
 
                 try {
                     NSError error;

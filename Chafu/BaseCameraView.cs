@@ -324,5 +324,32 @@ namespace Chafu
             }
             catch { /* ignore */ }
         }
+
+        protected void NoCameraAvailable()
+        {
+            var noCameraText = new UILabel
+            {
+                Text = Configuration.NoCameraText,
+                Font = UIFont.PreferredTitle1,
+                LineBreakMode = UILineBreakMode.WordWrap,
+                TextColor = Configuration.BaseTintColor,
+                BackgroundColor = Configuration.TintColor,
+                TranslatesAutoresizingMaskIntoConstraints = false,
+                TextAlignment = UITextAlignment.Center
+            };
+
+            Add(noCameraText);
+            PreviewContainer.Hidden = true;
+
+            FlipButton.Enabled = false;
+            FlashButton.Enabled = false;
+            ShutterButton.Enabled = false;
+
+            this.AddConstraints(
+                noCameraText.WithSameTop(PreviewContainer),
+                noCameraText.WithSameBottom(PreviewContainer),
+                noCameraText.WithSameLeft(PreviewContainer),
+                noCameraText.WithSameRight(PreviewContainer));
+        }
     }
 }

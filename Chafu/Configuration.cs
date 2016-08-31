@@ -153,5 +153,11 @@ namespace Chafu
         /// </summary>
         /// <value><c>true</c> if save to Photos Album; otherwise, <c>false</c>.</value>
         public static bool SaveToPhotosAlbum { get; set; } = false;
+
+        /// <summary>
+        /// Gets or sets the text of the camera preview, when no camera is present.
+        /// </summary>
+        /// <value>Value of the text to show, default is <c>NO CAMERA</c>.</value>
+        public static string NoCameraText { get; set; } = "NO CAMERA";
     }
 }
