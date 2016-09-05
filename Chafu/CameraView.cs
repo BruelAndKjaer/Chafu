@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using AVFoundation;
 using CoreFoundation;
@@ -40,10 +41,14 @@ namespace Chafu
         private void OnShutter(object sender, EventArgs e)
         {
             if (_imageOutput == null) return;
+            var orientation = GetOrientation();
+            Debug.WriteLine($"Capturing image with device orientation: {orientation.Item1} and image orientation: {orientation.Item2}");
 
             DispatchQueue.DefaultGlobalQueue.DispatchAsync(() =>
             {
                 var videoConnection = _imageOutput.ConnectionFromMediaType(AVMediaType.Video);
+                if (videoConnection.SupportsVideoOrientation)
+                    videoConnection.VideoOrientation = orientation.Item1;
 
                 _imageOutput.CaptureStillImageAsynchronously(videoConnection, (buffer, error) =>
                 {
@@ -66,7 +71,7 @@ namespace Chafu
                     {
                         if (Configuration.CropImage)
                         {
-                            var resizedImage = new UIImage(imageRef, previewWidth/imageWidth, image.Orientation);
+                            var resizedImage = new UIImage(imageRef, previewWidth/imageWidth, orientation.Item2);
                             SaveToPhotosAlbum(resizedImage);
                             _onImage?.Invoke(resizedImage);
                         }
@@ -146,6 +151,7 @@ namespace Chafu
                     Session.AddInput(VideoInput);
 
                     _imageOutput = new AVCaptureStillImageOutput();
+
                     Session.AddOutput(_imageOutput);
 
                     var videoLayer = new AVCaptureVideoPreviewLayer(Session) {
@@ -167,6 +173,27 @@ namespace Chafu
         private void WillEnterForeground(object sender, NSNotificationEventArgs nsNotificationEventArgs)
         {
             StartCamera();
+        }
+
+        public Tuple<AVCaptureVideoOrientation, UIImageOrientation> GetOrientation()
+        {
+            var orientation = UIDevice.CurrentDevice.Orientation;
+            switch (orientation)
+            {
+                case UIDeviceOrientation.LandscapeLeft:
+                    return new Tuple<AVCaptureVideoOrientation, UIImageOrientation>(
+                        AVCaptureVideoOrientation.LandscapeLeft, UIImageOrientation.Up);
+                case UIDeviceOrientation.LandscapeRight:
+                    return new Tuple<AVCaptureVideoOrientation, UIImageOrientation>(
+                        AVCaptureVideoOrientation.LandscapeRight, UIImageOrientation.Down);
+
+                case UIDeviceOrientation.PortraitUpsideDown:
+                    return new Tuple<AVCaptureVideoOrientation, UIImageOrientation>(
+                        AVCaptureVideoOrientation.PortraitUpsideDown, UIImageOrientation.Left);
+                default:
+                    return new Tuple<AVCaptureVideoOrientation, UIImageOrientation>(
+                        AVCaptureVideoOrientation.Portrait, UIImageOrientation.Right);
+            }
         }
 
         protected override void Dispose(bool disposing)

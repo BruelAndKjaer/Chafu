@@ -157,6 +157,9 @@ namespace Chafu
 
                 FlipButton.Enabled = false;
                 FlashButton.Enabled = false;
+                var connection = _videoOutput.ConnectionFromMediaType(AVMediaType.Video);
+                if (connection.SupportsVideoOrientation)
+                    connection.VideoOrientation = GetOrientation();
                 _videoOutput.StartRecordingToOutputFile(outputUrl, this);
             }
             else
@@ -181,6 +184,22 @@ namespace Chafu
             }
             
             _onVideoFinished?.Invoke(outputFileUrl);
+        }
+
+        private static AVCaptureVideoOrientation GetOrientation()
+        {
+            var orientation = UIDevice.CurrentDevice.Orientation;
+            switch (orientation)
+            {
+                case UIDeviceOrientation.LandscapeLeft:
+                    return AVCaptureVideoOrientation.LandscapeRight;
+                case UIDeviceOrientation.LandscapeRight:
+                    return AVCaptureVideoOrientation.LandscapeLeft;
+                case UIDeviceOrientation.PortraitUpsideDown:
+                    return AVCaptureVideoOrientation.PortraitUpsideDown;
+                default:
+                    return AVCaptureVideoOrientation.Portrait;
+            }
         }
 
         protected override void Dispose(bool disposing)
