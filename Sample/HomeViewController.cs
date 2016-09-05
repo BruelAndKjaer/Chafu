@@ -16,7 +16,7 @@ namespace Sample
             Title = "Chafu";
 
             var deleteAll = new UIBarButtonItem(UIBarButtonSystemItem.Trash) {TintColor = Configuration.BackgroundColor};
-            deleteAll.Clicked += (sender, args) => DeleteAllStuff();
+            
 
             NavigationController.NavigationBar.BarTintColor = Configuration.TintColor;
             NavigationController.NavigationBar.TintColor = Configuration.BaseTintColor;
@@ -86,6 +86,12 @@ namespace Sample
             {
                 ((LocalFilesDataSource)albumViewController.AlbumDataSource)?.UpdateImageSource(TempPath());
                 NavigationController.PresentModalViewController(albumViewController, true);
+            };
+
+            deleteAll.Clicked += (sender, args) =>
+            {
+                DeleteAllStuff();
+                ((LocalFilesDataSource)albumViewController.AlbumDataSource)?.UpdateImageSource(TempPath());
             };
 
             Add(imageView);

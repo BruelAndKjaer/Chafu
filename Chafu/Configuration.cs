@@ -159,5 +159,11 @@ namespace Chafu
         /// </summary>
         /// <value>Value of the text to show, default is <c>NO CAMERA</c>.</value>
         public static string NoCameraText { get; set; } = "NO CAMERA";
+
+        /// <summary>
+        /// Gets or sets whether to record audio when recording video.
+        /// </summary>
+        /// <value><c>true</c> if record audio; otherwise, <c>false</c>.</value>
+        public static bool RecordAudio { get; set; } = true;
     }
 }

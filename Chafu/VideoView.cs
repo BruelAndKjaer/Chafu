@@ -12,6 +12,7 @@ namespace Chafu
     {
         private bool _isRecording;
         private AVCaptureMovieFileOutput _videoOutput;
+        private AVCaptureDeviceInput _audioInput;
         private UIImage _videoStartImage;
         private UIImage _videoStopImage;
         private Action<NSUrl> _onVideoFinished;
@@ -32,6 +33,7 @@ namespace Chafu
         }
 
         private bool _initialized;
+        
 
         public void Initialize(Action<NSUrl> onVideoFinished, bool startCamera = true)
         {
@@ -58,7 +60,7 @@ namespace Chafu
             _initialized = true;
         }
 
-        void WillEnterForeground(object sender, NSNotificationEventArgs e)
+        private void WillEnterForeground(object sender, NSNotificationEventArgs e)
         {
             StartCamera();
         }
@@ -89,6 +91,16 @@ namespace Chafu
 
                     if (Session.CanAddOutput(_videoOutput))
                         Session.AddOutput(_videoOutput);
+
+                    if (Configuration.RecordAudio)
+                    {
+                        var audioDevice = AVCaptureDevice.DefaultDeviceWithMediaType(AVMediaType.Audio);
+
+                        _audioInput = new AVCaptureDeviceInput(audioDevice, out error);
+                        if (Session.CanAddInput(_audioInput))
+                            Session.AddInput(_audioInput);
+                    }
+                    
 
                     var videoLayer = new AVCaptureVideoPreviewLayer(Session) {
                         Frame = PreviewContainer.Bounds,
@@ -173,17 +185,24 @@ namespace Chafu
         public void FinishedRecording(AVCaptureFileOutput captureOutput, NSUrl outputFileUrl, NSObject[] connections, 
             NSError error)
         {
-            if (Configuration.SaveToPhotosAlbum)
+            if (error != null)
             {
-                var al = new ALAssetsLibrary();
-                al.WriteVideoToSavedPhotosAlbum(outputFileUrl, (url, nsError) =>
-                {
-                    if (nsError != null)
-                        SaveToPhotosAlbumError?.Invoke(this, nsError);
-                });
+                SaveToPhotosAlbumError?.Invoke(this, error);
             }
-            
-            _onVideoFinished?.Invoke(outputFileUrl);
+            else
+            {
+                if (Configuration.SaveToPhotosAlbum)
+                {
+                    var al = new ALAssetsLibrary();
+                    al.WriteVideoToSavedPhotosAlbum(outputFileUrl, (url, nsError) =>
+                    {
+                        if (nsError != null)
+                            SaveToPhotosAlbumError?.Invoke(this, nsError);
+                    });
+                }
+
+                _onVideoFinished?.Invoke(outputFileUrl);
+            }
         }
 
         private static AVCaptureVideoOrientation GetOrientation()
