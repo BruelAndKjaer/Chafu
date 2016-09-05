@@ -1,5 +1,4 @@
 using Foundation;
-using Photos;
 using UIKit;
 
 namespace Chafu

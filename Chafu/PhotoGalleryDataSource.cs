@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Linq;
 using AVFoundation;
 using CoreFoundation;
@@ -20,9 +22,8 @@ namespace Chafu
         public override event EventHandler CameraRollUnauthorized;
 
         public PHFetchResult Videos { get; set; }
-
         public PHFetchResult Images { get; set; }
-        public List<PHAsset> AllAssets { get; } = new List<PHAsset>();
+        public ObservableCollection<PHAsset> AllAssets { get; }
         public PHCachingImageManager ImageManager { get; private set; }
 
         public PhotoGalleryDataSource(AlbumView albumView, CGSize cellSize)
@@ -40,10 +41,11 @@ namespace Chafu
             Images = PHAsset.FetchAssets(PHAssetMediaType.Image, options);
             Videos = PHAsset.FetchAssets(PHAssetMediaType.Video, options);
 
-            AllAssets.AddRange(Images.OfType<PHAsset>());
-            AllAssets.AddRange(Videos.OfType<PHAsset>());
-
-            ShowFirstImage();
+            var assets = new List<PHAsset>();
+            assets.AddRange(Images.OfType<PHAsset>());
+            assets.AddRange(Videos.OfType<PHAsset>());
+            AllAssets = new ObservableCollection<PHAsset>(assets.OrderByDescending(a => a.CreationDate.SecondsSinceReferenceDate));
+            AllAssets.CollectionChanged += AssetsCollectionChanged;
 
             PHPhotoLibrary.SharedPhotoLibrary.RegisterChangeObserver(this);
         }
@@ -64,8 +66,7 @@ namespace Chafu
             cell.Duration = asset.Duration;
 
             cell.Tag = ImageManager.RequestImageForAsset(asset, _cellSize, PHImageContentMode.AspectFill, null,
-                (result, info) =>
-                {
+                (result, info) => {
                     cell.Image = result;
                     cell.Tag = 0;
                 });
@@ -81,35 +82,104 @@ namespace Chafu
         {
             DispatchQueue.MainQueue.DispatchAsync(() =>
             {
-                var collctionChanges = changeInstance.GetFetchResultChangeDetails(Images);
-                if (collctionChanges == null) return;
+                //var collectionView = _albumView.CollectionView;
+                var imageCollectionChanges = changeInstance.GetFetchResultChangeDetails(Images);
+                var videoCollctionChanges = changeInstance.GetFetchResultChangeDetails(Videos);
 
-                Images = collctionChanges.FetchResultAfterChanges;
-
-                var collectionView = _albumView.CollectionView;
-
-                if (!collctionChanges.HasIncrementalChanges || collctionChanges.HasMoves)
-                    collectionView.ReloadData();
-                else
+                if (imageCollectionChanges != null)
                 {
-                    collectionView.PerformBatchUpdates(() =>
+                    var imagesBefore = Images;
+                    Images = imageCollectionChanges.FetchResultAfterChanges;
+
+                    foreach (var image in imagesBefore.OfType<PHAsset>())
                     {
-                        var removedIndexes = collctionChanges.RemovedIndexes;
-                        if ((removedIndexes?.Count ?? 0) != 0)
-                            collectionView.DeleteItems(IndexPathsFromIndexSet(removedIndexes, 0));
+                        if (!Images.Contains(image))
+                            AllAssets.Remove(image);
+                    }
 
-                        var insertedIndexes = collctionChanges.InsertedIndexes;
-                        if ((insertedIndexes?.Count ?? 0) != 0)
-                            collectionView.InsertItems(IndexPathsFromIndexSet(insertedIndexes, 0));
-
-                        var changedIndexes = collctionChanges.ChangedIndexes;
-                        if ((changedIndexes?.Count ?? 0) != 0)
-                            collectionView.ReloadItems(IndexPathsFromIndexSet(changedIndexes, 0));
-                    }, null);
+                    foreach (var image in Images.OfType<PHAsset>().OrderBy(a => a.CreationDate.SecondsSinceReferenceDate))
+                    {
+                        if (!AllAssets.Contains(image))
+                            AllAssets.Insert(0, image);
+                    }
                 }
 
-                ResetCachedAssets();
+                if (videoCollctionChanges != null)
+                {
+                    var videosBefore = Images;
+                    Videos = videoCollctionChanges.FetchResultAfterChanges;
+
+                    foreach (var video in videosBefore.OfType<PHAsset>())
+                    {
+                        if (!Videos.Contains(video))
+                            AllAssets.Remove(video);
+                    }
+
+                    foreach (var video in Videos.OfType<PHAsset>().OrderBy(a => a.CreationDate.SecondsSinceReferenceDate))
+                    {
+                        if (!AllAssets.Contains(video))
+                            AllAssets.Insert(0, video);
+                    }
+                }
             });
+        }
+
+        private void AssetsCollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
+        {
+            var collectionView = _albumView.CollectionView;
+
+            if (args.NewItems?.Count > 10 || args.OldItems?.Count > 10)
+            {
+                collectionView.PerformBatchUpdates(() => {}, null);
+                collectionView.ReloadData();
+            }
+            else if (args.Action == NotifyCollectionChangedAction.Move)
+            {
+                collectionView.PerformBatchUpdates(() =>
+                {
+                    var oldCount = args.OldItems.Count;
+                    var newCount = args.NewItems.Count;
+                    var indexes = new NSIndexPath[oldCount + newCount];
+
+                    var startIndex = args.OldStartingIndex;
+                    for (var i = 0; i < oldCount; i++)
+                        indexes[i] = NSIndexPath.FromRowSection(startIndex + i, 0);
+                    startIndex = args.NewStartingIndex;
+                    for (var i = 0; i < oldCount + newCount; i++)
+                        indexes[i] = NSIndexPath.FromRowSection(startIndex + i, 0);
+
+                    collectionView.ReloadItems(indexes);
+                }, null);
+            }
+            else if (args.Action == NotifyCollectionChangedAction.Remove)
+            {
+                collectionView.PerformBatchUpdates(() =>
+                {
+                    var oldStartingIndex = args.OldStartingIndex;
+                    var indexPaths = new NSIndexPath[args.OldItems.Count];
+                    for(var i = 0; i < indexPaths.Length; ++i)
+                        indexPaths[i] = NSIndexPath.FromRowSection(oldStartingIndex + i, 0);
+                    collectionView.DeleteItems(indexPaths);
+                }, null);
+            }
+            else if (args.Action == NotifyCollectionChangedAction.Add)
+            {
+                collectionView.PerformBatchUpdates(() =>
+                {
+                    var newStartingIndex = args.NewStartingIndex;
+                    var indexPaths = new NSIndexPath[args.NewItems.Count];
+                    for (var i = 0; i < indexPaths.Length; ++i)
+                        indexPaths[i] = NSIndexPath.FromRowSection(newStartingIndex + i, 0);
+                    collectionView.InsertItems(indexPaths);
+                }, null);
+            }
+            else
+            {
+                collectionView.PerformBatchUpdates(() => {}, null);
+                collectionView.ReloadData();
+            }
+
+            ResetCachedAssets();
         }
 
         private void ResetCachedAssets()
@@ -189,16 +259,12 @@ namespace Chafu
             return new Tuple<IEnumerable<CGRect>, IEnumerable<CGRect>>(addedRects, removedRects);
         }
 
-        private static NSIndexPath[] IndexPathsFromIndexSet(NSIndexSet set, nint section)
+        private static NSIndexPath[] CreateIndexPathArry(int startingPosition, int count)
         {
-            var paths = new List<NSIndexPath>();
-
-            set.EnumerateIndexes((nuint idx, ref bool stop) =>
-            {
-                paths.Add(NSIndexPath.FromItemSection((nint)idx, section));
-            });
-
-            return paths.ToArray();
+            var newIndexPaths = new NSIndexPath[count];
+            for (var i = 0; i < count; i++)
+                newIndexPaths[i] = NSIndexPath.FromRowSection(i + startingPosition, 0);
+            return newIndexPaths;
         }
 
         private static IEnumerable<NSIndexPath> IndexPathsForElementsInRect(UICollectionView collectionView, CGRect rect)
@@ -338,22 +404,17 @@ namespace Chafu
 				var targetSize = new CGSize (dimension, dimension);
 
 				PHImageManager.DefaultManager.RequestImageForAsset (_asset, targetSize, PHImageContentMode.AspectFill,
-                    options, (result, info) => DispatchQueue.MainQueue.DispatchAsync(() => onImage?.Invoke (result)));;
+                    options, (result, info) => DispatchQueue.MainQueue.DispatchAsync(() => onImage?.Invoke (result)));
 			});
         }
 
         public override ChafuMediaType CurrentMediaType { get; set; }
+
         public override void ShowFirstImage()
         {
-            if (AllAssets.Any())
-            {
-                AllAssets.Sort((a, b) => (int)a.CreationDate.Compare(b.CreationDate));
-                AllAssets.Reverse();
-
-                ChangeAsset(AllAssets.First());
-                _albumView.CollectionView.ReloadData();
-                _albumView.CollectionView.SelectItem(NSIndexPath.FromRowSection(0, 0), false, UICollectionViewScrollPosition.None);
-            }
+            ChangeAsset(AllAssets.FirstOrDefault());
+            _albumView.CollectionView.ReloadData();
+            _albumView.CollectionView.SelectItem(NSIndexPath.FromRowSection(0, 0), false, UICollectionViewScrollPosition.None);
         }
     }
 }
