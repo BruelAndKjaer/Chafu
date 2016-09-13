@@ -16,6 +16,7 @@ namespace Chafu
         public override void ItemSelected(UICollectionView collectionView, NSIndexPath indexPath)
         {
             _dataSource.ChangeImage(_dataSource.Files[indexPath.Row]);
+			_dataSource.CurrentIndexPath = indexPath;
 
             base.ItemSelected(collectionView, indexPath);
         }

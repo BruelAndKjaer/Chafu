@@ -17,6 +17,7 @@ namespace Chafu
         private MenuView _menu;
         private bool _showExtraButton;
         private bool _showDoneButton;
+		private bool _showDeleteButton;
 
         /// <summary>
         /// Gets the album collectionview data source. Use <see cref="LazyDataSource"/> to create your own Data Source.
@@ -60,6 +61,17 @@ namespace Chafu
             }
         }
 
+		public bool ShowDeleteButton
+		{
+			get { return _showDeleteButton; }
+			set
+			{
+				_showDeleteButton = value;
+				if (_menu != null)
+					_menu.DeleteButtonHidden = !_showDeleteButton;
+			}
+		}
+
         public override void ViewDidLoad()
         {
             base.ViewDidLoad();
@@ -101,6 +113,7 @@ namespace Chafu
 
             _menu.ExtraButtonHidden = !ShowExtraButton;
             _menu.DoneButtonHidden = !ShowDoneButton;
+			_menu.DeleteButtonHidden = !ShowDeleteButton;
         }
 
         public override void ViewDidAppear(bool animated)
@@ -110,6 +123,7 @@ namespace Chafu
             _menu.Done += OnDone;
             _menu.Closed += OnClosed;
             _menu.Extra += OnExtra;
+			_menu.Deleted += OnDelete;
 
             AlbumDataSource.ShowFirstImage();
         }
@@ -119,6 +133,7 @@ namespace Chafu
             _menu.Done -= OnDone;
             _menu.Closed -= OnClosed;
             _menu.Extra -= OnExtra;
+			_menu.Deleted -= OnDelete;
 
             base.ViewDidDisappear(animated);
         }
@@ -137,6 +152,11 @@ namespace Chafu
         {
             Extra?.Invoke(this, EventArgs.Empty);
         }
+
+		private void OnDelete(object sender, EventArgs eventArgs)
+		{
+			AlbumDataSource.DeleteCurrentMediaItem();
+		}
 
         private void OnDone(object sender, EventArgs e)
         {
@@ -175,6 +195,8 @@ namespace Chafu
             {
                 _menu.Done -= OnDone;
                 _menu.Closed -= OnClosed;
+				_menu.Extra -= OnExtra;
+				_menu.Deleted -= OnDelete;
             }
 
             base.Dispose(disposing);

@@ -416,5 +416,10 @@ namespace Chafu
             _albumView.CollectionView.ReloadData();
             _albumView.CollectionView.SelectItem(NSIndexPath.FromRowSection(0, 0), false, UICollectionViewScrollPosition.None);
         }
-    }
+
+		public override void DeleteCurrentMediaItem()
+		{
+			throw new NotImplementedException();
+		}
+	}
 }

@@ -68,7 +68,8 @@ namespace Sample
                 LazyDataSource = (view, size) => new LocalFilesDataSource(view, size) {ImagesPath = TempPath()},
                 LazyDelegate = (view, source) => new LocalFilesDelegate(view, (LocalFilesDataSource) source),
                 ShowExtraButton = true,
-                ShowDoneButton = false
+                ShowDoneButton = false,
+				ShowDeleteButton = true
             };
 
             albumViewController.Extra += (sender, args) =>

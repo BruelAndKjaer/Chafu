@@ -24,6 +24,8 @@ namespace Chafu
         public readonly List<MediaItem> Files = new List<MediaItem>();
         private string _imagesPath;
 
+		public NSIndexPath CurrentIndexPath { get; set; }
+
         public override ChafuMediaType CurrentMediaType { get; set; }
 
         public string CurrentMediaPath { get; private set; }
@@ -61,9 +63,9 @@ namespace Chafu
             Files.Clear();
             var items = files.Select(file =>
             {
-                if (MovieFileExtensions.Any(ex => file.ToLower().EndsWith(ex)))
+                if (MovieFileExtensions.Any(ex => file.ToLower().EndsWith(ex, StringComparison.Ordinal)))
                     return new MediaItem {MediaType = ChafuMediaType.Video, Path = "file://" + file};
-                if (ImageFileExtensions.Any(ex => file.ToLower().EndsWith(ex)))
+                if (ImageFileExtensions.Any(ex => file.ToLower().EndsWith(ex, StringComparison.Ordinal)))
                     return new MediaItem {MediaType = ChafuMediaType.Image, Path = file};
                 return null;
             }).Where(f => f != null);
@@ -235,10 +237,32 @@ namespace Chafu
             if (!Files.Any()) return;
 
             ChangeImage(Files.First());
+			CurrentIndexPath = NSIndexPath.FromRowSection(0, 0);
             _albumView?.CollectionView.ReloadData();
-            _albumView?.CollectionView.SelectItem(NSIndexPath.FromRowSection(0, 0), false,
+            _albumView?.CollectionView.SelectItem(CurrentIndexPath, false,
                 UICollectionViewScrollPosition.None);
         }
+
+		public override void DeleteCurrentMediaItem()
+		{
+			if (CurrentIndexPath == null) return;
+			var mediaItem = Files.FirstOrDefault(f => f.Path == CurrentMediaPath);
+			if (mediaItem == null) return;
+
+			_albumView.CollectionView.PerformBatchUpdates(() =>
+			{
+				Files.Remove(mediaItem);
+				_albumView.ImageCropView.Image = null;
+				_albumView.ImageCropView.ImageSize = CGSize.Empty;
+				_albumView.CollectionView.DeleteItems(new [] { CurrentIndexPath });
+				File.Delete(CurrentMediaPath);
+
+				CurrentMediaPath = null;
+				CurrentIndexPath = null;
+			}, null);
+
+			ShowFirstImage();
+		}
 
         public override event EventHandler CameraRollUnauthorized;
     }

@@ -108,6 +108,9 @@
   </ItemGroup>
   <ItemGroup>
     <BundleResource Include="Resources\ic_check.png" />
+    <BundleResource Include="Resources\ic_delete.png" />
+    <BundleResource Include="Resources\ic_delete%403x.png" />
+    <BundleResource Include="Resources\ic_delete%402x.png" />
   </ItemGroup>
   <ItemGroup>
     <BundleResource Include="Resources\ic_check%402x.png" />

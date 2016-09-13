@@ -16,6 +16,12 @@ namespace Chafu
         /// <value>The color of the tint.</value>
         public static UIColor TintColor { get; set; } = UIColor.FromRGBA(0, 0x96, 0x88, 255);
 
+		/// <summary>
+		/// Gets or sets the tint color of the delete button.
+		/// </summary>
+		/// <value>The color of the tint.</value>
+		public static UIColor DeleteTintColor { get; set; } = UIColor.FromRGBA(230, 46, 52, 255);
+
         /// <summary>
         /// Gets or sets the background color.
         /// </summary>
@@ -135,6 +141,12 @@ namespace Chafu
         /// </summary>
         /// <value>The extra image.</value>
         public static UIImage ExtraImage { get; set; }
+
+		/// <summary>
+		/// Gets or sets the delete button image.
+		/// </summary>
+		/// <value>The delete button image.</value>
+		public static UIImage DeleteImage { get; set; }
 
         /// <summary>
         /// Gets or sets whether Statusbar should be hidden.
