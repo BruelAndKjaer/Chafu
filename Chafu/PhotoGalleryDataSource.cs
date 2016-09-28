@@ -412,9 +412,13 @@ namespace Chafu
 
         public override void ShowFirstImage()
         {
-            ChangeAsset(AllAssets.FirstOrDefault());
-            _albumView.CollectionView.ReloadData();
-            _albumView.CollectionView.SelectItem(NSIndexPath.FromRowSection(0, 0), false, UICollectionViewScrollPosition.None);
+            DispatchQueue.MainQueue.DispatchAsync(() =>
+            {
+                ChangeAsset(AllAssets.FirstOrDefault());
+                _albumView.CollectionView.ReloadData();
+                _albumView.CollectionView.SelectItem(NSIndexPath.FromRowSection(0, 0), false, UICollectionViewScrollPosition.None);
+
+            });
         }
 
 		public override void DeleteCurrentMediaItem()

@@ -222,6 +222,8 @@ namespace Chafu
 
 		    ChangeMode(Configuration.ModeOrder == ModeOrder.LibraryFirst ? 
                 Mode.Library : Mode.Camera);
+
+            AlbumDataSource.ShowFirstImage();
 		}
 
         public override void ViewWillDisappear (bool animated)
