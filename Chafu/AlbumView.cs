@@ -11,7 +11,7 @@ namespace Chafu
         private CGPoint _dragStartPos = CGPoint.Empty;
         private nfloat _cropBottomY;
         private float _dragDiff = 20f;
-        private float _imageCropViewMinimalVisibleHeight = 100;
+        private float _imageCropViewMinimalVisibleHeight = 50;
         private nfloat _imaginaryCollectionViewOffsetStartPosY;
 
         public static readonly int ImageCropViewOriginalConstraintTop = 0;
