@@ -58,14 +58,14 @@ namespace Chafu
             base.ViewDidLoad();
             View.BackgroundColor = Configuration.BackgroundColor;
 
+            if (CellSize == CGSize.Empty)
+                CellSize = CalculateCellSize();
+
             _album = new AlbumView(CellSize)
             {
                 TranslatesAutoresizingMaskIntoConstraints = false,
                 BackgroundColor = Configuration.BackgroundColor
             };
-
-            if (CellSize == CGSize.Empty)
-                CellSize = CalculateCellSize();
 
             AlbumDataSource = LazyDataSource(_album, CellSize);
             AlbumDelegate = LazyDelegate(_album, AlbumDataSource);
