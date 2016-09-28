@@ -65,7 +65,7 @@ namespace Chafu
             cell.IsVideo = asset.MediaType == PHAssetMediaType.Video;
             cell.Duration = asset.Duration;
 
-            cell.Tag = ImageManager.RequestImageForAsset(asset, _cellSize, PHImageContentMode.AspectFill, null,
+            cell.Tag = ImageManager.RequestImageForAsset(asset, _cellSize, PHImageContentMode.AspectFit, null,
                 (result, info) => {
                     cell.Image = result;
                     cell.Tag = 0;

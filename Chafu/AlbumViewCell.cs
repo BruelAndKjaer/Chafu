@@ -76,7 +76,14 @@ namespace Chafu
 
         private void CreateView()
         {
-            _imageView = new UIImageView {TranslatesAutoresizingMaskIntoConstraints = false};
+            ClipsToBounds = true;
+
+            _imageView = new UIImageView
+            {
+                TranslatesAutoresizingMaskIntoConstraints = false,
+                ContentMode = UIViewContentMode.ScaleAspectFill
+            };
+
             _videoImage = new UIImageView
             {
                 TranslatesAutoresizingMaskIntoConstraints = false,
