@@ -61,18 +61,20 @@ namespace Chafu
             var files = fileInfo.OrderByDescending(f => f.CreationTime).Select(f => f.FullName).Distinct();
 
             Files.Clear();
-            var items = files.Select(file =>
-            {
-                if (MovieFileExtensions.Any(ex => file.ToLower().EndsWith(ex, StringComparison.Ordinal)))
-                    return new MediaItem {MediaType = ChafuMediaType.Video, Path = "file://" + file};
-                if (ImageFileExtensions.Any(ex => file.ToLower().EndsWith(ex, StringComparison.Ordinal)))
-                    return new MediaItem {MediaType = ChafuMediaType.Image, Path = file};
-                return null;
-            }).Where(f => f != null);
+            var items = files.Select(GetMediaItem).Where(f => f != null);
 
             Files.AddRange(items);
 
             ShowFirstImage();
+        }
+
+        private static MediaItem GetMediaItem(string file)
+        {
+            if (MovieFileExtensions.Any(ex => file.ToLower().EndsWith(ex, StringComparison.Ordinal)))
+                return new MediaItem { MediaType = ChafuMediaType.Video, Path = "file://" + file };
+            if (ImageFileExtensions.Any(ex => file.ToLower().EndsWith(ex, StringComparison.Ordinal)))
+                return new MediaItem { MediaType = ChafuMediaType.Image, Path = file };
+            return null;
         }
 
         public override UICollectionViewCell GetCell(UICollectionView collectionView, NSIndexPath indexPath)
