@@ -141,7 +141,7 @@ namespace Chafu
         private void Panned(UIPanGestureRecognizer sender)
         {
             var currentPos = sender.LocationInView(this);
-
+            float alpha = 1.0f;
             if (sender.State == UIGestureRecognizerState.Began)
             {
                 var view = sender.View;
@@ -231,7 +231,7 @@ namespace Chafu
                 {
                     // The largest movement
                     ImageCropView.Scrollable = false;
-
+                    alpha = 0.3f;
                     MovieViewConstraintTop.Constant = ImageCropViewConstraintTop.Constant = _imageCropViewMinimalVisibleHeight -
                                                           ImageCropView.Frame.Height;
                     CollectionViewConstraintHeight.Constant = Frame.Height - _imageCropViewMinimalVisibleHeight;
@@ -243,6 +243,7 @@ namespace Chafu
                 {
                     // Get back to the original position
                     ImageCropView.Scrollable = true;
+                    alpha = 1.0f;
                     MovieViewConstraintTop.Constant = ImageCropViewConstraintTop.Constant = ImageCropViewOriginalConstraintTop;
                     CollectionViewConstraintHeight.Constant = Frame.Height - ImageCropViewOriginalConstraintTop -
                                                               ImageCropView.Frame.Height;
@@ -251,7 +252,11 @@ namespace Chafu
                 }
             }
 
-            AnimateNotify(0.3, 0, UIViewAnimationOptions.CurveEaseOut, LayoutIfNeeded, finished => { });
+            AnimateNotify(0.3, 0, UIViewAnimationOptions.CurveEaseOut, () =>
+            {
+                ImageCropView.Alpha = alpha;
+                LayoutIfNeeded();
+            }, finished => { });
         }
 
         public AlbumView(CGSize cellSize)
