@@ -18,6 +18,7 @@ namespace Chafu
             {
                 _albumView.ImageCropView.Scrollable = true;
                 _albumView.ImageCropView.Alpha = 1.0f;
+                _albumView.MovieView.Alpha = 1.0f;
                 _albumView.MovieViewConstraintTop.Constant =
                     _albumView.ImageCropViewConstraintTop.Constant = AlbumView.ImageCropViewOriginalConstraintTop;
                 _albumView.CollectionViewConstraintHeight.Constant =

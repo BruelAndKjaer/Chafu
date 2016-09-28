@@ -255,6 +255,7 @@ namespace Chafu
             AnimateNotify(0.3, 0, UIViewAnimationOptions.CurveEaseOut, () =>
             {
                 ImageCropView.Alpha = alpha;
+                MovieView.Alpha = alpha;
                 LayoutIfNeeded();
             }, finished => { });
         }
