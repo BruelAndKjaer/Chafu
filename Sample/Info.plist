@@ -13,7 +13,7 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>MinimumOSVersion</key>
-	<string></string>
+	<string>8.0</string>
 	<key>UIDeviceFamily</key>
 	<array>
 		<integer>1</integer>
@@ -40,5 +40,9 @@
 	</array>
 	<key>CFBundleName</key>
 	<string>Chafu Sample</string>
+  <key>NSCameraUsageDescription</key>
+  <string>Chafu needs access to the camera to take photos and video.</string>
+  <key>NSPhotoLibraryUsageDescription</key>
+  <string>Chafu needs access to the photo library.</string>
 </dict>
 </plist>
