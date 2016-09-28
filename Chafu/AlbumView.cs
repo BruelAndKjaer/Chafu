@@ -120,7 +120,7 @@ namespace Chafu
             {
                 ShouldRecognizeSimultaneously = (recognizer, gestureRecognizer) => true
             };
-            CollectionView.AddGestureRecognizer(panGesture);
+            AddGestureRecognizer(panGesture);
 
             CollectionViewConstraintHeight.Constant = Frame.Height - ImageCropView.Frame.Height -
                                                       ImageCropViewOriginalConstraintTop;
