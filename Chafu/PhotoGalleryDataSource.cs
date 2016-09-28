@@ -79,12 +79,15 @@ namespace Chafu
             cell.Duration = asset.Duration;
 
             cell.Tag = ImageManager.RequestImageForAsset(asset, _cellSize, PHImageContentMode.AspectFit, null,
-                (result, info) => {
-                    cell.Image = result;
-                    cell.Tag = 0;
-                });
+                (result, info) => SetImageCellImage(cell, result));
 
             return cell;
+        }
+
+        private static void SetImageCellImage(AlbumViewCell cell, UIImage image)
+        {
+            cell.Image = image;
+            cell.Tag = 0;
         }
 
         public override nint NumberOfSections(UICollectionView collectionView) => 1;
@@ -100,41 +103,31 @@ namespace Chafu
                 var videoCollctionChanges = changeInstance.GetFetchResultChangeDetails(Videos);
 
                 if (imageCollectionChanges != null)
-                {
-                    var imagesBefore = Images;
-                    Images = imageCollectionChanges.FetchResultAfterChanges;
-
-                    foreach (var image in imagesBefore.OfType<PHAsset>())
-                    {
-                        if (!Images.Contains(image))
-                            AllAssets.Remove(image);
-                    }
-
-                    foreach (var image in Images.OfType<PHAsset>().OrderBy(a => a.CreationDate.SecondsSinceReferenceDate))
-                    {
-                        if (!AllAssets.Contains(image))
-                            AllAssets.Insert(0, image);
-                    }
-                }
+                    Images = AdjustAssets(Images, imageCollectionChanges);
 
                 if (videoCollctionChanges != null)
-                {
-                    var videosBefore = Images;
-                    Videos = videoCollctionChanges.FetchResultAfterChanges;
-
-                    foreach (var video in videosBefore.OfType<PHAsset>())
-                    {
-                        if (!Videos.Contains(video))
-                            AllAssets.Remove(video);
-                    }
-
-                    foreach (var video in Videos.OfType<PHAsset>().OrderBy(a => a.CreationDate.SecondsSinceReferenceDate))
-                    {
-                        if (!AllAssets.Contains(video))
-                            AllAssets.Insert(0, video);
-                    }
-                }
+                    Videos = AdjustAssets(Videos, videoCollctionChanges);
             });
+        }
+
+        private PHFetchResult AdjustAssets(PHFetchResult assets, PHFetchResultChangeDetails changes)
+        {
+            var before = assets;
+            assets = changes.FetchResultAfterChanges;
+
+            foreach (var asset in before.OfType<PHAsset>())
+            {
+                if (!assets.Contains(asset))
+                    AllAssets.Remove(asset);
+            }
+
+            foreach (var asset in assets.OfType<PHAsset>().OrderBy(a => a.CreationDate.SecondsSinceReferenceDate))
+            {
+                if (!AllAssets.Contains(asset))
+                    AllAssets.Insert(0, asset);
+            }
+
+            return assets;
         }
 
         private void AssetsCollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
@@ -143,35 +136,22 @@ namespace Chafu
 
             if (args.NewItems?.Count > 10 || args.OldItems?.Count > 10)
             {
-                collectionView.PerformBatchUpdates(() => {}, null);
-                collectionView.ReloadData();
+                ReloadCollectionView(collectionView);
             }
             else if (args.Action == NotifyCollectionChangedAction.Move)
             {
                 collectionView.PerformBatchUpdates(() =>
                 {
-                    var oldCount = args.OldItems.Count;
-                    var newCount = args.NewItems.Count;
-                    var indexes = new NSIndexPath[oldCount + newCount];
-
-                    var startIndex = args.OldStartingIndex;
-                    for (var i = 0; i < oldCount; i++)
-                        indexes[i] = NSIndexPath.FromRowSection(startIndex + i, 0);
-                    startIndex = args.NewStartingIndex;
-                    for (var i = 0; i < oldCount + newCount; i++)
-                        indexes[i] = NSIndexPath.FromRowSection(startIndex + i, 0);
-
-                    collectionView.ReloadItems(indexes);
+                    var indexPaths = GetAllChangedIndexPaths(args.OldItems.Count,
+                        args.NewItems.Count, args.OldStartingIndex, args.NewStartingIndex);
+                    collectionView.ReloadItems(indexPaths);
                 }, null);
             }
             else if (args.Action == NotifyCollectionChangedAction.Remove)
             {
                 collectionView.PerformBatchUpdates(() =>
                 {
-                    var oldStartingIndex = args.OldStartingIndex;
-                    var indexPaths = new NSIndexPath[args.OldItems.Count];
-                    for(var i = 0; i < indexPaths.Length; ++i)
-                        indexPaths[i] = NSIndexPath.FromRowSection(oldStartingIndex + i, 0);
+                    var indexPaths = GetIndexPaths(args.OldItems.Count, args.OldStartingIndex);
                     collectionView.DeleteItems(indexPaths);
                 }, null);
             }
@@ -179,20 +159,46 @@ namespace Chafu
             {
                 collectionView.PerformBatchUpdates(() =>
                 {
-                    var newStartingIndex = args.NewStartingIndex;
-                    var indexPaths = new NSIndexPath[args.NewItems.Count];
-                    for (var i = 0; i < indexPaths.Length; ++i)
-                        indexPaths[i] = NSIndexPath.FromRowSection(newStartingIndex + i, 0);
+                    var indexPaths = GetIndexPaths(args.NewItems.Count, args.NewStartingIndex);
                     collectionView.InsertItems(indexPaths);
                 }, null);
             }
             else
             {
-                collectionView.PerformBatchUpdates(() => {}, null);
-                collectionView.ReloadData();
+                ReloadCollectionView(collectionView);
             }
 
             ResetCachedAssets();
+        }
+
+        private static void ReloadCollectionView(UICollectionView collectionView)
+        {
+            collectionView.PerformBatchUpdates(() => { }, null);
+            collectionView.ReloadData();
+        }
+
+        private static NSIndexPath[] GetAllChangedIndexPaths(int oldCount, int newCount, int oldStartIndex,
+            int newStartIndex)
+        {
+            var indexes = new NSIndexPath[oldCount + newCount];
+
+            var startIndex = oldStartIndex;
+            for (var i = 0; i < oldCount; i++)
+                indexes[i] = NSIndexPath.FromRowSection(startIndex + i, 0);
+            startIndex = newStartIndex;
+            for (var i = 0; i < oldCount + newCount; i++)
+                indexes[i] = NSIndexPath.FromRowSection(startIndex + i, 0);
+
+            return indexes;
+        }
+
+        private static NSIndexPath[] GetIndexPaths(int itemCount, int startingIndex)
+        {
+            var indexPaths = new NSIndexPath[itemCount];
+            for (var i = 0; i < indexPaths.Length; ++i)
+                indexPaths[i] = NSIndexPath.FromRowSection(startingIndex + i, 0);
+
+            return indexPaths;
         }
 
         private void ResetCachedAssets()
@@ -204,28 +210,15 @@ namespace Chafu
         public void UpdateCachedAssets()
         {
             var collectionView = _albumView.CollectionView;
-
-            var preheatRect = collectionView.Bounds;
-            preheatRect = CGRect.Inflate(preheatRect, 0.0f, 0.5f*preheatRect.Height);
+            var preheatRect = CGRect.Inflate(collectionView.Bounds, 0.0f, 0.5f* collectionView.Bounds.Height);
 
             var delta = Math.Abs(preheatRect.GetMidY() - _previousPreheatRect.GetMidY());
             if (delta > collectionView.Bounds.Height/3.0)
             {
-                var addedIndexPaths = new List<NSIndexPath>();
-                var removedIndexPaths = new List<NSIndexPath>();
-
                 var rects = ComputeDifferenceBetweenRect(_previousPreheatRect, preheatRect);
 
-                foreach (var rect in rects.Item1) {
-                    var indexPaths = IndexPathsForElementsInRect(collectionView, rect);
-                    addedIndexPaths.AddRange(indexPaths);
-                }
-
-                foreach (var rect in rects.Item2) {
-                    var indexPaths = IndexPathsForElementsInRect(collectionView, rect);
-                    removedIndexPaths.AddRange(indexPaths);
-                }
-
+                var addedIndexPaths = GetIndexPathsForRects(collectionView, rects.Item1);
+                var removedIndexPaths = GetIndexPathsForRects(collectionView, rects.Item2);
                 var assetsToStartCaching = AssetsAtIndexPaths(addedIndexPaths);
                 var assetsToStopCaching = AssetsAtIndexPaths(removedIndexPaths);
 
@@ -236,6 +229,16 @@ namespace Chafu
 
                 _previousPreheatRect = preheatRect;
             }
+        }
+
+        private static IEnumerable<NSIndexPath> GetIndexPathsForRects(UICollectionView collectionView, IEnumerable<CGRect> rects)
+        {
+            var indexPaths = new List<NSIndexPath>();
+
+            foreach (var rect in rects)
+                indexPaths.AddRange(IndexPathsForElementsInRect(collectionView, rect));
+
+            return indexPaths;
         }
 
         private static Tuple<IEnumerable<CGRect>, IEnumerable<CGRect>> ComputeDifferenceBetweenRect(
@@ -252,32 +255,16 @@ namespace Chafu
             var addedRects = new List<CGRect>();
             var removedRects = new List<CGRect>();
 
-            if (newMaxY > oldMaxY) {
-                var rectToAdd = new CGRect(newRect.X, oldMaxY, newRect.Width, newMaxY - oldMaxY);
-                addedRects.Add(rectToAdd);
-            }
-            if (oldMinY > newMinY) {
-                var rectToAdd = new CGRect(newRect.X, newMinY, newRect.Width, oldMinY - newMinY);
-                addedRects.Add(rectToAdd);
-            }
-            if (newMaxY < oldMaxY) {
-                var rectToRemove = new CGRect(newRect.X, newMaxY, newRect.Width, oldMaxY - newMaxY);
-                removedRects.Add(rectToRemove);
-            }
-            if (oldMinY < newMinY) {
-                var rectToRemove = new CGRect(newRect.X, oldMinY, newRect.Width, newMinY - oldMinY);
-                removedRects.Add(rectToRemove);
-            }
+            if (newMaxY > oldMaxY)
+                addedRects.Add(new CGRect(newRect.X, oldMaxY, newRect.Width, newMaxY - oldMaxY));
+            if (oldMinY > newMinY)
+                addedRects.Add(new CGRect(newRect.X, newMinY, newRect.Width, oldMinY - newMinY));
+            if (newMaxY < oldMaxY)
+                removedRects.Add(new CGRect(newRect.X, newMaxY, newRect.Width, oldMaxY - newMaxY));
+            if (oldMinY < newMinY)
+                removedRects.Add(new CGRect(newRect.X, oldMinY, newRect.Width, newMinY - oldMinY));
 
             return new Tuple<IEnumerable<CGRect>, IEnumerable<CGRect>>(addedRects, removedRects);
-        }
-
-        private static NSIndexPath[] CreateIndexPathArry(int startingPosition, int count)
-        {
-            var newIndexPaths = new NSIndexPath[count];
-            for (var i = 0; i < count; i++)
-                newIndexPaths[i] = NSIndexPath.FromRowSection(i + startingPosition, 0);
-            return newIndexPaths;
         }
 
         private static IEnumerable<NSIndexPath> IndexPathsForElementsInRect(UICollectionView collectionView, CGRect rect)
@@ -298,7 +285,7 @@ namespace Chafu
                 paths.Select(path => AllAssets[(int)path.Item]).ToArray();
         }
 
-        public void CheckPhotoAuthorization()
+        public void CheckPhotoAuthorization(Action onAuthorized)
         {
             PHPhotoLibrary.RequestAuthorization(status =>
             {
@@ -309,9 +296,7 @@ namespace Chafu
                         CameraRollUnauthorized?.Invoke(this, EventArgs.Empty);
                         break;
                     case PHAuthorizationStatus.Authorized:
-                        ImageManager = new PHCachingImageManager();
-                        if (AllAssets != null && AllAssets.Any())
-                            ChangeAsset(AllAssets.First());
+                        onAuthorized?.Invoke();
                         break;
                 }
             });
@@ -329,50 +314,109 @@ namespace Chafu
             });
 
             if (asset.MediaType == PHAssetMediaType.Image)
-            {
-                DispatchQueue.DefaultGlobalQueue.DispatchAsync(() =>
-                {
-                    var options = new PHImageRequestOptions { NetworkAccessAllowed = true };
-                    var assetSize = new CGSize(asset.PixelWidth, asset.PixelHeight);
-
-                    ImageManager?.RequestImageForAsset(asset, assetSize,
-                        PHImageContentMode.AspectFill, options,
-                        (result, info) =>
-                        {
-                            DispatchQueue.MainQueue.DispatchAsync(() =>
-                            {
-                                CurrentMediaType = ChafuMediaType.Image;
-                                _albumView.ImageCropView.Hidden = false;
-                                _albumView.MovieView.Hidden = true;
-                                _albumView.ImageCropView.ImageSize = assetSize;
-                                _albumView.ImageCropView.Image = result;
-                            });
-                        });
-                });
-            }
+                ChangeImage(asset, ImageManager, new PHImageRequestOptions { NetworkAccessAllowed = true });
             else if (asset.MediaType == PHAssetMediaType.Video)
-            {
-                DispatchQueue.DefaultGlobalQueue.DispatchAsync(() =>
-                {
-                    var options = new PHVideoRequestOptions { NetworkAccessAllowed = true };
-                    ImageManager?.RequestAvAsset(asset, options,
-                        (ass, mix, info) =>
-                        {
-                            DispatchQueue.MainQueue.DispatchAsync(() =>
-                            {
-                                CurrentMediaType = ChafuMediaType.Video;
-                                _albumView.ImageCropView.Hidden = true;
-                                _albumView.MovieView.Hidden = false;
-
-                                var urlAsset = ass as AVUrlAsset;
-                                if (urlAsset == null) return;
-                                _albumView.MoviePlayerController.ContentUrl = urlAsset.Url;
-                                _albumView.MoviePlayerController.PrepareToPlay();
-                            });
-                        });
-                });
-            }
+                ChangeVideo(asset, ImageManager, new PHVideoRequestOptions { NetworkAccessAllowed = true });
         }
+
+        private void ChangeImage(PHAsset asset, PHImageManager imageManager, PHImageRequestOptions options)
+        {
+            var assetSize = new CGSize(asset.PixelWidth, asset.PixelHeight);
+
+            DispatchQueue.DefaultGlobalQueue.DispatchAsync(() =>
+                imageManager?.RequestImageForAsset(asset, assetSize,
+                    PHImageContentMode.AspectFill, options,
+                    (result, info) =>
+                        DispatchQueue.MainQueue.DispatchAsync(() =>
+                        {
+                            CurrentMediaType = ChafuMediaType.Image;
+                            _albumView.ImageCropView.Hidden = false;
+                            _albumView.MovieView.Hidden = true;
+                            _albumView.ImageCropView.ImageSize = assetSize;
+                            _albumView.ImageCropView.Image = result;
+                        })));
+        }
+
+        private void ChangeVideo(PHAsset asset, PHImageManager imageManager, PHVideoRequestOptions options)
+        {
+            DispatchQueue.DefaultGlobalQueue.DispatchAsync(() =>
+                imageManager?.RequestAvAsset(asset, options,
+                    (ass, mix, info) =>
+                        DispatchQueue.MainQueue.DispatchAsync(() => 
+                        {
+                            CurrentMediaType = ChafuMediaType.Video;
+                            _albumView.ImageCropView.Hidden = true;
+                            _albumView.MovieView.Hidden = false;
+
+                            var urlAsset = ass as AVUrlAsset;
+                            if (urlAsset == null) return;
+                            _albumView.MoviePlayerController.ContentUrl = urlAsset.Url;
+                            _albumView.MoviePlayerController.PrepareToPlay();
+                        })));
+        }
+
+        public override void GetCroppedImage(Action<UIImage> onImage)
+        {
+            var cropRect = GetCropRect(_albumView.ImageCropView);
+
+            DispatchQueue.DefaultGlobalQueue.DispatchAsync (() =>
+            {
+                var options = GetRequestOptions(cropRect);
+                var targetSize = GetTargetSize(cropRect, _asset, _scale);
+
+				PHImageManager.DefaultManager.RequestImageForAsset (_asset, targetSize, PHImageContentMode.AspectFill,
+                    options, (result, info) => DispatchQueue.MainQueue.DispatchAsync(() => onImage?.Invoke (result)));
+			});
+        }
+
+        private static PHImageRequestOptions GetRequestOptions(CGRect cropRect) =>
+            new PHImageRequestOptions {
+					DeliveryMode = PHImageRequestOptionsDeliveryMode.HighQualityFormat,
+					NetworkAccessAllowed = true,
+					NormalizedCropRect = cropRect,
+					ResizeMode = PHImageRequestOptionsResizeMode.Exact
+            };
+
+        private static CGRect GetCropRect(UIScrollView view)
+        {
+            var normalizedX = view.ContentOffset.X / view.ContentSize.Width;
+            var normalizedY = view.ContentOffset.Y / view.ContentSize.Height;
+
+            var normalizedWidth = view.Frame.Width / view.ContentSize.Width;
+            var normalizedHeight = view.Frame.Height / view.ContentSize.Height;
+
+            var cropRect = new CGRect(normalizedX, normalizedY, normalizedWidth, normalizedHeight);
+
+            return cropRect;
+        }
+
+        private static CGSize GetTargetSize(CGRect cropRect, PHAsset asset, nfloat scale)
+        {
+            var targetWidth = Math.Floor((float)asset.PixelWidth * cropRect.Width);
+            var targetHeight = Math.Floor((float)asset.PixelHeight * cropRect.Height);
+            var dimension = Math.Max(Math.Min(targetHeight, targetWidth), 1024 * scale);
+
+            var targetSize = new CGSize(dimension, dimension);
+
+            return targetSize;
+        }
+
+        public override ChafuMediaType CurrentMediaType { get; set; }
+
+        public override void ShowFirstImage()
+        {
+            DispatchQueue.MainQueue.DispatchAsync(() =>
+            {
+                ChangeAsset(AllAssets.FirstOrDefault());
+                _albumView.CollectionView.ReloadData();
+                _albumView.CollectionView.SelectItem(NSIndexPath.FromRowSection(0, 0), false, UICollectionViewScrollPosition.None);
+            });
+        }
+
+		public override void DeleteCurrentMediaItem()
+		{
+			throw new NotImplementedException();
+		}
 
         protected override void Dispose(bool disposing)
         {
@@ -387,56 +431,5 @@ namespace Chafu
 
             base.Dispose(disposing);
         }
-
-        public override void GetCroppedImage(Action<UIImage> onImage)
-        {
-			var scale = UIScreen.MainScreen.Scale;
-
-            var view = _albumView.ImageCropView;
-
-            var normalizedX = view.ContentOffset.X / view.ContentSize.Width;
-            var normalizedY = view.ContentOffset.Y / view.ContentSize.Height;
-
-            var normalizedWidth = view.Frame.Width / view.ContentSize.Width;
-            var normalizedHeight = view.Frame.Height / view.ContentSize.Height;
-
-            var cropRect = new CGRect(normalizedX, normalizedY, normalizedWidth, normalizedHeight);
-
-            DispatchQueue.DefaultGlobalQueue.DispatchAsync (() => {
-				var options = new PHImageRequestOptions {
-					DeliveryMode = PHImageRequestOptionsDeliveryMode.HighQualityFormat,
-					NetworkAccessAllowed = true,
-					NormalizedCropRect = cropRect,
-					ResizeMode = PHImageRequestOptionsResizeMode.Exact
-				};
-
-				var targetWidth = Math.Floor ((float)_asset.PixelWidth * cropRect.Width);
-				var targetHeight = Math.Floor ((float)_asset.PixelHeight * cropRect.Height);
-				var dimension = Math.Max (Math.Min (targetHeight, targetWidth), 1024 * scale);
-
-				var targetSize = new CGSize (dimension, dimension);
-
-				PHImageManager.DefaultManager.RequestImageForAsset (_asset, targetSize, PHImageContentMode.AspectFill,
-                    options, (result, info) => DispatchQueue.MainQueue.DispatchAsync(() => onImage?.Invoke (result)));
-			});
-        }
-
-        public override ChafuMediaType CurrentMediaType { get; set; }
-
-        public override void ShowFirstImage()
-        {
-            DispatchQueue.MainQueue.DispatchAsync(() =>
-            {
-                ChangeAsset(AllAssets.FirstOrDefault());
-                _albumView.CollectionView.ReloadData();
-                _albumView.CollectionView.SelectItem(NSIndexPath.FromRowSection(0, 0), false, UICollectionViewScrollPosition.None);
-
-            });
-        }
-
-		public override void DeleteCurrentMediaItem()
-		{
-			throw new NotImplementedException();
-		}
-	}
+    }
 }
