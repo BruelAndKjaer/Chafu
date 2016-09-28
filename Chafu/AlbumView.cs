@@ -24,7 +24,7 @@ namespace Chafu
         public NSLayoutConstraint CollectionViewConstraintHeight { get; private set; }
         public NSLayoutConstraint CollectionViewConstraintTop { get; private set; }
         public UICollectionView CollectionView { get; private set; }
-        public CGSize CellSize { get; set; } = new CGSize(100, 100);
+        public CGSize CellSize { get; }
 
         public DragDirection DragDirection { get; set; }
 
@@ -254,7 +254,11 @@ namespace Chafu
             AnimateNotify(0.3, 0, UIViewAnimationOptions.CurveEaseOut, LayoutIfNeeded, finished => { });
         }
 
-        public AlbumView() { CreateView(); }
-        public AlbumView(IntPtr handle) : base(handle) { CreateView(); }
+        public AlbumView(CGSize cellSize)
+        {
+            CellSize = cellSize;
+            CreateView();
+        }
+        public AlbumView(IntPtr handle) : base(handle) { }
     }
 }

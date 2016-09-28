@@ -85,10 +85,13 @@ namespace Chafu
 				BackgroundColor = Configuration.BackgroundColor,
 				TranslatesAutoresizingMaskIntoConstraints = false
 			};
-			AlbumView = new AlbumView {
+
+            if (CellSize == CGSize.Empty)
+		        CellSize = CalculateCellSize();
+
+			AlbumView = new AlbumView(CellSize) {
 				BackgroundColor = Configuration.BackgroundColor,
-				TranslatesAutoresizingMaskIntoConstraints = false,
-                CellSize = CellSize
+				TranslatesAutoresizingMaskIntoConstraints = false
             };
 
 			View.AddSubviews (_cameraView, AlbumView);
