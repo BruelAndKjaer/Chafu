@@ -44,6 +44,7 @@
     <Compile Include="AlbumViewCell.cs" />
     <Compile Include="AlbumViewController.cs" />
     <Compile Include="BaseCameraView.cs" />
+    <Compile Include="BaseChafuViewController.cs" />
     <Compile Include="CameraView.cs" />
     <Compile Include="BaseAlbumDelegate.cs" />
     <Compile Include="MenuView.cs" />

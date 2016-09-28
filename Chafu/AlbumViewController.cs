@@ -6,7 +6,8 @@ using UIKit;
 
 namespace Chafu
 {
-    public class AlbumViewController : UIViewController
+    [Register("AlbumViewController")]
+    public class AlbumViewController : BaseChafuViewController
     {
         public event EventHandler<UIImage> ImageSelected;
         public event EventHandler<NSUrl> VideoSelected;
@@ -18,26 +19,6 @@ namespace Chafu
         private bool _showExtraButton;
         private bool _showDoneButton;
 		private bool _showDeleteButton;
-
-        /// <summary>
-        /// Gets the album collectionview data source. Use <see cref="LazyDataSource"/> to create your own Data Source.
-        /// </summary>
-        /// <value>The album data source.</value>
-        public BaseAlbumDataSource AlbumDataSource { get; private set; }
-
-        /// <summary>
-        /// Gets the album delegate. Use <see cref="LazyDelegate"/> to create your own Delegate.
-        /// </summary>
-        /// <value>The album delegate.</value>
-        public BaseAlbumDelegate AlbumDelegate { get; private set; }
-
-        public Func<AlbumView, CGSize, BaseAlbumDataSource> LazyDataSource { get; set; } =
-            (view, size) => new PhotoGalleryDataSource(view, size);
-
-        public Func<AlbumView, BaseAlbumDataSource, BaseAlbumDelegate> LazyDelegate { get; set; } =
-            (view, @delegate) => new PhotoGalleryDelegate(view, (PhotoGalleryDataSource)@delegate);
-
-        public CGSize CellSize { get; set; } = new CGSize(100, 100);
 
         public bool ShowExtraButton
         {

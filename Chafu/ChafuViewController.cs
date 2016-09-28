@@ -6,8 +6,9 @@ using UIKit;
 
 namespace Chafu
 {
-    public class ChafuViewController : UIViewController
-	{
+    [Register("ChafuViewController")]
+    public class ChafuViewController : BaseChafuViewController
+    {
 		public event EventHandler Closed;
 		public event EventHandler<UIImage> ImageSelected;
 		public event EventHandler<NSUrl> VideoSelected;
@@ -33,26 +34,6 @@ namespace Chafu
         /// </summary>
         /// <value><c>true</c> if has video; otherwise, <c>false</c>.</value>
 		public bool HasVideo { get; set; } = false;
-
-        /// <summary>
-        /// Gets the album collectionview data source. Use <see cref="LazyDataSource"/> to create your own Data Source.
-        /// </summary>
-        /// <value>The album data source.</value>
-		public BaseAlbumDataSource AlbumDataSource { get; private set; }
-
-        /// <summary>
-        /// Gets the album delegate. Use <see cref="LazyDelegate"/> to create your own Delegate.
-        /// </summary>
-        /// <value>The album delegate.</value>
-		public BaseAlbumDelegate AlbumDelegate { get; private set; }
-
-	    public Func<AlbumView, CGSize, BaseAlbumDataSource> LazyDataSource { get; set; } =
-	        (view, size) => new PhotoGalleryDataSource(view, size);
-
-	    public Func<AlbumView, BaseAlbumDataSource, BaseAlbumDelegate> LazyDelegate { get; set; } =
-	        (view, source) => new PhotoGalleryDelegate(view, (PhotoGalleryDataSource)source);
-
-        public CGSize CellSize { get; set; } = new CGSize(100, 100);
 
         public override void ViewDidLoad ()
 		{

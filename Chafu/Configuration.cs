@@ -1,4 +1,5 @@
-﻿using UIKit;
+﻿using CoreGraphics;
+using UIKit;
 
 namespace Chafu
 {
@@ -177,5 +178,12 @@ namespace Chafu
         /// </summary>
         /// <value><c>true</c> if record audio; otherwise, <c>false</c>.</value>
         public static bool RecordAudio { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets how many cells are allowed to be displayed on a row.
+        /// 
+        /// Default is 4.
+        /// </summary>
+        public static int NumberOfCells { get; set; } = 3;
     }
 }
