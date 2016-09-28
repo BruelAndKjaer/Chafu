@@ -236,13 +236,14 @@ namespace Chafu
 
         public override void ShowFirstImage()
         {
-            if (!Files.Any()) return;
-
-            ChangeImage(Files.First());
-			CurrentIndexPath = NSIndexPath.FromRowSection(0, 0);
-            _albumView?.CollectionView.ReloadData();
-            _albumView?.CollectionView.SelectItem(CurrentIndexPath, false,
-                UICollectionViewScrollPosition.None);
+            DispatchQueue.MainQueue.DispatchAsync(() =>
+            {
+                ChangeImage(Files.FirstOrDefault());
+                CurrentIndexPath = NSIndexPath.FromRowSection(0, 0);
+                _albumView?.CollectionView.ReloadData();
+                _albumView?.CollectionView.SelectItem(CurrentIndexPath, false,
+                    UICollectionViewScrollPosition.None);
+            });
         }
 
 		public override void DeleteCurrentMediaItem()
