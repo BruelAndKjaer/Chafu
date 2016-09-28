@@ -107,8 +107,6 @@ namespace Chafu
             _menu.Closed += OnClosed;
             _menu.Extra += OnExtra;
 			_menu.Deleted += OnDelete;
-
-            AlbumDataSource.ShowFirstImage();
         }
 
         public override void ViewDidDisappear(bool animated)
