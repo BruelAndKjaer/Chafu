@@ -18,36 +18,49 @@ namespace Chafu
         private readonly CGSize _cellSize;
         private CGRect _previousPreheatRect = CGRect.Empty;
         private PHAsset _asset;
+        private readonly nfloat _scale;
 
         public override event EventHandler CameraRollUnauthorized;
 
         public PHFetchResult Videos { get; set; }
         public PHFetchResult Images { get; set; }
-        public ObservableCollection<PHAsset> AllAssets { get; }
+        public ObservableCollection<PHAsset> AllAssets { get; } = new ObservableCollection<PHAsset>();
         public PHCachingImageManager ImageManager { get; private set; }
 
         public PhotoGalleryDataSource(AlbumView albumView, CGSize cellSize)
         {
             _albumView = albumView;
             _cellSize = cellSize != CGSize.Empty ? cellSize : new CGSize(100, 100);
+            _scale = UIScreen.MainScreen.Scale;
 
-            CheckPhotoAuthorization();
+            CheckPhotoAuthorization(OnAuthorized);
+        }
 
-            var options = new PHFetchOptions
+        private void OnAuthorized()
+        {
+            DispatchQueue.MainQueue.DispatchAsync(() =>
             {
-                SortDescriptors = new[] {new NSSortDescriptor("creationDate", false)}
-            };
+                ImageManager = new PHCachingImageManager();
 
-            Images = PHAsset.FetchAssets(PHAssetMediaType.Image, options);
-            Videos = PHAsset.FetchAssets(PHAssetMediaType.Video, options);
+                var options = new PHFetchOptions
+                {
+                    SortDescriptors = new[] {new NSSortDescriptor("creationDate", false)}
+                };
 
-            var assets = new List<PHAsset>();
-            assets.AddRange(Images.OfType<PHAsset>());
-            assets.AddRange(Videos.OfType<PHAsset>());
-            AllAssets = new ObservableCollection<PHAsset>(assets.OrderByDescending(a => a.CreationDate.SecondsSinceReferenceDate));
-            AllAssets.CollectionChanged += AssetsCollectionChanged;
+                Images = PHAsset.FetchAssets(PHAssetMediaType.Image, options);
+                Videos = PHAsset.FetchAssets(PHAssetMediaType.Video, options);
 
-            PHPhotoLibrary.SharedPhotoLibrary.RegisterChangeObserver(this);
+                var assets = new List<PHAsset>();
+                assets.AddRange(Images.OfType<PHAsset>());
+                assets.AddRange(Videos.OfType<PHAsset>());
+                foreach (var asset in assets.OrderByDescending(a => a.CreationDate.SecondsSinceReferenceDate))
+                    AllAssets.Add(asset);
+
+                ShowFirstImage();
+
+                AllAssets.CollectionChanged += AssetsCollectionChanged;
+                PHPhotoLibrary.SharedPhotoLibrary.RegisterChangeObserver(this);
+            });
         }
 
         public override UICollectionViewCell GetCell(UICollectionView collectionView, NSIndexPath indexPath)
