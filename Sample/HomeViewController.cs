@@ -162,7 +162,6 @@ namespace Sample
                     Directory.CreateDirectory(dirPath);
 
                 File.Copy(videoUrl.RelativePath, tempPath);
-                File.Delete(videoUrl.RelativePath);
             });
         }
 
