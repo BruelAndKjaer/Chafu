@@ -15,6 +15,6 @@ namespace Chafu
         public abstract void GetCroppedImage (Action<UIImage> onImage);
         public abstract ChafuMediaType CurrentMediaType { get; set; }
         public abstract void ShowFirstImage();
-		public abstract void DeleteCurrentMediaItem();
+		public abstract MediaItem DeleteCurrentMediaItem();
     }
 }

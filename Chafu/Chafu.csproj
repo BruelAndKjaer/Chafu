@@ -47,6 +47,7 @@
     <Compile Include="BaseChafuViewController.cs" />
     <Compile Include="CameraView.cs" />
     <Compile Include="BaseAlbumDelegate.cs" />
+    <Compile Include="MediaItem.cs" />
     <Compile Include="MenuView.cs" />
     <Compile Include="Configuration.cs" />
     <Compile Include="DragDirection.cs" />

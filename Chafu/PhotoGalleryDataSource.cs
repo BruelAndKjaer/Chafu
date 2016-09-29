@@ -413,7 +413,7 @@ namespace Chafu
             });
         }
 
-		public override void DeleteCurrentMediaItem()
+		public override MediaItem DeleteCurrentMediaItem()
 		{
 			throw new NotImplementedException();
 		}

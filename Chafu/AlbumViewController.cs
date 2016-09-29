@@ -13,6 +13,7 @@ namespace Chafu
         public event EventHandler<NSUrl> VideoSelected;
         public event EventHandler Closed;
         public event EventHandler Extra;
+        public event EventHandler<MediaItem> Deleted;
 
         private AlbumView _album;
         private MenuView _menu;
@@ -56,13 +57,23 @@ namespace Chafu
         public override void ViewDidLoad()
         {
             base.ViewDidLoad();
+            
+            CreateViews();
+            CreateConstraints();
+
+            _menu.ExtraButtonHidden = !ShowExtraButton;
+            _menu.DoneButtonHidden = !ShowDoneButton;
+			_menu.DeleteButtonHidden = !ShowDeleteButton;
+        }
+
+        private void CreateViews()
+        {
             View.BackgroundColor = Configuration.BackgroundColor;
 
             if (CellSize == CGSize.Empty)
                 CellSize = CalculateCellSize();
 
-            _album = new AlbumView(CellSize)
-            {
+            _album = new AlbumView(CellSize) {
                 TranslatesAutoresizingMaskIntoConstraints = false,
                 BackgroundColor = Configuration.BackgroundColor
             };
@@ -71,15 +82,17 @@ namespace Chafu
             AlbumDelegate = LazyDelegate(_album, AlbumDataSource);
             _album.Initialize(AlbumDataSource, AlbumDelegate);
 
-            _menu = new MenuView
-            {
+            _menu = new MenuView {
                 TranslatesAutoresizingMaskIntoConstraints = false,
                 BackgroundColor = Configuration.BackgroundColor
             };
 
             Add(_menu);
             Add(_album);
+        }
 
+        private void CreateConstraints()
+        {
             View.AddConstraints(
                 _menu.AtTopOf(View),
                 _menu.AtLeftOf(View),
@@ -93,12 +106,8 @@ namespace Chafu
                 );
 
             View.BringSubviewToFront(_menu);
-
-            _menu.ExtraButtonHidden = !ShowExtraButton;
-            _menu.DoneButtonHidden = !ShowDoneButton;
-			_menu.DeleteButtonHidden = !ShowDeleteButton;
         }
-
+        
         public override void ViewDidAppear(bool animated)
         {
             base.ViewDidAppear(animated);
@@ -136,33 +145,41 @@ namespace Chafu
 
 		private void OnDelete(object sender, EventArgs eventArgs)
 		{
-			AlbumDataSource.DeleteCurrentMediaItem();
+			var item = AlbumDataSource.DeleteCurrentMediaItem();
+            Deleted?.Invoke(this, item);
 		}
 
         private void OnDone(object sender, EventArgs e)
         {
             if (AlbumDataSource.CurrentMediaType == ChafuMediaType.Image)
-            {
-                if (Configuration.CropImage) {
-                    Console.WriteLine("Cropping image before handing it over");
-                    AlbumDataSource.GetCroppedImage(croppedImage => {
-                        ImageSelected?.Invoke(this, croppedImage);
-                        Dismiss();
-                    });
-                }
-                else {
-                    Console.WriteLine("Not cropping image");
-                    ImageSelected?.Invoke(this, _album.ImageCropView.Image);
-                    Dismiss();
-                }
-            }
-
+                OnImageSelected();
             if (AlbumDataSource.CurrentMediaType == ChafuMediaType.Video)
+                OnVideoSelected();
+        }
+
+        private void OnImageSelected()
+        {
+            if (Configuration.CropImage)
             {
-                var url = _album.MoviePlayerController.ContentUrl;
-                VideoSelected?.Invoke(this, url);
+                Console.WriteLine("Cropping image before handing it over");
+                AlbumDataSource.GetCroppedImage(croppedImage => {
+                    ImageSelected?.Invoke(this, croppedImage);
+                    Dismiss();
+                });
+            }
+            else
+            {
+                Console.WriteLine("Not cropping image");
+                ImageSelected?.Invoke(this, _album.ImageCropView.Image);
                 Dismiss();
             }
+        }
+
+        private void OnVideoSelected()
+        {
+            var url = _album.MoviePlayerController.ContentUrl;
+            VideoSelected?.Invoke(this, url);
+            Dismiss();
         }
 
         public override UIInterfaceOrientationMask GetSupportedInterfaceOrientations() => UIInterfaceOrientationMask.Portrait;

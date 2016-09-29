@@ -11,12 +11,6 @@ using UIKit;
 
 namespace Chafu
 {
-    public class MediaItem
-    {
-        public ChafuMediaType MediaType { get; set; }
-        public string Path { get; set; }
-    }
-
     public class LocalFilesDataSource : BaseAlbumDataSource
     {
         private readonly AlbumView _albumView;
@@ -259,10 +253,10 @@ namespace Chafu
             });
         }
 
-		public override void DeleteCurrentMediaItem()
+		public override MediaItem DeleteCurrentMediaItem()
 		{
 		    var mediaItem = MediaItemFromPath(CurrentMediaPath);
-			if (mediaItem == null) return;
+			if (mediaItem == null) return null;
 
 			_albumView.CollectionView.PerformBatchUpdates(() =>
 			{
@@ -278,6 +272,8 @@ namespace Chafu
 			}, null);
 
 			ShowFirstImage();
+
+		    return mediaItem;
 		}
 
         private MediaItem MediaItemFromPath(string path)
