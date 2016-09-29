@@ -50,22 +50,25 @@ namespace Chafu
 
         public void UpdateImageSource(string imagesPath)
         {
+            var files = GetOrderedFiles(imagesPath);
+
+            Files.Clear();
+            var items = files.Select(GetMediaItem).Where(f => f != null);
+            Files.AddRange(items);
+
+            ShowFirstImage();
+        }
+
+        private IEnumerable<string> GetOrderedFiles(string imagesPath)
+        {
             if (string.IsNullOrEmpty(imagesPath))
                 throw new ArgumentNullException(nameof(imagesPath));
-
             if (!Directory.Exists(imagesPath))
                 throw new InvalidOperationException($"Cannot load images from non-existing Directory: {imagesPath}");
 
             var dirInfo = new DirectoryInfo(imagesPath);
             var fileInfo = dirInfo.GetFiles();
-            var files = fileInfo.OrderByDescending(f => f.CreationTime).Select(f => f.FullName).Distinct();
-
-            Files.Clear();
-            var items = files.Select(GetMediaItem).Where(f => f != null);
-
-            Files.AddRange(items);
-
-            ShowFirstImage();
+            return fileInfo.OrderByDescending(f => f.CreationTime).Select(f => f.FullName);
         }
 
         private static MediaItem GetMediaItem(string file)
@@ -120,35 +123,37 @@ namespace Chafu
         {
             DispatchQueue.DefaultGlobalQueue.DispatchAsync(() =>
             {
-                var sourceMovieUrl = new NSUrl(item.Path);
-                using (var asset = AVAsset.FromUrl(sourceMovieUrl))
+                using (var asset = AVAsset.FromUrl(new NSUrl(item.Path)))
                 using (var generator = AVAssetImageGenerator.FromAsset(asset))
                 {
                     generator.AppliesPreferredTrackTransform = true;
 
                     var duration = asset.Duration.Seconds;
-                    var time = new CMTime(Clamp(1, 0, (int)cell.Duration), 1);
+                    var scaledImage = GetVideoThumbnail(generator, duration, _cellSize);
 
-                    CMTime actual;
-                    NSError error;
-
-                    using (var cgImage = generator.CopyCGImageAtTime(time, out actual, out error))
-                    using (var uiImage = new UIImage(cgImage))
+                    DispatchQueue.MainQueue.DispatchAsync(() =>
                     {
-                        var scaledImage = uiImage.ScaleImage(_cellSize);
-
-                        DispatchQueue.MainQueue.DispatchAsync(() =>
-                        {
-                            if (cell.Tag == row)
-                            {
-                                cell.Duration = duration;
-                                cell.Image = scaledImage;
-                            }
-                        });
-                    }
+                        if (cell.Tag != row) return;
+                        cell.Duration = duration;
+                        cell.Image = scaledImage;
+                    });
                 }
-
             });
+        }
+
+        private static UIImage GetVideoThumbnail(AVAssetImageGenerator generator, double seconds, CGSize cellSize)
+        {
+            var time = new CMTime(Clamp(1, 0, (int)seconds), 1);
+
+            CMTime actual;
+            NSError error;
+
+            using (var cgImage = generator.CopyCGImageAtTime(time, out actual, out error))
+            using (var uiImage = new UIImage(cgImage))
+            {
+                var scaledImage = uiImage.ScaleImage(cellSize);
+                return scaledImage;
+            }
         }
 
         private static int Clamp(int value, int min, int max)
@@ -158,18 +163,14 @@ namespace Chafu
 
         public override nint GetItemsCount(UICollectionView collectionView, nint section) => Files?.Count ?? 0;
 
-        public void ChangeImage(MediaItem item)
+        public void ChangeMediaItem(MediaItem item)
         {
             if (item?.Path == null) return;
             if (_albumView?.ImageCropView == null) return;
 
             DispatchQueue.MainQueue.DispatchAsync(() =>
             {
-                if (CurrentMediaType == ChafuMediaType.Video && 
-                    _albumView.MoviePlayerController.ContentUrl != null)
-                {
-                    _albumView.MoviePlayerController.Stop();
-                }
+                StopVideo();
 
                 _albumView.ImageCropView.Image = null;
                 _albumView.MoviePlayerController.ContentUrl = null;
@@ -177,26 +178,38 @@ namespace Chafu
                 CurrentMediaType = item.MediaType;
 
                 if (item.MediaType == ChafuMediaType.Image)
-                {
-                    _albumView.ImageCropView.Hidden = false;
-                    _albumView.MovieView.Hidden = true;
-
-                    var image = UIImage.FromFile(item.Path);
-
-                    _albumView.ImageCropView.ImageSize = image.Size;
-                    _albumView.ImageCropView.Image = image;
-                }
+                    ChangeImage(item, _albumView);
                 else
-                {
-                    _albumView.ImageCropView.Hidden = true;
-                    _albumView.MovieView.Hidden = false;
-
-                    var sourceMovieUrl = new NSUrl(item.Path);
-
-                    _albumView.MoviePlayerController.ContentUrl = sourceMovieUrl;
-                    _albumView.MoviePlayerController.PrepareToPlay();
-                }
+                    ChangeVideo(item, _albumView);
             });
+        }
+
+        private static void ChangeImage(MediaItem item, AlbumView albumView)
+        {
+            albumView.ImageCropView.Hidden = false;
+            albumView.MovieView.Hidden = true;
+
+            var image = UIImage.FromFile(item.Path);
+
+            albumView.ImageCropView.ImageSize = image.Size;
+            albumView.ImageCropView.Image = image;
+        }
+
+        private static void ChangeVideo(MediaItem item, AlbumView albumView)
+        {
+            albumView.ImageCropView.Hidden = true;
+            albumView.MovieView.Hidden = false;
+
+            var sourceMovieUrl = new NSUrl(item.Path);
+
+            albumView.MoviePlayerController.ContentUrl = sourceMovieUrl;
+            albumView.MoviePlayerController.PrepareToPlay();
+        }
+
+        private void StopVideo()
+        {
+            if (CurrentMediaType != ChafuMediaType.Video) return;
+            _albumView.StopVideo();
         }
 
         public override void GetCroppedImage(Action<UIImage> onImage)
@@ -238,7 +251,7 @@ namespace Chafu
         {
             DispatchQueue.MainQueue.DispatchAsync(() =>
             {
-                ChangeImage(Files.FirstOrDefault());
+                ChangeMediaItem(Files.FirstOrDefault());
                 CurrentIndexPath = NSIndexPath.FromRowSection(0, 0);
                 _albumView?.CollectionView.ReloadData();
                 _albumView?.CollectionView.SelectItem(CurrentIndexPath, false,
@@ -248,17 +261,17 @@ namespace Chafu
 
 		public override void DeleteCurrentMediaItem()
 		{
-			if (CurrentIndexPath == null) return;
-			var mediaItem = Files.FirstOrDefault(f => f.Path == CurrentMediaPath);
+		    var mediaItem = MediaItemFromPath(CurrentMediaPath);
 			if (mediaItem == null) return;
 
 			_albumView.CollectionView.PerformBatchUpdates(() =>
 			{
-				Files.Remove(mediaItem);
-				_albumView.ImageCropView.Image = null;
-				_albumView.ImageCropView.ImageSize = CGSize.Empty;
+                Files.Remove(mediaItem);
+
+                _albumView.ClearPreview();
 				_albumView.CollectionView.DeleteItems(new [] { CurrentIndexPath });
-				File.Delete(CurrentMediaPath);
+
+                File.Delete(CurrentMediaPath);
 
 				CurrentMediaPath = null;
 				CurrentIndexPath = null;
@@ -266,6 +279,11 @@ namespace Chafu
 
 			ShowFirstImage();
 		}
+
+        private MediaItem MediaItemFromPath(string path)
+        {
+            return string.IsNullOrEmpty(path) ? null : Files.FirstOrDefault(f => f.Path == path);
+        }
 
         public override event EventHandler CameraRollUnauthorized;
     }

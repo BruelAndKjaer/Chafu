@@ -30,6 +30,15 @@ namespace Chafu
 
         private void CreateView()
         {
+            CreateControls();
+            CreateConstraints();
+
+            Hidden = true;
+            CollectionView.RegisterClassForCell(typeof(AlbumViewCell), "AlbumViewCell");
+        }
+
+        private void CreateControls()
+        {
             MoviePlayerController = new MPMoviePlayerController
             {
                 AllowsAirPlay = false,
@@ -59,7 +68,7 @@ namespace Chafu
             {
                 AccessibilityLabel = "CollectionView",
                 TranslatesAutoresizingMaskIntoConstraints = false,
-				BackgroundColor = Configuration.BackgroundColor
+                BackgroundColor = Configuration.BackgroundColor
             };
 
             Add(CollectionView);
@@ -68,13 +77,16 @@ namespace Chafu
             {
                 AccessibilityLabel = "ImageCropView",
                 TranslatesAutoresizingMaskIntoConstraints = false,
-				BackgroundColor = Configuration.BackgroundColor
+                BackgroundColor = Configuration.BackgroundColor
             };
 
-			Add (ImageCropView);
+            Add(ImageCropView);
 
-			BackgroundColor = Configuration.BackgroundColor;
+            BackgroundColor = Configuration.BackgroundColor;
+        }
 
+        private void CreateConstraints()
+        {
             CollectionViewConstraintHeight = NSLayoutConstraint.Create(CollectionView, NSLayoutAttribute.Height,
                 NSLayoutRelation.Equal);
             CollectionViewConstraintHeight.Constant = 0;
@@ -106,10 +118,6 @@ namespace Chafu
                 CollectionView.AtLeftOf(this),
                 CollectionView.AtRightOf(this)
             );
-
-            Hidden = true;
-
-            CollectionView.RegisterClassForCell(typeof(AlbumViewCell), "AlbumViewCell");
         }
 
         public void Initialize(UICollectionViewDataSource dataSource, UICollectionViewDelegate @delegate)
@@ -122,10 +130,7 @@ namespace Chafu
             };
             AddGestureRecognizer(panGesture);
 
-            CollectionViewConstraintHeight.Constant = Frame.Height - ImageCropView.Frame.Height -
-                                                      ImageCropViewOriginalConstraintTop;
-            MovieViewConstraintTop.Constant = ImageCropViewConstraintTop.Constant = ImageCropViewOriginalConstraintTop;
-            DragDirection = DragDirection.Up;
+            SetOriginalConstraints();
 
             ImageCropView.Layer.ShadowColor = UIColor.Black.CGColor;
             ImageCropView.Layer.ShadowRadius = 30;
@@ -141,116 +146,13 @@ namespace Chafu
         private void Panned(UIPanGestureRecognizer sender)
         {
             var currentPos = sender.LocationInView(this);
-            float alpha = 1.0f;
+            var alpha = ImageCropView.Alpha;
             if (sender.State == UIGestureRecognizerState.Began)
-            {
-                var view = sender.View;
-                var loc = sender.LocationInView(view);
-                var subView = view?.HitTest(loc, null);
-
-                var isImageCropView = subView?.Equals(ImageCropView);
-
-                if (isImageCropView.HasValue && isImageCropView.Value &&
-                    ImageCropViewConstraintTop.Constant == ImageCropViewOriginalConstraintTop)
-                {
-                    return;
-                }
-
-                _dragStartPos = currentPos;
-                _cropBottomY = ImageCropView.Frame.Y + ImageCropView.Frame.Height;
-
-                if (DragDirection == DragDirection.Stop)
-                {
-                    DragDirection = ImageCropViewConstraintTop.Constant == ImageCropViewOriginalConstraintTop
-                        ? DragDirection.Up
-                        : DragDirection.Down;
-                }
-
-                if ((DragDirection == DragDirection.Up && _dragStartPos.Y < _cropBottomY + _dragDiff) ||
-                    (DragDirection == DragDirection.Down && _dragStartPos.Y > _cropBottomY))
-                {
-                    DragDirection = DragDirection.Stop;
-                    ImageCropView.Scrollable = false;
-                }
-                else
-                {
-                    ImageCropView.Scrollable = true;
-                }
-            }
+                PannedBegan(sender, currentPos);
             else if (sender.State == UIGestureRecognizerState.Changed)
-            {
-                if (DragDirection == DragDirection.Up && currentPos.Y < _cropBottomY - _dragDiff)
-                {
-                    MovieViewConstraintTop.Constant = ImageCropViewConstraintTop.Constant =
-                        (nfloat) Math.Max(_imageCropViewMinimalVisibleHeight - ImageCropView.Frame.Height,
-                            currentPos.Y + _dragDiff - ImageCropView.Frame.Height);
-                    CollectionViewConstraintHeight.Constant =
-                        (nfloat) Math.Min(Frame.Height - _imageCropViewMinimalVisibleHeight,
-                            Frame.Height - ImageCropViewConstraintTop.Constant - ImageCropView.Frame.Height);
-                }
-                else if (DragDirection == DragDirection.Down && currentPos.Y > _cropBottomY)
-                {
-                    MovieViewConstraintTop.Constant = ImageCropViewConstraintTop.Constant =
-                        (nfloat) Math.Min(ImageCropViewOriginalConstraintTop,
-                            currentPos.Y - ImageCropView.Frame.Height);
-                    CollectionViewConstraintHeight.Constant =
-                        (nfloat)
-                            Math.Max(
-                                Frame.Height - ImageCropViewOriginalConstraintTop - ImageCropView.Frame.Height,
-                                Frame.Height - ImageCropViewConstraintTop.Constant - ImageCropView.Frame.Height);
-                }
-                else if (DragDirection == DragDirection.Stop && CollectionView.ContentOffset.Y < 0)
-                {
-                    DragDirection = DragDirection.Scroll;
-                    _imaginaryCollectionViewOffsetStartPosY = currentPos.Y;
-                }
-                else if (DragDirection == DragDirection.Scroll)
-                {
-                    MovieViewConstraintTop.Constant = ImageCropViewConstraintTop.Constant = _imageCropViewMinimalVisibleHeight -
-                                                          ImageCropView.Frame.Height + currentPos.Y -
-                                                          _imaginaryCollectionViewOffsetStartPosY;
-                    CollectionViewConstraintHeight.Constant =
-                        (nfloat)
-                            Math.Max(
-                                Frame.Height - ImageCropViewOriginalConstraintTop - ImageCropView.Frame.Height,
-                                Frame.Height - ImageCropViewConstraintTop.Constant - ImageCropView.Frame.Height);
-                }
-            }
+                PannedChanged(currentPos);
             else
-            {
-                _imaginaryCollectionViewOffsetStartPosY = 0;
-
-                if (sender.State == UIGestureRecognizerState.Ended && DragDirection == DragDirection.Stop)
-                {
-                    ImageCropView.Scrollable = true;
-                    return;
-                }
-
-                if (currentPos.Y < _cropBottomY - _dragDiff &&
-                    ImageCropViewConstraintTop.Constant != ImageCropViewOriginalConstraintTop)
-                {
-                    // The largest movement
-                    ImageCropView.Scrollable = false;
-                    alpha = 0.3f;
-                    MovieViewConstraintTop.Constant = ImageCropViewConstraintTop.Constant = _imageCropViewMinimalVisibleHeight -
-                                                          ImageCropView.Frame.Height;
-                    CollectionViewConstraintHeight.Constant = Frame.Height - _imageCropViewMinimalVisibleHeight;
-                    CollectionViewConstraintTop.Constant = ImageCropViewOriginalConstraintTop;
-
-                    DragDirection = DragDirection.Down;
-                }
-                else
-                {
-                    // Get back to the original position
-                    ImageCropView.Scrollable = true;
-                    alpha = 1.0f;
-                    MovieViewConstraintTop.Constant = ImageCropViewConstraintTop.Constant = ImageCropViewOriginalConstraintTop;
-                    CollectionViewConstraintHeight.Constant = Frame.Height - ImageCropViewOriginalConstraintTop -
-                                                              ImageCropView.Frame.Height;
-                    CollectionViewConstraintTop.Constant = 0;
-                    DragDirection = DragDirection.Up;
-                }
-            }
+                alpha = PannedOtherwise(sender, currentPos, alpha);
 
             AnimateNotify(0.3, 0, UIViewAnimationOptions.CurveEaseOut, () =>
             {
@@ -258,6 +160,141 @@ namespace Chafu
                 MovieView.Alpha = alpha;
                 LayoutIfNeeded();
             }, finished => { });
+        }
+
+        private void PannedBegan(UIPanGestureRecognizer sender, CGPoint currentPosition)
+        {
+            var view = sender.View;
+            var loc = sender.LocationInView(view);
+            var subView = view?.HitTest(loc, null);
+
+            var isImageCropView = subView?.Equals(ImageCropView);
+
+            if (isImageCropView.HasValue && isImageCropView.Value &&
+                ImageCropViewConstraintTop.Constant == ImageCropViewOriginalConstraintTop)
+            {
+                return;
+            }
+
+            _dragStartPos = currentPosition;
+            _cropBottomY = ImageCropView.Frame.Y + ImageCropView.Frame.Height;
+
+            if (DragDirection == DragDirection.Stop)
+            {
+                DragDirection = ImageCropViewConstraintTop.Constant == ImageCropViewOriginalConstraintTop
+                    ? DragDirection.Up
+                    : DragDirection.Down;
+            }
+
+            if ((DragDirection == DragDirection.Up && _dragStartPos.Y < _cropBottomY + _dragDiff) ||
+                (DragDirection == DragDirection.Down && _dragStartPos.Y > _cropBottomY))
+            {
+                DragDirection = DragDirection.Stop;
+                ImageCropView.Scrollable = false;
+            }
+            else
+            {
+                ImageCropView.Scrollable = true;
+            }
+        }
+
+        private void PannedChanged(CGPoint currentPosition)
+        {
+            if (DragDirection == DragDirection.Up && currentPosition.Y < _cropBottomY - _dragDiff)
+            {
+                MovieViewConstraintTop.Constant = ImageCropViewConstraintTop.Constant =
+                    (nfloat)Math.Max(_imageCropViewMinimalVisibleHeight - ImageCropView.Frame.Height,
+                        currentPosition.Y + _dragDiff - ImageCropView.Frame.Height);
+                CollectionViewConstraintHeight.Constant =
+                    (nfloat)Math.Min(Frame.Height - _imageCropViewMinimalVisibleHeight,
+                        Frame.Height - ImageCropViewConstraintTop.Constant - ImageCropView.Frame.Height);
+            }
+            else if (DragDirection == DragDirection.Down && currentPosition.Y > _cropBottomY)
+            {
+                MovieViewConstraintTop.Constant = ImageCropViewConstraintTop.Constant =
+                    (nfloat)Math.Min(ImageCropViewOriginalConstraintTop,
+                        currentPosition.Y - ImageCropView.Frame.Height);
+                CollectionViewConstraintHeight.Constant =
+                    (nfloat)
+                        Math.Max(
+                            Frame.Height - ImageCropViewOriginalConstraintTop - ImageCropView.Frame.Height,
+                            Frame.Height - ImageCropViewConstraintTop.Constant - ImageCropView.Frame.Height);
+            }
+            else if (DragDirection == DragDirection.Stop && CollectionView.ContentOffset.Y < 0)
+            {
+                DragDirection = DragDirection.Scroll;
+                _imaginaryCollectionViewOffsetStartPosY = currentPosition.Y;
+            }
+            else if (DragDirection == DragDirection.Scroll)
+            {
+                MovieViewConstraintTop.Constant = ImageCropViewConstraintTop.Constant = _imageCropViewMinimalVisibleHeight -
+                                                      ImageCropView.Frame.Height + currentPosition.Y -
+                                                      _imaginaryCollectionViewOffsetStartPosY;
+                CollectionViewConstraintHeight.Constant =
+                    (nfloat)
+                        Math.Max(
+                            Frame.Height - ImageCropViewOriginalConstraintTop - ImageCropView.Frame.Height,
+                            Frame.Height - ImageCropViewConstraintTop.Constant - ImageCropView.Frame.Height);
+            }
+        }
+
+        private nfloat PannedOtherwise(UIGestureRecognizer sender, CGPoint currentPosition, nfloat alpha)
+        {
+            _imaginaryCollectionViewOffsetStartPosY = 0;
+
+            if (sender.State == UIGestureRecognizerState.Ended && DragDirection == DragDirection.Stop)
+            {
+                ImageCropView.Scrollable = true;
+                return alpha;
+            }
+
+            if (currentPosition.Y < _cropBottomY - _dragDiff &&
+                ImageCropViewConstraintTop.Constant != ImageCropViewOriginalConstraintTop)
+            {
+                // The largest movement
+                ImageCropView.Scrollable = false;
+                alpha = 0.3f;
+                MovieViewConstraintTop.Constant = ImageCropViewConstraintTop.Constant = _imageCropViewMinimalVisibleHeight -
+                                                      ImageCropView.Frame.Height;
+                CollectionViewConstraintHeight.Constant = Frame.Height - _imageCropViewMinimalVisibleHeight;
+                CollectionViewConstraintTop.Constant = ImageCropViewOriginalConstraintTop;
+
+                DragDirection = DragDirection.Down;
+            }
+            else
+            {
+                // Get back to the original position
+                ImageCropView.Scrollable = true;
+                alpha = 1.0f;
+                SetOriginalConstraints();
+            }
+
+            return alpha;
+        }
+
+        private void SetOriginalConstraints()
+        {
+            MovieViewConstraintTop.Constant = ImageCropViewConstraintTop.Constant = ImageCropViewOriginalConstraintTop;
+            CollectionViewConstraintHeight.Constant = Frame.Height - ImageCropViewOriginalConstraintTop -
+                                                      ImageCropView.Frame.Height;
+            CollectionViewConstraintTop.Constant = 0;
+            DragDirection = DragDirection.Up;
+        }
+
+        public void ClearPreview()
+        {
+            ImageCropView.Image = null;
+            ImageCropView.ImageSize = CGSize.Empty;
+
+            StopVideo();
+            MoviePlayerController.ContentUrl = null;
+        }
+
+        public void StopVideo()
+        {
+            if (MoviePlayerController?.ContentUrl == null) return;
+
+            MoviePlayerController.Stop();
         }
 
         public AlbumView(CGSize cellSize)

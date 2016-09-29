@@ -425,6 +425,8 @@ namespace Chafu
                 if (PHPhotoLibrary.AuthorizationStatus == PHAuthorizationStatus.Authorized)
                     PHPhotoLibrary.SharedPhotoLibrary.UnregisterChangeObserver(this);
 
+                _albumView.ClearPreview();
+
                 _asset.Dispose();
                 _asset = null;
             }
