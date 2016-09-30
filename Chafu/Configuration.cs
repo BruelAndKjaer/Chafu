@@ -1,8 +1,10 @@
-﻿using CoreGraphics;
-using UIKit;
+﻿using UIKit;
 
 namespace Chafu
 {
+    /// <summary>
+    /// Configuration class for Chafu. Use this to change colors, images and options.
+    /// </summary>
     public static class Configuration
     {
         /// <summary>
