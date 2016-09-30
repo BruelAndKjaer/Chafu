@@ -188,7 +188,7 @@ namespace Chafu
         {
             if (_deleteAlertController == null)
             {
-                _deleteAlertController = UIAlertController.Create("", "", UIAlertControllerStyle.ActionSheet);
+                _deleteAlertController = UIAlertController.Create(null, null, UIAlertControllerStyle.ActionSheet);
                 _deleteAlertController.AddAction(UIAlertAction.Create(Configuration.DeleteTitle,
                     UIAlertActionStyle.Destructive, Delete));
                 _deleteAlertController.AddAction(UIAlertAction.Create(Configuration.CancelTitle, UIAlertActionStyle.Cancel,
@@ -221,24 +221,34 @@ namespace Chafu
 
         private void Delete(UIAlertAction action)
         {
+            Delete();
+        }
+
+        private void Delete()
+        {
             var item = AlbumDataSource.DeleteCurrentMediaItem();
             Deleted?.Invoke(this, item);
         }
 
         private void OnDelete(object sender, EventArgs eventArgs)
-		{
-		    var deleteController = EnsureAlertController();
-
-            var item = new MediaItem
+        {
+            if (Configuration.ShowActionSheetOnDelete)
             {
-                MediaType = AlbumDataSource.CurrentMediaType,
-                Path = AlbumDataSource.CurrentMediaPath
-            };
+                var deleteController = EnsureAlertController();
 
-            SetAlertControllerTitleAndMessage(item, deleteController);
+                var item = new MediaItem
+                {
+                    MediaType = AlbumDataSource.CurrentMediaType,
+                    Path = AlbumDataSource.CurrentMediaPath
+                };
 
-            PresentViewController(deleteController, true, () => {});
-		}
+                SetAlertControllerTitleAndMessage(item, deleteController);
+
+                PresentViewController(deleteController, true, () => { });
+            }
+            else
+                Delete();
+        }
 
         private void OnDone(object sender, EventArgs e)
         {
