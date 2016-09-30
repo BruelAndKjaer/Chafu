@@ -143,10 +143,62 @@ namespace Chafu
             Extra?.Invoke(this, EventArgs.Empty);
         }
 
-		private void OnDelete(object sender, EventArgs eventArgs)
-		{
-			var item = AlbumDataSource.DeleteCurrentMediaItem();
+        private UIAlertController _deleteAlertController;
+
+        private UIAlertController EnsureAlertController()
+        {
+            if (_deleteAlertController == null)
+            {
+                _deleteAlertController = UIAlertController.Create("", "", UIAlertControllerStyle.ActionSheet);
+                _deleteAlertController.AddAction(UIAlertAction.Create(Configuration.DeleteTitle,
+                    UIAlertActionStyle.Destructive, Delete));
+                _deleteAlertController.AddAction(UIAlertAction.Create(Configuration.CancelTitle, UIAlertActionStyle.Cancel,
+                    action => { }));
+            }
+
+            return _deleteAlertController;
+        }
+
+        private static void SetAlertControllerTitleAndMessage(MediaItem item, UIAlertController controller)
+        {
+            if (item == null) return;
+            if (controller == null) return;
+
+            if (item.MediaType == ChafuMediaType.Image)
+            {
+                if (!string.IsNullOrEmpty(Configuration.DeletePhotoTitle))
+                    controller.Title = Configuration.DeletePhotoTitle;
+                if (!string.IsNullOrEmpty(Configuration.DeletePhotoMessage))
+                    controller.Message = Configuration.DeletePhotoMessage;
+            }
+            else if (item.MediaType == ChafuMediaType.Video)
+            {
+                if (!string.IsNullOrEmpty(Configuration.DeleteVideoTitle))
+                    controller.Title = Configuration.DeleteVideoTitle;
+                if (!string.IsNullOrEmpty(Configuration.DeleteVideoMessage))
+                    controller.Message = Configuration.DeleteVideoMessage;
+            }
+        }
+
+        private void Delete(UIAlertAction action)
+        {
+            var item = AlbumDataSource.DeleteCurrentMediaItem();
             Deleted?.Invoke(this, item);
+        }
+
+        private void OnDelete(object sender, EventArgs eventArgs)
+		{
+		    var deleteController = EnsureAlertController();
+
+            var item = new MediaItem
+            {
+                MediaType = AlbumDataSource.CurrentMediaType,
+                Path = AlbumDataSource.CurrentMediaPath
+            };
+
+            SetAlertControllerTitleAndMessage(item, deleteController);
+
+            PresentViewController(deleteController, true, () => {});
 		}
 
         private void OnDone(object sender, EventArgs e)

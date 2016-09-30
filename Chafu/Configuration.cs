@@ -185,5 +185,44 @@ namespace Chafu
         /// Default is 4.
         /// </summary>
         public static int NumberOfCells { get; set; } = 3;
+
+
+        /// <summary>
+        /// Get or set whether to show a Action Sheet when deleting a photo or video.
+        /// 
+        /// Default is <c>true</c>
+        /// </summary>
+        /// <value><c>true</c> if show action sheet; otherwise, <c>false</c>.</value>
+        public static bool ShowActionSheetOnDelete { get; set; } = true;
+
+        /// <summary>
+        /// Get or set the title of the Action Sheet when deleting a photo.
+        /// </summary>
+        public static string DeletePhotoTitle { get; set; }
+
+        /// <summary>
+        /// Get or set the message of the Action Sheet when deleting a photo.
+        /// </summary>
+        public static string DeletePhotoMessage { get; set; }
+
+        /// <summary>
+        /// Get or set the title of the Action Sheet when deleting a video.
+        /// </summary>
+        public static string DeleteVideoTitle { get; set; }
+
+        /// <summary>
+        /// Get or set the message of the Action Sheet when deleting a video.
+        /// </summary>
+        public static string DeleteVideoMessage { get; set; }
+
+        /// <summary>
+        /// Get or set the title of the delete button when deleting a photo or video.
+        /// </summary>
+        public static string DeleteTitle { get; set; } = "Delete";
+
+        /// <summary>
+        /// Get or set the title of the cancel button when deleting a photo or video.
+        /// </summary>
+        public static string CancelTitle { get; set; } = "Cancel";
     }
 }
