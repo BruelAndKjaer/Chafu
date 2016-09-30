@@ -11,19 +11,35 @@ using UIKit;
 
 namespace Chafu
 {
+    /// <summary>
+    /// Data source for showing images and video from local folder
+    /// </summary>
     public class LocalFilesDataSource : BaseAlbumDataSource
     {
         private readonly AlbumView _albumView;
         private readonly CGSize _cellSize;
-        public readonly List<MediaItem> Files = new List<MediaItem>();
         private string _imagesPath;
 
+        /// <summary>
+        /// Backing <see cref="List{T}"/> of <see cref="MediaItem"/>
+        /// </summary>
+        public List<MediaItem> Files { get; } = new List<MediaItem>();
+
+        /// <summary>
+        /// Get or set the <see cref="NSIndexPath"/> of currently selected item
+        /// </summary>
 		public NSIndexPath CurrentIndexPath { get; set; }
 
+
+        /// <inheritdoc />
         public override ChafuMediaType CurrentMediaType { get; set; }
 
-        public string CurrentMediaPath { get; private set; }
+        /// <inheritdoc />
+        public override string CurrentMediaPath { get; set; }
 
+        /// <summary>
+        /// Get or set the path of where the data source looks for images and videos
+        /// </summary>
         public string ImagesPath
         {
             get { return _imagesPath; }
@@ -33,15 +49,35 @@ namespace Chafu
             }
         }
 
+        /// <summary>
+        /// Get or set the accepted extensions for video files.
+        /// 
+        /// Defaults to .mov and .mp4
+        /// </summary>
         public static string[] MovieFileExtensions { get; set; } = {".mov", ".mp4"};
+
+        /// <summary>
+        /// Get or set the accepted extensions for image files.
+        /// 
+        /// Defaults to .jpg, .jpeg and .png
+        /// </summary>
         public static string[] ImageFileExtensions { get; set; } = {".jpg", ".jpeg", ".png"};
 
+        /// <summary>
+        /// Creates a new data source for showing images and video from a local folder
+        /// </summary>
+        /// <param name="albumView"><see cref="AlbumView"/> this data source is feeding</param>
+        /// <param name="cellSize">Optional: <see cref="CGSize"/> with the desired cell size. Defaults to 100x100.</param>
         public LocalFilesDataSource(AlbumView albumView, CGSize cellSize = default(CGSize))
         {
             _albumView = albumView;
             _cellSize = cellSize != CGSize.Empty ? cellSize : new CGSize(100, 100);
         }
 
+        /// <summary>
+        /// Update the path where to look for images and video
+        /// </summary>
+        /// <param name="imagesPath"></param>
         public void UpdateImageSource(string imagesPath)
         {
             var files = GetOrderedFiles(imagesPath);
@@ -74,6 +110,8 @@ namespace Chafu
             return null;
         }
 
+
+        /// <inheritdoc />
         public override UICollectionViewCell GetCell(UICollectionView collectionView, NSIndexPath indexPath)
         {
             var cell = collectionView.DequeueReusableCell(AlbumViewCell.Key, indexPath) as AlbumViewCell ??
@@ -155,8 +193,13 @@ namespace Chafu
             return value < min ? min : value > max ? max : value;
         }
 
+        /// <inheritdoc />
         public override nint GetItemsCount(UICollectionView collectionView, nint section) => Files?.Count ?? 0;
 
+        /// <summary>
+        /// Change the the currently shown <see cref="MediaItem"/>
+        /// </summary>
+        /// <param name="item"><see cref="MediaItem"/> to change to</param>
         public void ChangeMediaItem(MediaItem item)
         {
             if (item?.Path == null) return;
@@ -206,6 +249,7 @@ namespace Chafu
             _albumView.StopVideo();
         }
 
+        /// <inheritdoc />
         public override void GetCroppedImage(Action<UIImage> onImage)
         {
             var view = _albumView?.ImageCropView;
@@ -241,6 +285,7 @@ namespace Chafu
             });
         }
 
+        /// <inheritdoc />
         public override void ShowFirstImage()
         {
             DispatchQueue.MainQueue.DispatchAsync(() =>
@@ -253,6 +298,7 @@ namespace Chafu
             });
         }
 
+        /// <inheritdoc />
 		public override MediaItem DeleteCurrentMediaItem()
 		{
 		    var mediaItem = MediaItemFromPath(CurrentMediaPath);
@@ -281,6 +327,7 @@ namespace Chafu
             return string.IsNullOrEmpty(path) ? null : Files.FirstOrDefault(f => f.Path == path);
         }
 
+        /// <inheritdoc />
         public override event EventHandler CameraRollUnauthorized;
     }
 }

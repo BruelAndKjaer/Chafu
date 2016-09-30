@@ -12,6 +12,9 @@ using UIKit;
 
 namespace Chafu
 {
+    /// <summary>
+    /// PhotoGalleryDataSource used to showing images and videos from the Photo Library
+    /// </summary>
     public class PhotoGalleryDataSource : BaseAlbumDataSource, IPHPhotoLibraryChangeObserver
     {
         private readonly AlbumView _albumView;
@@ -20,13 +23,29 @@ namespace Chafu
         private PHAsset _asset;
         private readonly nfloat _scale;
 
+        /// <inheritdoc />
         public override event EventHandler CameraRollUnauthorized;
 
-        public PHFetchResult Videos { get; set; }
-        public PHFetchResult Images { get; set; }
-        public ObservableCollection<PHAsset> AllAssets { get; } = new ObservableCollection<PHAsset>();
-        public PHCachingImageManager ImageManager { get; private set; }
+        /// <inheritdoc />
+        public override ChafuMediaType CurrentMediaType { get; set; }
 
+        /// <inheritdoc />
+        public override string CurrentMediaPath { get; set; }
+
+        private PHFetchResult _videos;
+        private PHFetchResult _images;
+        private PHCachingImageManager _imageManager;
+
+        /// <summary>
+        /// Get all the shown assets
+        /// </summary>
+        public ObservableCollection<PHAsset> AllAssets { get; } = new ObservableCollection<PHAsset>();
+
+        /// <summary>
+        /// Create an instance of <see cref="PhotoGalleryDataSource"/>
+        /// </summary>
+        /// <param name="albumView"><see cref="AlbumView"/> attached to</param>
+        /// <param name="cellSize"><see cref="CGSize"/> with cell size. If <see cref="CGSize.Empty"/> it will default to 100x100</param>
         public PhotoGalleryDataSource(AlbumView albumView, CGSize cellSize)
         {
             _albumView = albumView;
@@ -40,19 +59,19 @@ namespace Chafu
         {
             DispatchQueue.MainQueue.DispatchAsync(() =>
             {
-                ImageManager = new PHCachingImageManager();
+                _imageManager = new PHCachingImageManager();
 
                 var options = new PHFetchOptions
                 {
                     SortDescriptors = new[] {new NSSortDescriptor("creationDate", false)}
                 };
 
-                Images = PHAsset.FetchAssets(PHAssetMediaType.Image, options);
-                Videos = PHAsset.FetchAssets(PHAssetMediaType.Video, options);
+                _images = PHAsset.FetchAssets(PHAssetMediaType.Image, options);
+                _videos = PHAsset.FetchAssets(PHAssetMediaType.Video, options);
 
                 var assets = new List<PHAsset>();
-                assets.AddRange(Images.OfType<PHAsset>());
-                assets.AddRange(Videos.OfType<PHAsset>());
+                assets.AddRange(_images.OfType<PHAsset>());
+                assets.AddRange(_videos.OfType<PHAsset>());
                 foreach (var asset in assets.OrderByDescending(a => a.CreationDate.SecondsSinceReferenceDate))
                     AllAssets.Add(asset);
 
@@ -63,22 +82,23 @@ namespace Chafu
             });
         }
 
+        /// <inheritdoc />
         public override UICollectionViewCell GetCell(UICollectionView collectionView, NSIndexPath indexPath)
         {
             var cell = collectionView.DequeueReusableCell(AlbumViewCell.Key, indexPath) as AlbumViewCell ??
                        new AlbumViewCell();
 
-            if (ImageManager == null) return cell;
+            if (_imageManager == null) return cell;
 
             if (cell.Tag != 0)
-                ImageManager.CancelImageRequest((int)cell.Tag);
+                _imageManager.CancelImageRequest((int)cell.Tag);
 
             var asset = AllAssets[(int)indexPath.Item];
 
             cell.IsVideo = asset.MediaType == PHAssetMediaType.Video;
             cell.Duration = asset.Duration;
 
-            cell.Tag = ImageManager.RequestImageForAsset(asset, _cellSize, PHImageContentMode.AspectFit, null,
+            cell.Tag = _imageManager.RequestImageForAsset(asset, _cellSize, PHImageContentMode.AspectFit, null,
                 (result, info) => SetImageCellImage(cell, result));
 
             return cell;
@@ -90,23 +110,30 @@ namespace Chafu
             cell.Tag = 0;
         }
 
+        /// <inheritdoc />
         public override nint NumberOfSections(UICollectionView collectionView) => 1;
 
+        /// <inheritdoc />
         public override nint GetItemsCount(UICollectionView collectionView, nint section) => AllAssets?.Count ?? 0;
 
+        /// <summary>
+        /// Photo Library change observer. Triggers when changes are made to the photo library such as new pictures were 
+        /// added or pictures were removed
+        /// </summary>
+        /// <param name="changeInstance"><see cref="PHChange"/> with changes</param>
         public void PhotoLibraryDidChange(PHChange changeInstance)
         {
             DispatchQueue.MainQueue.DispatchAsync(() =>
             {
                 //var collectionView = _albumView.CollectionView;
-                var imageCollectionChanges = changeInstance.GetFetchResultChangeDetails(Images);
-                var videoCollctionChanges = changeInstance.GetFetchResultChangeDetails(Videos);
+                var imageCollectionChanges = changeInstance.GetFetchResultChangeDetails(_images);
+                var videoCollectionChanges = changeInstance.GetFetchResultChangeDetails(_videos);
 
                 if (imageCollectionChanges != null)
-                    Images = AdjustAssets(Images, imageCollectionChanges);
+                    _images = AdjustAssets(_images, imageCollectionChanges);
 
-                if (videoCollctionChanges != null)
-                    Videos = AdjustAssets(Videos, videoCollctionChanges);
+                if (videoCollectionChanges != null)
+                    _videos = AdjustAssets(_videos, videoCollectionChanges);
             });
         }
 
@@ -203,10 +230,13 @@ namespace Chafu
 
         private void ResetCachedAssets()
         {
-            ImageManager?.StopCaching();
+            _imageManager?.StopCaching();
             _previousPreheatRect = CGRect.Empty;
         }
 
+        /// <summary>
+        /// Update cached assets to fit the preheated rect
+        /// </summary>
         public void UpdateCachedAssets()
         {
             var collectionView = _albumView.CollectionView;
@@ -222,9 +252,9 @@ namespace Chafu
                 var assetsToStartCaching = AssetsAtIndexPaths(addedIndexPaths);
                 var assetsToStopCaching = AssetsAtIndexPaths(removedIndexPaths);
 
-                ImageManager?.StartCaching(assetsToStartCaching, _cellSize, PHImageContentMode.AspectFill,
+                _imageManager?.StartCaching(assetsToStartCaching, _cellSize, PHImageContentMode.AspectFill,
                     null);
-                ImageManager?.StopCaching(assetsToStopCaching, _cellSize, PHImageContentMode.AspectFill,
+                _imageManager?.StopCaching(assetsToStopCaching, _cellSize, PHImageContentMode.AspectFill,
                     null);
 
                 _previousPreheatRect = preheatRect;
@@ -285,6 +315,10 @@ namespace Chafu
                 paths.Select(path => AllAssets[(int)path.Item]).ToArray();
         }
 
+        /// <summary>
+        /// Check whether we are authorized to use the Photo Library
+        /// </summary>
+        /// <param name="onAuthorized">Callback <see cref="Action"/> which triggers when we are authorized</param>
         public void CheckPhotoAuthorization(Action onAuthorized)
         {
             PHPhotoLibrary.RequestAuthorization(status =>
@@ -302,6 +336,10 @@ namespace Chafu
             });
         }
 
+        /// <summary>
+        /// Change currently shown asset in the preview
+        /// </summary>
+        /// <param name="asset"></param>
         public void ChangeAsset(PHAsset asset)
         {
             if (asset == null) return;
@@ -314,9 +352,9 @@ namespace Chafu
             });
 
             if (asset.MediaType == PHAssetMediaType.Image)
-                ChangeImage(asset, ImageManager, new PHImageRequestOptions { NetworkAccessAllowed = true });
+                ChangeImage(asset, _imageManager, new PHImageRequestOptions { NetworkAccessAllowed = true });
             else if (asset.MediaType == PHAssetMediaType.Video)
-                ChangeVideo(asset, ImageManager, new PHVideoRequestOptions { NetworkAccessAllowed = true });
+                ChangeVideo(asset, _imageManager, new PHVideoRequestOptions { NetworkAccessAllowed = true });
         }
 
         private void ChangeImage(PHAsset asset, PHImageManager imageManager, PHImageRequestOptions options)
@@ -355,6 +393,11 @@ namespace Chafu
                         })));
         }
 
+        /// <summary>
+        /// Get the cropped image
+        /// </summary>
+        /// <param name="onImage">Callback <see cref="Action{T}"/> with <see cref="UIImage"/>, 
+        /// which triggers when the cropped image is ready</param>
         public override void GetCroppedImage(Action<UIImage> onImage)
         {
             var cropRect = GetCropRect(_albumView.ImageCropView);
@@ -392,17 +435,18 @@ namespace Chafu
 
         private static CGSize GetTargetSize(CGRect cropRect, PHAsset asset, nfloat scale)
         {
-            var targetWidth = Math.Floor((float)asset.PixelWidth * cropRect.Width);
-            var targetHeight = Math.Floor((float)asset.PixelHeight * cropRect.Height);
-            var dimension = Math.Max(Math.Min(targetHeight, targetWidth), 1024 * scale);
+            var targetWidth = Math.Floor((float) asset.PixelWidth*cropRect.Width);
+            var targetHeight = Math.Floor((float) asset.PixelHeight*cropRect.Height);
+            var dimension = Math.Max(Math.Min(targetHeight, targetWidth), 1024*scale);
 
             var targetSize = new CGSize(dimension, dimension);
 
             return targetSize;
         }
 
-        public override ChafuMediaType CurrentMediaType { get; set; }
-
+        /// <summary>
+        /// Show the first image in <see cref="AllAssets"/> in the preview
+        /// </summary>
         public override void ShowFirstImage()
         {
             DispatchQueue.MainQueue.DispatchAsync(() =>
@@ -413,11 +457,16 @@ namespace Chafu
             });
         }
 
+        /// <summary>
+        /// Delete the current media item (don't use me)
+        /// </summary>
+        /// <returns></returns>
 		public override MediaItem DeleteCurrentMediaItem()
 		{
 			throw new NotImplementedException();
 		}
 
+        /// <inheritdoc />
         protected override void Dispose(bool disposing)
         {
             if (disposing)

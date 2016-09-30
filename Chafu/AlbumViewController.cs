@@ -6,13 +6,35 @@ using UIKit;
 
 namespace Chafu
 {
+    /// <summary>
+    /// AlbumViewController is used if you want to show a stand-alone media picker without camera
+    /// </summary>
     [Register("AlbumViewController")]
     public class AlbumViewController : BaseChafuViewController
     {
+        /// <summary>
+        /// <see cref="EventHandler{t}"/> with <see cref="UIImage"/> which fires when an Image is selected
+        /// </summary>
         public event EventHandler<UIImage> ImageSelected;
+
+        /// <summary>
+        /// <see cref="EventHandler{t}"/> with the <see cref="NSUrl"/> of the video, which fires when a Video is selcted
+        /// </summary>
         public event EventHandler<NSUrl> VideoSelected;
+
+        /// <summary>
+        /// <see cref="EventHandler"/> which fires when this <see cref="AlbumViewController"/> is dismissed
+        /// </summary>
         public event EventHandler Closed;
+
+        /// <summary>
+        /// <see cref="EventHandler"/> which fires when Extra button is pressed
+        /// </summary>
         public event EventHandler Extra;
+
+        /// <summary>
+        /// <see cref="EventHandler{T}"/> with <see cref="MediaItem"/> which fires when either a Image or Video is deleted
+        /// </summary>
         public event EventHandler<MediaItem> Deleted;
 
         private AlbumView _album;
@@ -21,6 +43,9 @@ namespace Chafu
         private bool _showDoneButton;
 		private bool _showDeleteButton;
 
+        /// <summary>
+        /// Get or set whether to show the Extra button in the Menu
+        /// </summary>
         public bool ShowExtraButton
         {
             get { return _showExtraButton; }
@@ -32,6 +57,9 @@ namespace Chafu
             }
         }
 
+        /// <summary>
+        /// Get or set whether to show the Done button in the Menu
+        /// </summary>
         public bool ShowDoneButton
         {
             get { return _showDoneButton; }
@@ -43,6 +71,9 @@ namespace Chafu
             }
         }
 
+        /// <summary>
+        /// Get or set whether to show the Delete button in the Menu
+        /// </summary>
 		public bool ShowDeleteButton
 		{
 			get { return _showDeleteButton; }
@@ -54,6 +85,7 @@ namespace Chafu
 			}
 		}
 
+        /// <inheritdoc />
         public override void ViewDidLoad()
         {
             base.ViewDidLoad();
@@ -107,7 +139,8 @@ namespace Chafu
 
             View.BringSubviewToFront(_menu);
         }
-        
+
+        /// <inheritdoc />
         public override void ViewDidAppear(bool animated)
         {
             base.ViewDidAppear(animated);
@@ -118,6 +151,7 @@ namespace Chafu
 			_menu.Deleted += OnDelete;
         }
 
+        /// <inheritdoc />
         public override void ViewDidDisappear(bool animated)
         {
             _menu.Done -= OnDone;
@@ -128,6 +162,11 @@ namespace Chafu
             base.ViewDidDisappear(animated);
         }
 
+        /// <summary>
+        /// Dismiss this <see cref="AlbumViewController"/>
+        /// </summary>
+        /// <param name="animated">Optional: <see cref="bool"/> describing whether to dismiss animated or not. 
+        /// Default value is <c>true</c></param>
         public void Dismiss(bool animated = true)
         {
             DismissViewController(animated, () => Closed?.Invoke(this, EventArgs.Empty));
@@ -234,11 +273,16 @@ namespace Chafu
             Dismiss();
         }
 
+        /// <inheritdoc />
         public override UIInterfaceOrientationMask GetSupportedInterfaceOrientations() => UIInterfaceOrientationMask.Portrait;
+
+        /// <inheritdoc />
         public override UIInterfaceOrientation InterfaceOrientation => UIInterfaceOrientation.Portrait;
 
+        /// <inheritdoc />
         public override bool PrefersStatusBarHidden() => Configuration.PreferStatusbarHidden;
 
+        /// <inheritdoc />
         protected override void Dispose(bool disposing)
         {
             if (disposing)

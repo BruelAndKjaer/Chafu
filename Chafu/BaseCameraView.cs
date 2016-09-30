@@ -7,31 +7,88 @@ using Cirrious.FluentLayouts.Touch;
 
 namespace Chafu
 {
-    public class BaseCameraView : UIView
+    /// <summary>
+    /// Abstract base class used for camera and video view
+    /// </summary>
+    public abstract class BaseCameraView : UIView
     {
-        protected AVCaptureSession Session;
-        protected UIView FocusView;
-        protected UIImage FlashOnImage;
-        protected UIImage FlashOffImage;
-        protected UIView PreviewContainer;
+        /// <summary>
+        /// Get or set the <see cref="AVCaptureSession"/>
+        /// </summary>
+        protected AVCaptureSession Session { get; set; }
 
-        protected UIButton FlipButton;
-        protected UIButton FlashButton;
-        protected UIButton ShutterButton;
-        protected UIView ButtonContainer;
+        /// <summary>
+        /// Get or set the <see cref="UIView"/> for indicating focus
+        /// </summary>
+        protected UIView FocusView { get; private set; }
 
-        protected AVCaptureDevice Device;
-        protected AVCaptureDeviceInput VideoInput;
+        /// <summary>
+        /// Get or set the <see cref="UIImage"/> for toggling the flash on
+        /// </summary>
+        protected UIImage FlashOnImage { get; private set; }
 
+        /// <summary>
+        /// Get or set the <see cref="UIImage"/> for toggling the flash off
+        /// </summary>
+        protected UIImage FlashOffImage { get; private set; }
+
+        /// <summary>
+        /// Get or set the <see cref="UIView"/> for the preview
+        /// </summary>
+        protected UIView PreviewContainer { get; }
+
+        /// <summary>
+        /// Get or set the <see cref="UIButton"/> used to flip the camera
+        /// </summary>
+        protected UIButton FlipButton { get; }
+
+        /// <summary>
+        /// Get or set the <see cref="UIButton"/> used to toggle flash
+        /// </summary>
+        protected UIButton FlashButton { get; }
+
+        /// <summary>
+        /// Get or set the <see cref="UIButton"/> used for the shutter button
+        /// </summary>
+        protected UIButton ShutterButton { get; }
+
+        /// <summary>
+        /// Get or set the container used for flip, flash and shutter buttons
+        /// </summary>
+        protected UIView ButtonContainer { get; }
+
+        /// <summary>
+        /// Get or set the <see cref="AVCaptureDevice"/>
+        /// </summary>
+        protected AVCaptureDevice Device { get; set; }
+
+        /// <summary>
+        /// Get or set the <see cref="AVCaptureDeviceInput"/>, video input use for preview
+        /// </summary>
+        protected AVCaptureDeviceInput VideoInput { get; set; }
+
+        /// <summary>
+        /// <see cref="EventHandler"/> which fires when access to the camera was rejected
+        /// </summary>
         public event EventHandler CameraUnauthorized;
 
+        /// <summary>
+        /// Get whether the usage of the camera is authorized
+        /// </summary>
         protected static bool CameraAvailable
             => AVCaptureDevice.GetAuthorizationStatus(AVMediaType.Video) == AVAuthorizationStatus.Authorized;
 
-        public BaseCameraView(IntPtr handle) 
+        /// <summary>
+        /// Initialize
+        /// </summary>
+        /// <param name="handle"></param>
+        protected BaseCameraView(IntPtr handle) 
             : base(handle) { }
 
-        public BaseCameraView() { 
+        /// <summary>
+        /// Initialize a new Camera View
+        /// </summary>
+        protected BaseCameraView() { 
             Hidden = true;
             BackgroundColor = Configuration.BackgroundColor;
 
@@ -134,6 +191,9 @@ namespace Chafu
             BringSubviewToFront(ButtonContainer);
         }
 
+        /// <summary>
+        /// Set up images for buttons and set up gesture recognizers
+        /// </summary>
         protected void Initialize()
         {
             if (Session != null)
@@ -162,6 +222,9 @@ namespace Chafu
             Hidden = false;
         }
 
+        /// <summary>
+        /// Start the camera
+        /// </summary>
         public virtual void StartCamera()
         {
             var status = AVCaptureDevice.GetAuthorizationStatus(AVMediaType.Video);
@@ -173,12 +236,15 @@ namespace Chafu
             }
         }
 
+        /// <summary>
+        /// Stop the camera
+        /// </summary>
         public virtual void StopCamera()
         {
             Session?.StopRunning();
         }
 
-        protected void Focus(UITapGestureRecognizer recognizer)
+        private void Focus(UITapGestureRecognizer recognizer)
         {
             var point = recognizer.LocationInView(this);
             var viewSize = Bounds.Size;
@@ -223,6 +289,9 @@ namespace Chafu
             });
         }
 
+        /// <summary>
+        /// Flip the camera
+        /// </summary>
         protected void Flip()
         {
             if (!CameraAvailable) return;
@@ -262,6 +331,10 @@ namespace Chafu
             Session?.StartRunning();
         }
 
+        /// <summary>
+        /// Toggle the flash or torch
+        /// </summary>
+        /// <param name="torch"><see cref="bool"/> indicating whether to use torch for video</param>
         protected void Flash(bool torch)
         {
             if (!CameraAvailable) return;
@@ -300,6 +373,10 @@ namespace Chafu
             }
         }
 
+        /// <summary>
+        /// Create flash configuration
+        /// </summary>
+        /// <param name="torch"><see cref="bool"/></param>
         protected void FlashConfiguration(bool torch)
         {
             try
@@ -325,6 +402,9 @@ namespace Chafu
             catch { /* ignore */ }
         }
 
+        /// <summary>
+        /// Display No Camera when camera is missing or running in simulator
+        /// </summary>
         protected void NoCameraAvailable()
         {
             var noCameraText = new UILabel

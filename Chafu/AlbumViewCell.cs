@@ -4,8 +4,14 @@ using Cirrious.FluentLayouts.Touch;
 
 namespace Chafu
 {
+    /// <summary>
+    /// View cell displayed in the <see cref="AlbumView"/>
+    /// </summary>
     public sealed class AlbumViewCell : UICollectionViewCell
     {
+        /// <summary>
+        /// Key for cell reuse
+        /// </summary>
         public const string Key = "AlbumViewCell";
 
         private UIImageView _imageView;
@@ -15,6 +21,7 @@ namespace Chafu
         private bool _isVideo;
         private double _duration;
 
+        /// <inheritdoc/>
         public override bool Selected
         {
             get
@@ -29,13 +36,18 @@ namespace Chafu
             }
         }
 
+        /// <summary>
+        /// Image displayed in the view cell
+        /// </summary>
         public UIImage Image
         {
             get { return _imageView.Image; }
             set { _imageView.Image = value; }
         }
 
-        
+        /// <summary>
+        /// Duration in seconds used for showing a time stamp on video cells
+        /// </summary>
         public double Duration
         {
             get { return _duration; }
@@ -53,6 +65,9 @@ namespace Chafu
             _timeStamp.Text = timestamp;
         }
 
+        /// <summary>
+        /// Get or set whether the cell is a video
+        /// </summary>
         public bool IsVideo
         {
             get { return _isVideo; }
@@ -64,11 +79,17 @@ namespace Chafu
             }
         }
 
+        /// <summary>
+        /// Create a <see cref="AlbumViewCell"/>
+        /// </summary>
         public AlbumViewCell()
         {
             CreateView();
         }
 
+        /// <summary>
+        /// Create a <see cref="AlbumViewCell"/>, used by iOS with native handle
+        /// </summary>
         public AlbumViewCell(IntPtr handle) : base(handle)
         {
             CreateView();

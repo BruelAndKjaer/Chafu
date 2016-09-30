@@ -6,13 +6,37 @@ using UIKit;
 
 namespace Chafu
 {
+    /// <summary>
+    /// <see cref="ChafuViewController"/>. Present this when you want to show images from the camera roll 
+    /// and when you want to take new pictures and video
+    /// </summary>
     [Register("ChafuViewController")]
     public class ChafuViewController : BaseChafuViewController
     {
+        /// <summary>
+        /// <see cref="EventHandler"/> which triggers when this ViewController is dismissed
+        /// </summary>
 		public event EventHandler Closed;
+
+        /// <summary>
+        /// <see cref="EventHandler{T}"/> with <see cref="UIImage"/> which triggers when an image is selected
+        /// </summary>
 		public event EventHandler<UIImage> ImageSelected;
+
+        /// <summary>
+        /// <see cref="EventHandler{T}"/> with <see cref="NSUrl"/> containing the path to the video, 
+        /// which triggers when video is selected
+        /// </summary>
 		public event EventHandler<NSUrl> VideoSelected;
+
+        /// <summary>
+        /// <see cref="EventHandler"/> which triggers when permission was rejected to the Photo Library
+        /// </summary>
         public event EventHandler CameraRollUnauthorized;
+
+        /// <summary>
+        /// <see cref="EventHandler"/> which triggers when permission was rejected to the Camera
+        /// </summary>
         public event EventHandler CameraUnauthorized;
 
 		private CameraView _cameraView;
@@ -35,6 +59,7 @@ namespace Chafu
         /// <value><c>true</c> if has video; otherwise, <c>false</c>.</value>
 		public bool HasVideo { get; set; } = false;
 
+        /// <inheritdoc />
         public override void ViewDidLoad ()
 		{
 			base.ViewDidLoad ();
@@ -190,7 +215,8 @@ namespace Chafu
 			}
 		}
 
-		public override void ViewDidAppear (bool animated)
+        /// <inheritdoc />
+        public override void ViewDidAppear (bool animated)
 		{
 			base.ViewDidAppear (animated);
 
@@ -217,13 +243,14 @@ namespace Chafu
             _cameraButton.TouchUpInside += CameraButtonPressed;
 			_videoButton.TouchUpInside += VideoButtonPressed;
 			
-            AlbumDataSource.CameraRollUnauthorized += CameraRollUnauthoized;
+            AlbumDataSource.CameraRollUnauthorized += OnCameraRollUnauthorized;
             _cameraView.CameraUnauthorized += OnCameraUnauthorized;
 
 		    ChangeMode(Configuration.ModeOrder == ModeOrder.LibraryFirst ? 
                 Mode.Library : Mode.Camera);
 		}
 
+        /// <inheritdoc />
         public override void ViewWillDisappear (bool animated)
 		{
 			base.ViewWillDisappear (animated);
@@ -234,19 +261,20 @@ namespace Chafu
             _menuView.Done -= DoneButtonPressed;
             _cameraButton.TouchUpInside -= CameraButtonPressed;
 			_videoButton.TouchUpInside -= VideoButtonPressed;
-            AlbumDataSource.CameraRollUnauthorized -= CameraRollUnauthoized;
+            AlbumDataSource.CameraRollUnauthorized -= OnCameraRollUnauthorized;
             _cameraView.CameraUnauthorized -= OnCameraUnauthorized;
             if (_videoView != null)
                 _videoView.CameraUnauthorized -= OnCameraUnauthorized;
 		}
 
-		public override bool PrefersStatusBarHidden () => Configuration.PreferStatusbarHidden;
+        /// <inheritdoc />
+        public override bool PrefersStatusBarHidden () => Configuration.PreferStatusbarHidden;
 
         private void OnCameraUnauthorized(object sender, EventArgs e){
             CameraUnauthorized?.Invoke(this, e);
         }
 
-        private void CameraRollUnauthoized(object sender, EventArgs e)
+        private void OnCameraRollUnauthorized(object sender, EventArgs e)
         {
             CameraRollUnauthorized?.Invoke(this, e);
         }
@@ -256,6 +284,10 @@ namespace Chafu
 			Dismiss();
 		}
 
+        /// <summary>
+        /// Dismiss the View Controller
+        /// </summary>
+        /// <param name="animated"><see cref="bool"/> indicating whether to dismiss animated</param>
         public void Dismiss(bool animated = true)
         {
             DismissViewController(animated, () => {
@@ -409,7 +441,10 @@ namespace Chafu
 			_cameraView?.StopCamera();
 		}
 
-		public override UIInterfaceOrientationMask GetSupportedInterfaceOrientations () => UIInterfaceOrientationMask.Portrait;
-		public override UIInterfaceOrientation InterfaceOrientation => UIInterfaceOrientation.Portrait;
+        /// <inheritdoc />
+        public override UIInterfaceOrientationMask GetSupportedInterfaceOrientations () => UIInterfaceOrientationMask.Portrait;
+
+        /// <inheritdoc />
+        public override UIInterfaceOrientation InterfaceOrientation => UIInterfaceOrientation.Portrait;
 	}
 }

@@ -4,13 +4,22 @@ using UIKit;
 
 namespace Chafu
 {
+    /// <summary>
+    /// View used to scroll and zoom images for cropping
+    /// </summary>
     public class ImageCropView : UIScrollView
     {
         private readonly UIImageView _imageView = new UIImageView();
         private UIImage _image;
 
+        /// <summary>
+        /// Get or set the <see cref="CGSize"/> with the size of the image
+        /// </summary>
         public CGSize ImageSize { get; set; }
 
+        /// <summary>
+        /// Get or set the <see cref="UIImage"/>
+        /// </summary>
         public UIImage Image
         {
             get { return _image; }
@@ -74,6 +83,9 @@ namespace Chafu
             }
         }
 
+        /// <summary>
+        /// Create a new <see cref="ImageCropView"/>
+        /// </summary>
         public ImageCropView()
         {
             BackgroundColor = Configuration.BackgroundColor;
@@ -93,13 +105,16 @@ namespace Chafu
             Delegate = new ScrollViewDelegate(this);
         }
 
+        /// <summary>
+        /// Get or set whether the view is scrollable
+        /// </summary>
         public bool Scrollable
         {
             get { return ScrollEnabled; }
             set { ScrollEnabled = value; }
         }
 
-        public class ScrollViewDelegate : UIScrollViewDelegate
+        private class ScrollViewDelegate : UIScrollViewDelegate
         {
             private readonly ImageCropView _view;
 

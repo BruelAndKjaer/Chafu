@@ -6,10 +6,22 @@ using UIKit;
 
 namespace Chafu
 {
+    /// <summary>
+    /// Extension method for <see cref="UIKit"/> classes
+    /// </summary>
     public static class UiKitExtensions
     {
+        /// <summary>
+        /// Name for border added to tab items
+        /// </summary>
         public const string BorderLayerName = "FSBottomBorder";
 
+        /// <summary>
+        /// Add bottom border to UIView
+        /// </summary>
+        /// <param name="self"><see cref="UIView"/> to add border to</param>
+        /// <param name="color"><see cref="UIColor"/> of the border</param>
+        /// <param name="width">Border width</param>
         public static void AddBottomBorder(this UIView self, UIColor color, float width)
         {
             var border = new CALayer
@@ -22,28 +34,79 @@ namespace Chafu
             self.Layer.AddSublayer(border);
         }
 
-        public enum UIImageAligment
+        /// <summary>
+        /// Alignment for scaling images
+        /// </summary>
+        public enum UIImageAlignment
         {
+            /// <summary>
+            /// Center align
+            /// </summary>
             Center,
+            /// <summary>
+            /// Left align
+            /// </summary>
             Left,
+            /// <summary>
+            /// Top align
+            /// </summary>
             Top,
+            /// <summary>
+            /// Right align
+            /// </summary>
             Right,
+            /// <summary>
+            /// Bottom align
+            /// </summary>
             Bottom,
+            /// <summary>
+            /// Top-left align
+            /// </summary>
             TopLeft,
+            /// <summary>
+            /// Bottom-right align
+            /// </summary>
             BottomRight,
+            /// <summary>
+            /// Bottom-left align
+            /// </summary>
             BottomLeft,
+            /// <summary>
+            /// Top-right align
+            /// </summary>
             TopRight
         }
 
+        /// <summary>
+        /// Scale mode for scaling images
+        /// </summary>
         public enum UIImageScaleMode
         {
+            /// <summary>
+            /// Fill
+            /// </summary>
             Fill,
+            /// <summary>
+            /// Fill with aspect ratio preserved
+            /// </summary>
             AspectFill,
+            /// <summary>
+            /// Fit image with aspect ratio preserved
+            /// </summary>
             AspectFit
         }
 
+        /// <summary>
+        /// Scale image
+        /// </summary>
+        /// <param name="image"><see cref="UIImage"/> to scale</param>
+        /// <param name="size"><see cref="CGSize"/> size to scale to</param>
+        /// <param name="scaleMode"><see cref="UIImageScaleMode"/> scale mode</param>
+        /// <param name="alignment"><see cref="UIImageAlignment"/> alignment</param>
+        /// <param name="trim">Trim blank space</param>
+        /// <returns></returns>
         public static UIImage ScaleImage(this UIImage image, CGSize size, UIImageScaleMode scaleMode = UIImageScaleMode.AspectFit,
-            UIImageAligment alignment = UIImageAligment.Center, bool trim = false)
+            UIImageAlignment alignment = UIImageAlignment.Center, bool trim = false)
         {
             var width = size == CGSize.Empty ? 1 : size.Width;
             var height = size == CGSize.Empty ? 1 : size.Height;
@@ -84,35 +147,35 @@ namespace Chafu
             {
                 switch (alignment)
                 {
-                    case UIImageAligment.Center:
+                    case UIImageAlignment.Center:
                         originX = (float)((canvasWidth - newWidth) / 2);
                         originY = (float)((canvasHeight - newHeight) / 2);
                         break;
-                    case UIImageAligment.Top:
+                    case UIImageAlignment.Top:
                         originX = (float)((canvasWidth - newWidth) / 2);
                         break;
-                    case UIImageAligment.Left:
+                    case UIImageAlignment.Left:
                         originY = (float)((canvasHeight - newHeight) / 2);
                         break;
-                    case UIImageAligment.Bottom:
+                    case UIImageAlignment.Bottom:
                         originX = (float)((canvasWidth - newWidth) / 2);
                         originY = (float)(canvasHeight - newHeight);
                         break;
-                    case UIImageAligment.Right:
+                    case UIImageAlignment.Right:
                         originX = (float)(canvasWidth - newWidth);
                         originY = (float)((canvasHeight - newHeight) / 2);
                         break;
-                    case UIImageAligment.TopRight:
+                    case UIImageAlignment.TopRight:
                         originX = (float)(canvasWidth - newWidth);
                         break;
-                    case UIImageAligment.BottomLeft:
+                    case UIImageAlignment.BottomLeft:
                         originY = (float)(canvasHeight - newHeight);
                         break;
-                    case UIImageAligment.BottomRight:
+                    case UIImageAlignment.BottomRight:
                         originX = (float)(canvasWidth - newWidth);
                         originY = (float)(canvasHeight - newHeight);
                         break;
-                    case UIImageAligment.TopLeft:
+                    case UIImageAlignment.TopLeft:
                     default:
                         break;
                 }
@@ -124,7 +187,11 @@ namespace Chafu
             return scaledImage;
         }
 
-
+        /// <summary>
+        /// Convert <see cref="CMTime"/> to double
+        /// </summary>
+        /// <param name="duration"><see cref="CMTime"/> to convert</param>
+        /// <returns><see cref="double"/> with seconds</returns>
         public static double ToDouble(this CMTime duration)
         {
             if (duration.IsIndefinite)

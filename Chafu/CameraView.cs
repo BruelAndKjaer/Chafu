@@ -9,16 +9,30 @@ using UIKit;
 
 namespace Chafu
 {
+    /// <summary>
+    /// Camera view used to preview camera and take pictures
+    /// </summary>
     public class CameraView : BaseCameraView
     {
         private AVCaptureStillImageOutput _imageOutput;
         private NSObject _willEnterForegroundObserver;
         private Action<UIImage> _onImage;
 
+        /// <summary>
+        /// <see cref="EventHandler{T}"/> with <see cref="NSError"/> which fires when saving image to photos album failed
+        /// </summary>
         public event EventHandler<NSError> SaveToPhotosAlbumError;
 
+        /// <summary>
+        /// Create a new camera view (used by iOS internally)
+        /// </summary>
+        /// <param name="handle"><see cref="IntPtr"/> handle</param>
         public CameraView(IntPtr handle) 
             : base(handle) { CreateView(); }
+
+        /// <summary>
+        /// Create a new camera view
+        /// </summary>
         public CameraView() { CreateView(); }
 
         private void CreateView()
@@ -103,6 +117,11 @@ namespace Chafu
 
         private bool _initialized;
 
+        /// <summary>
+        /// Initialize camera
+        /// </summary>
+        /// <param name="onImage">Callback <see cref="Action{T}"/> with <see cref="UIImage"/>, 
+        /// triggered when picture is taken</param>
         public void Initialize(Action<UIImage> onImage)
         {
             if (_initialized)
@@ -127,6 +146,9 @@ namespace Chafu
             _initialized = true;
         }
 
+        /// <summary>
+        /// Start the camera
+        /// </summary>
         public override void StartCamera()
         {
             if (Session == null) {
@@ -175,6 +197,11 @@ namespace Chafu
             StartCamera();
         }
 
+        /// <summary>
+        /// Get the orientation of view and preview
+        /// </summary>
+        /// <returns><see cref="Tuple{T,T}"/> with <see cref="AVCaptureVideoOrientation"/> and <see cref="UIImageOrientation"/>
+        /// </returns>
         public Tuple<AVCaptureVideoOrientation, UIImageOrientation> GetOrientation()
         {
             var orientation = UIDevice.CurrentDevice.Orientation;
@@ -196,6 +223,7 @@ namespace Chafu
             }
         }
 
+        /// <inheritdoc />
         protected override void Dispose(bool disposing)
         {
             if (disposing)

@@ -4,19 +4,43 @@ using UIKit;
 
 namespace Chafu
 {
+    /// <summary>
+    /// Menu View for title and buttons
+    /// </summary>
     public class MenuView : UIView
     {
+        /// <summary>
+        /// <see cref="EventHandler"/> which fires when Close button is pressed
+        /// </summary>
         public event EventHandler Closed;
+
+        /// <summary>
+        /// <see cref="EventHandler"/> which fires when Done button is pressed
+        /// </summary>
         public event EventHandler Done;
+
+        /// <summary>
+        /// <see cref="EventHandler"/> which fires when Extra button is pressed
+        /// </summary>
         public event EventHandler Extra;
+
+        /// <summary>
+        /// <see cref="EventHandler"/> which fires when Deleted button is pressed
+        /// </summary>
 		public event EventHandler Deleted;
 
+        /// <summary>
+        /// Get or set the Menu title
+        /// </summary>
         public string Title
         {
             get { return MenuTitle.Text; }
             set { MenuTitle.Text = value; }
         }
 
+        /// <summary>
+        /// Get or set whether to hide the Done button
+        /// </summary>
         public bool DoneButtonHidden
         {
             get { return DoneButton.Hidden; }
@@ -29,12 +53,18 @@ namespace Chafu
             }
         }
 
+        /// <summary>
+        /// Get or set whether to hide the Close button
+        /// </summary>
         public bool CloseButtonHidden
         {
             get { return CloseButton.Hidden; }
             set { CloseButton.Hidden = value; }
         }
 
+        /// <summary>
+        /// Get or set whether to hide the Extra button
+        /// </summary>
         public bool ExtraButtonHidden
         {
             get { return ExtraButton.Hidden; }
@@ -47,6 +77,9 @@ namespace Chafu
             }
         }
 
+        /// <summary>
+        /// Get or set whether to hide the Delete button
+        /// </summary>
 		public bool DeleteButtonHidden
 		{
 			get { return DeleteButton.Hidden; }
@@ -59,12 +92,34 @@ namespace Chafu
 			}
 		}
 
+        /// <summary>
+        /// Get the Done button
+        /// </summary>
         public UIButton DoneButton { get; }
+
+        /// <summary>
+        /// Get the Close button
+        /// </summary>
         public UIButton CloseButton { get; }
+
+        /// <summary>
+        /// Get the Extra button
+        /// </summary>
         public UIButton ExtraButton { get; }
+
+        /// <summary>
+        /// Get the Delete button
+        /// </summary>
 		public UIButton DeleteButton { get; }
+
+        /// <summary>
+        /// Get the Menu title view
+        /// </summary>
         public UILabel MenuTitle { get; }
 
+        /// <summary>
+        /// Create a <see cref="MenuView"/>
+        /// </summary>
         public MenuView()
         {
             CloseButton = CreateButton("CloseButton");
@@ -133,7 +188,7 @@ namespace Chafu
 			DeleteButtonHidden = true;
         }
 
-		private UIButton CreateButton(string accessibilityLabel)
+		private static UIButton CreateButton(string accessibilityLabel)
 		{
 			return new UIButton
 			{
@@ -168,6 +223,7 @@ namespace Chafu
 			Deleted?.Invoke(sender, e);
 		}
 
+        /// <inheritdoc />
         public override void UpdateConstraints()
         {
             RemoveConstraints(Constraints);
@@ -208,6 +264,7 @@ namespace Chafu
             base.UpdateConstraints();
         }
 
+        /// <inheritdoc />
         protected override void Dispose(bool disposing)
         {
             if (disposing)

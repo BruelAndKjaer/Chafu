@@ -3,15 +3,23 @@ using UIKit;
 
 namespace Chafu
 {
+    /// <summary>
+    /// Base class used for Album Delegate
+    /// </summary>
     public abstract class BaseAlbumDelegate : UICollectionViewDelegate
     {
         private readonly AlbumView _albumView;
 
+        /// <summary>
+        /// Instantiate a AlbumDelegate
+        /// </summary>
+        /// <param name="albumView"><see cref="AlbumView"/> the delegate is attached to</param>
         protected BaseAlbumDelegate(AlbumView albumView)
         {
             _albumView = albumView;
         }
 
+        /// <inheritdoc />
         public override void ItemSelected(UICollectionView collectionView, NSIndexPath indexPath)
         {
             UIView.AnimateNotify(0.2, 0.0, UIViewAnimationOptions.CurveEaseOut, () =>

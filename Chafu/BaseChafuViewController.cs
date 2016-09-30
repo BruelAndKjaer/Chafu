@@ -4,13 +4,16 @@ using UIKit;
 
 namespace Chafu
 {
+    /// <summary>
+    /// Base UIViewController used for sharing common methods and properties
+    /// </summary>
     public class BaseChafuViewController : UIViewController
     {
         /// <summary>
         /// Gets the album collectionview data source. Use <see cref="LazyDataSource"/> to create your own Data Source.
         /// </summary>
         /// <value>The album data source.</value>
-        public BaseAlbumDataSource AlbumDataSource { get; protected set; }
+        public BaseAlbumDataSource AlbumDataSource { get; set; }
 
         /// <summary>
         /// Gets the album delegate. Use <see cref="LazyDelegate"/> to create your own Delegate.
@@ -18,9 +21,15 @@ namespace Chafu
         /// <value>The album delegate.</value>
 		public BaseAlbumDelegate AlbumDelegate { get; protected set; }
 
+        /// <summary>
+        /// Lazy initializer for the <see cref="AlbumDataSource"/>
+        /// </summary>
         public Func<AlbumView, CGSize, BaseAlbumDataSource> LazyDataSource { get; set; } =
             (view, size) => new PhotoGalleryDataSource(view, size);
 
+        /// <summary>
+        /// Lazy initializer for the <see cref="AlbumDelegate"/>
+        /// </summary>
         public Func<AlbumView, BaseAlbumDataSource, BaseAlbumDelegate> LazyDelegate { get; set; } =
             (view, source) => new PhotoGalleryDelegate(view, (PhotoGalleryDataSource)source);
 

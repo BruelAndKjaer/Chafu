@@ -6,6 +6,9 @@ using MediaPlayer;
 
 namespace Chafu
 {
+    /// <summary>
+    /// AlbumView used to display the photo picker
+    /// </summary>
     public class AlbumView : UIView
     {
         private CGPoint _dragStartPos = CGPoint.Empty;
@@ -14,18 +17,59 @@ namespace Chafu
         private float _imageCropViewMinimalVisibleHeight = 50;
         private nfloat _imaginaryCollectionViewOffsetStartPosY;
 
+        /// <summary>
+        /// Original top constraint
+        /// </summary>
         public static readonly int ImageCropViewOriginalConstraintTop = 0;
 
+        /// <summary>
+        /// Get the <see cref="MPMoviePlayerController"/> for video preview
+        /// </summary>
         public MPMoviePlayerController MoviePlayerController { get; private set; }
+
+        /// <summary>
+        /// Get the <see cref="UIView"/> container for <see cref="MoviePlayerController"/>
+        /// </summary>
         public UIView MovieView { get; private set; }
+
+        /// <summary>
+        /// Get the <see cref="ImageCropView"/> used for image preview
+        /// </summary>
         public ImageCropView ImageCropView { get; private set; }
+
+        /// <summary>
+        /// Get the top constraint for <see cref="ImageCropView"/>
+        /// </summary>
         public NSLayoutConstraint ImageCropViewConstraintTop { get; private set; }
+
+        /// <summary>
+        /// Get the top constraint for <see cref="MovieView"/>
+        /// </summary>
         public NSLayoutConstraint MovieViewConstraintTop { get; private set; }
+
+        /// <summary>
+        /// Get the height constraint for the <see cref="CollectionView"/> containing the <see cref="AlbumViewCell"/>
+        /// </summary>
         public NSLayoutConstraint CollectionViewConstraintHeight { get; private set; }
+
+        /// <summary>
+        /// Get the top constraint for the <see cref="UICollectionView"/> containing the <see cref="AlbumViewCell"/>
+        /// </summary>
         public NSLayoutConstraint CollectionViewConstraintTop { get; private set; }
+
+        /// <summary>
+        /// Get the <see cref="UICollectionView"/> used to display <see cref="AlbumViewCell"/>
+        /// </summary>
         public UICollectionView CollectionView { get; private set; }
+
+        /// <summary>
+        /// Get the <see cref="CGSize"/> of the <see cref="AlbumViewCell"/>
+        /// </summary>
         public CGSize CellSize { get; }
 
+        /// <summary>
+        /// Get or set the current <see cref="DragDirection"/>
+        /// </summary>
         public DragDirection DragDirection { get; set; }
 
         private void CreateView()
@@ -281,6 +325,9 @@ namespace Chafu
             DragDirection = DragDirection.Up;
         }
 
+        /// <summary>
+        /// Clear the contents of <see cref="ImageCropView"/> and <see cref="MoviePlayerController"/>
+        /// </summary>
         public void ClearPreview()
         {
             ImageCropView.Image = null;
@@ -290,6 +337,9 @@ namespace Chafu
             MoviePlayerController.ContentUrl = null;
         }
 
+        /// <summary>
+        /// Stop the video if playing in the <see cref="MoviePlayerController"/>
+        /// </summary>
         public void StopVideo()
         {
             if (MoviePlayerController?.ContentUrl == null) return;
@@ -297,11 +347,20 @@ namespace Chafu
             MoviePlayerController.Stop();
         }
 
+        /// <summary>
+        /// Create a <see cref="AlbumView"/>
+        /// </summary>
+        /// <param name="cellSize"><see cref="CGSize"/> with the size of the <see cref="AlbumViewCell"/> displayed</param>
         public AlbumView(CGSize cellSize)
         {
             CellSize = cellSize;
             CreateView();
         }
+        
+        /// <summary>
+        /// Don't use this
+        /// </summary>
+        /// <param name="handle"></param>
         public AlbumView(IntPtr handle) : base(handle) { }
     }
 }

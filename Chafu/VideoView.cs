@@ -8,6 +8,9 @@ using UIKit;
 
 namespace Chafu
 {
+    /// <summary>
+    /// Video view used to preview camera and record video
+    /// </summary>
     public class VideoView : BaseCameraView, IAVCaptureFileOutputRecordingDelegate
     {
         private bool _isRecording;
@@ -17,12 +20,22 @@ namespace Chafu
         private UIImage _videoStopImage;
         private Action<NSUrl> _onVideoFinished;
 
-        NSObject _willEnterForegroundObserver;
+        private NSObject _willEnterForegroundObserver;
 
+        /// <summary>
+        /// <see cref="EventHandler{T}"/> with <see cref="NSError"/> which triggers when saving video to Photos Library fails
+        /// </summary>
         public event EventHandler<NSError> SaveToPhotosAlbumError;
 
+        /// <summary>
+        /// Create a VideoView
+        /// </summary>
+        /// <param name="handle"></param>
         public VideoView(IntPtr handle) 
             : base(handle) { CreateView(); }
+        /// <summary>
+        /// Create a VideoView
+        /// </summary>
         public VideoView() { CreateView(); }
 
         private void CreateView()
@@ -33,8 +46,14 @@ namespace Chafu
         }
 
         private bool _initialized;
-        
 
+        /// <summary>
+        /// Initialize video view
+        /// </summary>
+        /// <param name="onVideoFinished">Callback <see cref="Action{T}"/> with <see cref="NSUrl"/> 
+        /// with the url of the video when recording is done</param>
+        /// <param name="startCamera">Optional: <see cref="bool"/> describing whether to start the camera immediately.
+        /// Defaults to <c>true</c></param>
         public void Initialize(Action<NSUrl> onVideoFinished, bool startCamera = true)
         {
             if (_initialized) return;
@@ -65,6 +84,9 @@ namespace Chafu
             StartCamera();
         }
 
+        /// <summary>
+        /// Start camera preview
+        /// </summary>
         public override void StartCamera()
         {
             if (Session == null) {
@@ -118,6 +140,9 @@ namespace Chafu
             base.StartCamera();
         }
 
+        /// <summary>
+        /// Stop camera preview
+        /// </summary>
         public override void StopCamera()
         {
             if (_isRecording)
@@ -182,6 +207,7 @@ namespace Chafu
             }
         }
 
+        /// <inheritdoc cref="IAVCaptureFileOutputRecordingDelegate"/>
         public void FinishedRecording(AVCaptureFileOutput captureOutput, NSUrl outputFileUrl, NSObject[] connections, 
             NSError error)
         {
@@ -221,6 +247,7 @@ namespace Chafu
             }
         }
 
+        /// <inheritdoc />
         protected override void Dispose(bool disposing)
         {
             if (disposing)
