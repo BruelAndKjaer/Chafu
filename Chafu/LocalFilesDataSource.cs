@@ -183,7 +183,8 @@ namespace Chafu
             using (var cgImage = generator.CopyCGImageAtTime(time, out actual, out error))
             using (var uiImage = new UIImage(cgImage))
             {
-                var scaledImage = uiImage.ScaleImage(cellSize);
+                var scaledImage = uiImage.ScaleImage(cellSize, UiKitExtensions.UIImageScaleMode.AspectFill,
+                    UiKitExtensions.UIImageAlignment.Center, true);
                 return scaledImage;
             }
         }
