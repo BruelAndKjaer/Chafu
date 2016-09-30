@@ -78,6 +78,7 @@ Task("Package")
 		LicenseUrl = new Uri("https://github.com/BruelAndKjaer/Chafu/blob/master/LICENSE"),
 		Copyright = "Copyright (c) Brüel & Kjær",
 		RequireLicenseAcceptance = false,
+		ReleaseNotes = ParseReleaseNotes("./releasenotes.md").Notes.ToArray(),
 		Tags = new [] {"fusuma", "photo", "media", "video", "picker", "browser", "mobile",
 			"xamarin", "ios"},
 		Version = versionInfo.NuGetVersion,
