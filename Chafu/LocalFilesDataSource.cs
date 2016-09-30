@@ -311,7 +311,11 @@ namespace Chafu
                 _albumView.ClearPreview();
 				_albumView.CollectionView.DeleteItems(new [] { CurrentIndexPath });
 
-                File.Delete(CurrentMediaPath);
+			    var path = CurrentMediaPath;
+			    if (path.StartsWith("file://"))
+			        path = path.Substring(7);
+
+                File.Delete(path);
 
 				CurrentMediaPath = null;
 				CurrentIndexPath = null;
