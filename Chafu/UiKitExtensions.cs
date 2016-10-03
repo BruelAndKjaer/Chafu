@@ -24,6 +24,8 @@ namespace Chafu
         /// <param name="width">Border width</param>
         public static void AddBottomBorder(this UIView self, UIColor color, float width)
         {
+            if (self == null) return;
+
             var border = new CALayer
             {
                 BorderColor = color.CGColor,
@@ -108,6 +110,8 @@ namespace Chafu
         public static UIImage ScaleImage(this UIImage image, CGSize size, UIImageScaleMode scaleMode = UIImageScaleMode.AspectFit,
             UIImageAlignment alignment = UIImageAlignment.Center, bool trim = false)
         {
+            if (image == null) return null;
+
             var width = size == CGSize.Empty ? 1 : size.Width;
             var height = size == CGSize.Empty ? 1 : size.Height;
 

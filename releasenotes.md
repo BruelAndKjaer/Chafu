@@ -35,3 +35,7 @@
 ### New in 1.4.1
 
 * Fill cells in AlbumView for videos instead of fitting
+
+### New in 1.4.2
+
+* Fix null reference exception in rare cases where UIImage is null when scaling
