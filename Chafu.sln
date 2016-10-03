@@ -10,6 +10,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{EC8D56AC-40A9-468A-9DF2-1E9E611C27E3}"
 	ProjectSection(SolutionItems) = preProject
 		build.cake = build.cake
+		releasenotes.md = releasenotes.md
 	EndProjectSection
 EndProject
 Global
