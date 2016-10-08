@@ -26,7 +26,19 @@ has been simplified and loads of unfixed Fusuma bugs and features have been fixe
 
 Install from NuGet
 
-> Install-Package Chafu
+`Install-Package Chafu`
+
+> Note: 
+> iOS 10 requires the developer to provide usage descriptions in the `info.plist`. Otherwise, the application will crash, when requesting permissions to camera, photo library or microphone.
+
+```
+<key>NSPhotoLibraryUsageDescription</key>
+<string>Describe what photo library is used for</string>
+<key>NSCameraUsageDescription</key>
+<string>Describe what camera is used for</string>
+<key>NSMicrophoneUsageDescription</key>
+<string>Describe what microphone is used for</string>
+```
 
 ## Usage
 
