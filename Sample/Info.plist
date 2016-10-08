@@ -44,5 +44,7 @@
   <string>Chafu needs access to the camera to take photos and video.</string>
   <key>NSPhotoLibraryUsageDescription</key>
   <string>Chafu needs access to the photo library.</string>
+  <key>NSMicrophoneUsageDescription</key>
+  <string>Chafu needs access to the microphone to record audio and video.</string>
 </dict>
 </plist>
