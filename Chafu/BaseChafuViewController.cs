@@ -24,8 +24,8 @@ namespace Chafu
         /// <summary>
         /// Lazy initializer for the <see cref="AlbumDataSource"/>
         /// </summary>
-        public Func<AlbumView, CGSize, BaseAlbumDataSource> LazyDataSource { get; set; } =
-            (view, size) => new PhotoGalleryDataSource(view, size);
+        public Func<AlbumView, CGSize, MediaType, BaseAlbumDataSource> LazyDataSource { get; set; } =
+			(view, size, mediaTypes) => new PhotoGalleryDataSource(view, size, MediaType.Photo | MediaType.Video);
 
         /// <summary>
         /// Lazy initializer for the <see cref="AlbumDelegate"/>

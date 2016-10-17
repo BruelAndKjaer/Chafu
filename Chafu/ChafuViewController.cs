@@ -223,7 +223,7 @@ namespace Chafu
 			AlbumView.LayoutIfNeeded ();
 			_cameraView.LayoutIfNeeded ();
 
-		    var albumDataSource = LazyDataSource(AlbumView, AlbumView.CellSize);
+		    var albumDataSource = LazyDataSource(AlbumView, AlbumView.CellSize, MediaType.Photo | MediaType.Video);
 		    var albumDelegate = LazyDelegate(AlbumView, albumDataSource);
 		    AlbumDataSource = albumDataSource;
 		    AlbumDelegate = albumDelegate;

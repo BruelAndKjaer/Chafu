@@ -22,6 +22,7 @@ namespace Chafu
         private CGRect _previousPreheatRect = CGRect.Empty;
         private PHAsset _asset;
         private readonly nfloat _scale;
+		private MediaType _mediaTypes;
 
         /// <inheritdoc />
         public override event EventHandler CameraRollUnauthorized;
@@ -46,11 +47,12 @@ namespace Chafu
         /// </summary>
         /// <param name="albumView"><see cref="AlbumView"/> attached to</param>
         /// <param name="cellSize"><see cref="CGSize"/> with cell size. If <see cref="CGSize.Empty"/> it will default to 100x100</param>
-        public PhotoGalleryDataSource(AlbumView albumView, CGSize cellSize)
+		public PhotoGalleryDataSource(AlbumView albumView, CGSize cellSize, MediaType mediaTypes)
         {
             _albumView = albumView;
             _cellSize = cellSize != CGSize.Empty ? cellSize : new CGSize(100, 100);
             _scale = UIScreen.MainScreen.Scale;
+			_mediaTypes = mediaTypes;
 
             CheckPhotoAuthorization(OnAuthorized);
         }
@@ -66,12 +68,20 @@ namespace Chafu
                     SortDescriptors = new[] {new NSSortDescriptor("creationDate", false)}
                 };
 
-                _images = PHAsset.FetchAssets(PHAssetMediaType.Image, options);
-                _videos = PHAsset.FetchAssets(PHAssetMediaType.Video, options);
+				var assets = new List<PHAsset>();
 
-                var assets = new List<PHAsset>();
-                assets.AddRange(_images.OfType<PHAsset>());
-                assets.AddRange(_videos.OfType<PHAsset>());
+				if (_mediaTypes.HasFlag(MediaType.Photo))
+				{
+					_images = PHAsset.FetchAssets(PHAssetMediaType.Image, options);
+					assets.AddRange(_images.OfType<PHAsset>());
+				}
+
+				if (_mediaTypes.HasFlag(MediaType.Video))
+				{
+					_videos = PHAsset.FetchAssets(PHAssetMediaType.Video, options);
+					assets.AddRange(_videos.OfType<PHAsset>());
+				}
+
                 foreach (var asset in assets.OrderByDescending(a => a.CreationDate.SecondsSinceReferenceDate))
                     AllAssets.Add(asset);
 
@@ -125,21 +135,37 @@ namespace Chafu
         {
             DispatchQueue.MainQueue.DispatchAsync(() =>
             {
-                //var collectionView = _albumView.CollectionView;
-                var imageCollectionChanges = changeInstance.GetFetchResultChangeDetails(_images);
-                var videoCollectionChanges = changeInstance.GetFetchResultChangeDetails(_videos);
+				//var collectionView = _albumView.CollectionView;
+				if (_images != null)
+				{
+					var imageCollectionChanges = changeInstance.GetFetchResultChangeDetails(_images);
 
-                if (imageCollectionChanges != null)
-                    _images = AdjustAssets(_images, imageCollectionChanges);
+					if (imageCollectionChanges != null)
+					{
+						_images = AdjustAssets(_images, imageCollectionChanges);
+					}
+				}
 
-                if (videoCollectionChanges != null)
-                    _videos = AdjustAssets(_videos, videoCollectionChanges);
+				if (_videos != null)
+				{
+					var videoCollectionChanges = changeInstance.GetFetchResultChangeDetails(_videos);
+
+					if (videoCollectionChanges != null)
+					{
+						_images = AdjustAssets(_videos, videoCollectionChanges);
+					}
+				}
             });
         }
 
         private PHFetchResult AdjustAssets(PHFetchResult assets, PHFetchResultChangeDetails changes)
         {
-            var before = assets;
+			if (assets == null)
+			{
+				return null;
+			}
+			
+			var before = assets;
             assets = changes.FetchResultAfterChanges;
 
             foreach (var asset in before.OfType<PHAsset>())

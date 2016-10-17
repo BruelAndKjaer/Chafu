@@ -110,7 +110,7 @@ namespace Chafu
                 BackgroundColor = Configuration.BackgroundColor
             };
 
-            AlbumDataSource = LazyDataSource(_album, CellSize);
+			AlbumDataSource = LazyDataSource(_album, CellSize, MediaType.Photo | MediaType.Video);
             AlbumDelegate = LazyDelegate(_album, AlbumDataSource);
             _album.Initialize(AlbumDataSource, AlbumDelegate);
 
