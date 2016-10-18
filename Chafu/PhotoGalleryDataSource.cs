@@ -22,7 +22,7 @@ namespace Chafu
         private CGRect _previousPreheatRect = CGRect.Empty;
         private PHAsset _asset;
         private readonly nfloat _scale;
-		private MediaType _mediaTypes;
+        private ChafuMediaType _mediaTypes;
 
         /// <inheritdoc />
         public override event EventHandler CameraRollUnauthorized;
@@ -47,7 +47,8 @@ namespace Chafu
         /// </summary>
         /// <param name="albumView"><see cref="AlbumView"/> attached to</param>
         /// <param name="cellSize"><see cref="CGSize"/> with cell size. If <see cref="CGSize.Empty"/> it will default to 100x100</param>
-		public PhotoGalleryDataSource(AlbumView albumView, CGSize cellSize, MediaType mediaTypes)
+        /// <param name="mediaTypes"><see cref="ChafuMediaType"/> media types to show. Default is <see cref="ChafuMediaType.Image"/> and <see cref="ChafuMediaType.Video"/>.</param>
+        public PhotoGalleryDataSource(AlbumView albumView, CGSize cellSize, ChafuMediaType mediaTypes = ChafuMediaType.Image | ChafuMediaType.Video)
         {
             _albumView = albumView;
             _cellSize = cellSize != CGSize.Empty ? cellSize : new CGSize(100, 100);
@@ -68,19 +69,19 @@ namespace Chafu
                     SortDescriptors = new[] {new NSSortDescriptor("creationDate", false)}
                 };
 
-				var assets = new List<PHAsset>();
+                var assets = new List<PHAsset>();
 
-				if (_mediaTypes.HasFlag(MediaType.Photo))
-				{
-					_images = PHAsset.FetchAssets(PHAssetMediaType.Image, options);
-					assets.AddRange(_images.OfType<PHAsset>());
-				}
+                if (_mediaTypes.HasFlag(ChafuMediaType.Image))
+                {
+                    _images = PHAsset.FetchAssets(PHAssetMediaType.Image, options);
+                    assets.AddRange(_images.OfType<PHAsset>());
+                }
 
-				if (_mediaTypes.HasFlag(MediaType.Video))
-				{
-					_videos = PHAsset.FetchAssets(PHAssetMediaType.Video, options);
-					assets.AddRange(_videos.OfType<PHAsset>());
-				}
+                if (_mediaTypes.HasFlag(ChafuMediaType.Video))
+                {
+                    _videos = PHAsset.FetchAssets(PHAssetMediaType.Video, options);
+                    assets.AddRange(_videos.OfType<PHAsset>());
+                }
 
                 foreach (var asset in assets.OrderByDescending(a => a.CreationDate.SecondsSinceReferenceDate))
                     AllAssets.Add(asset);
@@ -135,36 +136,33 @@ namespace Chafu
         {
             DispatchQueue.MainQueue.DispatchAsync(() =>
             {
-				//var collectionView = _albumView.CollectionView;
-				if (_images != null)
-				{
-					var imageCollectionChanges = changeInstance.GetFetchResultChangeDetails(_images);
-
-					if (imageCollectionChanges != null)
-					{
-						_images = AdjustAssets(_images, imageCollectionChanges);
-					}
-				}
-
-				if (_videos != null)
-				{
-					var videoCollectionChanges = changeInstance.GetFetchResultChangeDetails(_videos);
-
-					if (videoCollectionChanges != null)
-					{
-						_images = AdjustAssets(_videos, videoCollectionChanges);
-					}
-				}
+                //var collectionView = _albumView.CollectionView;
+                _images = TryAdjustAssets(_images, changeInstance);
+                _videos = TryAdjustAssets(_videos, changeInstance);
             });
+        }
+
+        private PHFetchResult TryAdjustAssets(PHFetchResult assets, PHChange changeInstance)
+        {
+            if (assets == null)
+                return null;
+
+            if (changeInstance == null)
+                return assets;
+
+            var collectionChanges = changeInstance.GetFetchResultChangeDetails(assets);
+
+            if (collectionChanges == null)
+                return assets;
+
+            return AdjustAssets(assets, collectionChanges);
         }
 
         private PHFetchResult AdjustAssets(PHFetchResult assets, PHFetchResultChangeDetails changes)
         {
-			if (assets == null)
-			{
-				return null;
-			}
-			
+            if (assets == null)
+                return null;
+
 			var before = assets;
             assets = changes.FetchResultAfterChanges;
 
