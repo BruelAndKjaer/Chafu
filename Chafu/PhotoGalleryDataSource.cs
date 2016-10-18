@@ -53,7 +53,7 @@ namespace Chafu
             _albumView = albumView;
             _cellSize = cellSize != CGSize.Empty ? cellSize : new CGSize(100, 100);
             _scale = UIScreen.MainScreen.Scale;
-			_mediaTypes = mediaTypes;
+            _mediaTypes = mediaTypes;
 
             CheckPhotoAuthorization(OnAuthorized);
         }
