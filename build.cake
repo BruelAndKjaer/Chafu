@@ -111,7 +111,6 @@ Task("UploadAppVeyorArtifact")
 Task("UploadBitriseArtifact")
 	.IsDependentOn("Package")
 	.WithCriteria(() => isRunningOnBitrise)
-	.WithCriteria(() => bitrisePullRequest == null)
 	.Does(() => {
 
 	Information("Artifacts Dir: {0}", outputDir.FullPath);
@@ -128,6 +127,11 @@ Task("UploadBitriseArtifact")
 Task("Default")
 	.IsDependentOn("UploadAppVeyorArtifact")
 	.IsDependentOn("UploadBitriseArtifact")
-	.Does(() => {});
+	.Does(() => {
+	
+	Information("Bitrise: {0}", isRunningOnBitrise);
+	Information("AppVeyor: {0}", isRunningOnAppVeyor);
+
+	});
 
 RunTarget(target);
