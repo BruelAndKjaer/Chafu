@@ -116,7 +116,7 @@ Task("UploadBitriseArtifact")
 
 	Information("Artifacts Dir: {0}", outputDir.FullPath);
 
-	var deployDir = Bitrise.Data.Directory.DeployDirectory;
+	var deployDir = Bitrise.Environment.Directory.DeployDirectory;
 
 	foreach(var file in GetFiles(outputDir.FullPath + "/*")) {
 		Information("Moving file {0} to deloy dir", file.FullPath);
