@@ -11,6 +11,9 @@ var target = Argument("target", "Default");
 var isRunningOnAppVeyor = AppVeyor.IsRunningOnAppVeyor;
 var isPullRequest = AppVeyor.Environment.PullRequest.IsPullRequest;
 
+var isRunningOnBitrise = Bitrise.IsRunningOnBitrise;
+var bitrisePullRequest = Bitrise.Environment.Repository.PullRequest;
+
 Task("Clean").Does(() =>
 {
     CleanDirectories("./**/bin");
@@ -105,6 +108,26 @@ Task("UploadAppVeyorArtifact")
 	}
 });
 
-Task("Default").IsDependentOn("UploadAppVeyorArtifact").Does(() => {});
+Task("UploadBitriseArtifact")
+	.IsDependentOn("Package")
+	.WithCriteria(() => isRunningOnBitrise)
+	.WithCriteria(() => bitrisePullRequest == null)
+	.Does(() => {
+
+	Information("Artifacts Dir: {0}", outputDir.FullPath);
+
+	var deployDir = Bitrise.Data.Directory.DeployDirectory;
+
+	foreach(var file in GetFiles(outputDir.FullPath + "/*")) {
+		Information("Moving file {0} to deloy dir", file.FullPath);
+
+		MoveFileToDirectory(file.FullPath, deployDir);
+	}
+});
+
+Task("Default")
+	.IsDependentOn("UploadAppVeyorArtifact")
+	.IsDependentOn("UploadBitriseArtifact")
+	.Does(() => {});
 
 RunTarget(target);
