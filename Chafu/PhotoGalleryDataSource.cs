@@ -46,9 +46,12 @@ namespace Chafu
         /// Create an instance of <see cref="PhotoGalleryDataSource"/>
         /// </summary>
         /// <param name="albumView"><see cref="AlbumView"/> attached to</param>
-        /// <param name="cellSize"><see cref="CGSize"/> with cell size. If <see cref="CGSize.Empty"/> it will default to 100x100</param>
-        /// <param name="mediaTypes"><see cref="ChafuMediaType"/> media types to show. Default is <see cref="ChafuMediaType.Image"/> and <see cref="ChafuMediaType.Video"/>.</param>
-        public PhotoGalleryDataSource(AlbumView albumView, CGSize cellSize, ChafuMediaType mediaTypes = ChafuMediaType.Image | ChafuMediaType.Video)
+        /// <param name="cellSize"><see cref="CGSize"/> with cell size. If <see cref="CGSize.Empty"/> 
+        /// it will default to 100x100</param>
+        /// <param name="mediaTypes"><see cref="MediaType"/> media types to show. 
+        /// Default is both <see cref="MediaType.Image"/> and <see cref="MediaType.Video"/>.</param>
+        public PhotoGalleryDataSource(AlbumView albumView, CGSize cellSize, 
+            MediaType mediaTypes = MediaType.Image | MediaType.Video)
         {
             _albumView = albumView;
             _cellSize = cellSize != CGSize.Empty ? cellSize : new CGSize(100, 100);
@@ -71,13 +74,13 @@ namespace Chafu
 
                 var assets = new List<PHAsset>();
 
-                if (_mediaTypes.HasFlag(ChafuMediaType.Image))
+                if (_mediaTypes.HasFlag(MediaType.Image))
                 {
                     _images = PHAsset.FetchAssets(PHAssetMediaType.Image, options);
                     assets.AddRange(_images.OfType<PHAsset>());
                 }
 
-                if (_mediaTypes.HasFlag(ChafuMediaType.Video))
+                if (_mediaTypes.HasFlag(MediaType.Video))
                 {
                     _videos = PHAsset.FetchAssets(PHAssetMediaType.Video, options);
                     assets.AddRange(_videos.OfType<PHAsset>());
@@ -128,8 +131,8 @@ namespace Chafu
         public override nint GetItemsCount(UICollectionView collectionView, nint section) => AllAssets?.Count ?? 0;
 
         /// <summary>
-        /// Photo Library change observer. Triggers when changes are made to the photo library such as new pictures were 
-        /// added or pictures were removed
+        /// Photo Library change observer. Triggers when changes are made to the photo library such as 
+        /// new pictures were added or pictures were removed
         /// </summary>
         /// <param name="changeInstance"><see cref="PHChange"/> with changes</param>
         public void PhotoLibraryDidChange(PHChange changeInstance)

@@ -19,6 +19,7 @@ namespace Chafu
         private readonly AlbumView _albumView;
         private readonly CGSize _cellSize;
         private string _imagesPath;
+        private MediaType _mediaTypes;
 
         /// <summary>
         /// Backing <see cref="List{T}"/> of <see cref="MediaItem"/>
@@ -67,11 +68,16 @@ namespace Chafu
         /// Creates a new data source for showing images and video from a local folder
         /// </summary>
         /// <param name="albumView"><see cref="AlbumView"/> this data source is feeding</param>
-        /// <param name="cellSize">Optional: <see cref="CGSize"/> with the desired cell size. Defaults to 100x100.</param>
-        public LocalFilesDataSource(AlbumView albumView, CGSize cellSize = default(CGSize))
+        /// <param name="cellSize">Optional: <see cref="CGSize"/> with the desired cell size. 
+        /// Defaults to 100x100.</param>
+        /// <param name="mediaTypes"><see cref="MediaType"/> media types to show. 
+        /// Default is both <see cref="MediaType.Image"/> and <see cref="MediaType.Video"/>.</param>
+        public LocalFilesDataSource(AlbumView albumView, CGSize cellSize = default(CGSize),
+            MediaType mediaTypes = MediaType.Image | MediaType.Video)
         {
             _albumView = albumView;
             _cellSize = cellSize != CGSize.Empty ? cellSize : new CGSize(100, 100);
+            _mediaTypes = mediaTypes;
         }
 
         /// <summary>
@@ -101,15 +107,16 @@ namespace Chafu
             return fileInfo.OrderByDescending(f => f.CreationTime).Select(f => f.FullName);
         }
 
-        private static MediaItem GetMediaItem(string file)
+        private MediaItem GetMediaItem(string file)
         {
-            if (MovieFileExtensions.Any(ex => file.ToLower().EndsWith(ex, StringComparison.Ordinal)))
-                return new MediaItem { MediaType = ChafuMediaType.Video, Path = "file://" + file };
-            if (ImageFileExtensions.Any(ex => file.ToLower().EndsWith(ex, StringComparison.Ordinal)))
-                return new MediaItem { MediaType = ChafuMediaType.Image, Path = file };
+            if (MovieFileExtensions.Any(ex => file.ToLower().EndsWith(ex, StringComparison.Ordinal)) && 
+                _mediaTypes.HasFlag(MediaType.Video))
+                return new MediaItem { MediaType = MediaType.Video, Path = "file://" + file };
+            if (ImageFileExtensions.Any(ex => file.ToLower().EndsWith(ex, StringComparison.Ordinal)) &&
+                _mediaTypes.HasFlag(MediaType.Image))
+                return new MediaItem { MediaType = MediaType.Image, Path = file };
             return null;
         }
-
 
         /// <inheritdoc />
         public override UICollectionViewCell GetCell(UICollectionView collectionView, NSIndexPath indexPath)
