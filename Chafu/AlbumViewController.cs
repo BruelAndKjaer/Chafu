@@ -44,6 +44,13 @@ namespace Chafu
 		private bool _showDeleteButton;
 
         /// <summary>
+        /// Gets or sets the media types shown from Photo Library.
+        /// </summary>
+        /// <value><see cref="MediaType"/> media types. 
+        /// Defaults to both <see cref="MediaType.Image"/> and <see cref="MediaType.Video"/>.</value>
+        public MediaType MediaTypes { get; set; } = MediaType.Image | MediaType.Video;
+
+        /// <summary>
         /// Get or set whether to show the Extra button in the Menu
         /// </summary>
         public bool ShowExtraButton
@@ -110,7 +117,7 @@ namespace Chafu
                 BackgroundColor = Configuration.BackgroundColor
             };
 
-            AlbumDataSource = LazyDataSource(_album, CellSize, ChafuMediaType.Image | ChafuMediaType.Video);
+            AlbumDataSource = LazyDataSource(_album, CellSize, MediaTypes);
             AlbumDelegate = LazyDelegate(_album, AlbumDataSource);
             _album.Initialize(AlbumDataSource, AlbumDelegate);
 

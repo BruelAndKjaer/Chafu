@@ -39,14 +39,14 @@ namespace Chafu
         /// </summary>
         public event EventHandler CameraUnauthorized;
 
-		private CameraView _cameraView;
-		private VideoView _videoView;
+        private CameraView _cameraView;
+        private VideoView _videoView;
 
         private Mode _mode = Mode.NotSelected;
-		private UIButton _libraryButton;
-		private UIButton _videoButton;
-		private UIButton _cameraButton;
-		private MenuView _menuView;
+        private UIButton _libraryButton;
+        private UIButton _videoButton;
+        private UIButton _cameraButton;
+        private MenuView _menuView;
 
         /// <summary>
         /// Gets the AlbumView
@@ -58,6 +58,13 @@ namespace Chafu
         /// </summary>
         /// <value><c>true</c> if has video; otherwise, <c>false</c>.</value>
 		public bool HasVideo { get; set; } = false;
+
+        /// <summary>
+        /// Gets or sets the media types shown from Photo Library.
+        /// </summary>
+        /// <value><see cref="MediaType"/> media types. 
+        /// Defaults to both <see cref="MediaType.Image"/> and <see cref="MediaType.Video"/>.</value>
+        public MediaType MediaTypes { get; set; } = MediaType.Image | MediaType.Video;
 
         /// <inheritdoc />
         public override void ViewDidLoad ()
@@ -223,7 +230,7 @@ namespace Chafu
 			AlbumView.LayoutIfNeeded ();
 			_cameraView.LayoutIfNeeded ();
 
-		    var albumDataSource = LazyDataSource(AlbumView, AlbumView.CellSize, ChafuMediaType.Image | ChafuMediaType.Video);
+            var albumDataSource = LazyDataSource(AlbumView, AlbumView.CellSize, MediaTypes);
 		    var albumDelegate = LazyDelegate(AlbumView, albumDataSource);
 		    AlbumDataSource = albumDataSource;
 		    AlbumDelegate = albumDelegate;
