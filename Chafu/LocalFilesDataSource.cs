@@ -32,7 +32,7 @@ namespace Chafu
 
 
         /// <inheritdoc />
-        public override ChafuMediaType CurrentMediaType { get; set; }
+        public override MediaType CurrentMediaType { get; set; }
 
         /// <inheritdoc />
         public override string CurrentMediaPath { get; set; }
@@ -122,11 +122,11 @@ namespace Chafu
 
             var row = indexPath.Row;
 
-            cell.IsVideo = file.MediaType == ChafuMediaType.Video;
+            cell.IsVideo = file.MediaType == MediaType.Video;
             cell.Image = null;
             cell.Tag = row;
 
-            if (file.MediaType == ChafuMediaType.Image)
+            if (file.MediaType == MediaType.Image)
                 SetImageCell(cell, file, row);
             else
                 SetVideoCell(cell, file, row);
@@ -215,7 +215,7 @@ namespace Chafu
                 CurrentMediaPath = item.Path;
                 CurrentMediaType = item.MediaType;
 
-                if (item.MediaType == ChafuMediaType.Image)
+                if (item.MediaType == MediaType.Image)
                     ChangeImage(item, _albumView);
                 else
                     ChangeVideo(item, _albumView);
@@ -246,7 +246,7 @@ namespace Chafu
 
         private void StopVideo()
         {
-            if (CurrentMediaType != ChafuMediaType.Video) return;
+            if (CurrentMediaType != MediaType.Video) return;
             _albumView.StopVideo();
         }
 

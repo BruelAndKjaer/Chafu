@@ -22,13 +22,13 @@ namespace Chafu
         private CGRect _previousPreheatRect = CGRect.Empty;
         private PHAsset _asset;
         private readonly nfloat _scale;
-        private ChafuMediaType _mediaTypes;
+        private MediaType _mediaTypes;
 
         /// <inheritdoc />
         public override event EventHandler CameraRollUnauthorized;
 
         /// <inheritdoc />
-        public override ChafuMediaType CurrentMediaType { get; set; }
+        public override MediaType CurrentMediaType { get; set; }
 
         /// <inheritdoc />
         public override string CurrentMediaPath { get; set; }
@@ -391,7 +391,7 @@ namespace Chafu
                     (result, info) =>
                         DispatchQueue.MainQueue.DispatchAsync(() =>
                         {
-                            CurrentMediaType = ChafuMediaType.Image;
+                            CurrentMediaType = MediaType.Image;
                             _albumView.ImageCropView.Hidden = false;
                             _albumView.MovieView.Hidden = true;
                             _albumView.ImageCropView.ImageSize = assetSize;
@@ -406,7 +406,7 @@ namespace Chafu
                     (ass, mix, info) =>
                         DispatchQueue.MainQueue.DispatchAsync(() => 
                         {
-                            CurrentMediaType = ChafuMediaType.Video;
+                            CurrentMediaType = MediaType.Video;
                             _albumView.ImageCropView.Hidden = true;
                             _albumView.MovieView.Hidden = false;
 

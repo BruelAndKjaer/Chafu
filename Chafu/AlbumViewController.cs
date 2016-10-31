@@ -203,14 +203,14 @@ namespace Chafu
             if (item == null) return;
             if (controller == null) return;
 
-            if (item.MediaType == ChafuMediaType.Image)
+            if (item.MediaType == MediaType.Image)
             {
                 if (!string.IsNullOrEmpty(Configuration.DeletePhotoTitle))
                     controller.Title = Configuration.DeletePhotoTitle;
                 if (!string.IsNullOrEmpty(Configuration.DeletePhotoMessage))
                     controller.Message = Configuration.DeletePhotoMessage;
             }
-            else if (item.MediaType == ChafuMediaType.Video)
+            else if (item.MediaType == MediaType.Video)
             {
                 if (!string.IsNullOrEmpty(Configuration.DeleteVideoTitle))
                     controller.Title = Configuration.DeleteVideoTitle;
@@ -252,9 +252,9 @@ namespace Chafu
 
         private void OnDone(object sender, EventArgs e)
         {
-            if (AlbumDataSource.CurrentMediaType == ChafuMediaType.Image)
+            if (AlbumDataSource.CurrentMediaType == MediaType.Image)
                 OnImageSelected();
-            if (AlbumDataSource.CurrentMediaType == ChafuMediaType.Video)
+            if (AlbumDataSource.CurrentMediaType == MediaType.Video)
                 OnVideoSelected();
         }
 

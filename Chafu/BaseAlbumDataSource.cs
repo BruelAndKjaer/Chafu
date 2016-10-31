@@ -4,22 +4,6 @@ using UIKit;
 namespace Chafu
 {
     /// <summary>
-    /// Enum used to determine the media type to display
-    /// </summary>
-    [Flags]
-    public enum ChafuMediaType
-    {
-        /// <summary>
-        /// Used for images
-        /// </summary>
-        Image,
-        /// <summary>
-        /// Used for video
-        /// </summary>
-        Video
-    }
-
-    /// <summary>
     /// Base class used for DataSource
     /// </summary>
     public abstract class BaseAlbumDataSource : UICollectionViewDataSource
@@ -36,9 +20,9 @@ namespace Chafu
         public abstract void GetCroppedImage (Action<UIImage> onImage);
 
         /// <summary>
-        /// <see cref="ChafuMediaType"/> of the current selected item
+        /// <see cref="MediaType"/> of the current selected item
         /// </summary>
-        public abstract ChafuMediaType CurrentMediaType { get; set; }
+        public abstract MediaType CurrentMediaType { get; set; }
 
         /// <summary>
         /// File system path of the current selected item

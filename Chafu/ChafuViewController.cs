@@ -312,7 +312,7 @@ namespace Chafu
 
 		private void DoneButtonPressed (object sender, EventArgs e)
 		{
-			if (AlbumDataSource.CurrentMediaType == ChafuMediaType.Image)
+			if (AlbumDataSource.CurrentMediaType == MediaType.Image)
 			{
 				if (Configuration.CropImage) {
 					Console.WriteLine("Cropping image before handing it over");
@@ -327,7 +327,7 @@ namespace Chafu
 				}
 			}
 
-			if (AlbumDataSource.CurrentMediaType == ChafuMediaType.Video)
+			if (AlbumDataSource.CurrentMediaType == MediaType.Video)
 			{
 				var url = AlbumView.MoviePlayerController.ContentUrl;
 				VideoSelected?.Invoke(this, url);

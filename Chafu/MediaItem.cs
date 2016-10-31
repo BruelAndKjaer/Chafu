@@ -8,7 +8,7 @@ namespace Chafu
         /// <summary>
         /// Type of media
         /// </summary>
-        public ChafuMediaType MediaType { get; set; }
+        public MediaType MediaType { get; set; }
 
         /// <summary>
         /// File path
