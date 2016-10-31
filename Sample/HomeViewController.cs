@@ -65,7 +65,8 @@ namespace Sample
 
             var albumViewController = new AlbumViewController
             {
-                LazyDataSource = (view, size) => new LocalFilesDataSource(view, size) {ImagesPath = TempPath()},
+                LazyDataSource = (view, size, mediaTypes) => 
+                    new LocalFilesDataSource(view, size, mediaTypes) {ImagesPath = TempPath()},
                 LazyDelegate = (view, source) => new LocalFilesDelegate(view, (LocalFilesDataSource) source),
                 ShowExtraButton = true,
                 ShowDoneButton = false,
