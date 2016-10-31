@@ -6,6 +6,7 @@ namespace Chafu
     /// <summary>
     /// Enum used to determine the media type to display
     /// </summary>
+    [Flags]
     public enum ChafuMediaType
     {
         /// <summary>
