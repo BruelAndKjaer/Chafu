@@ -39,3 +39,11 @@
 ### New in 1.4.2
 
 * Fix null reference exception in rare cases where UIImage is null when scaling
+
+### New in 1.5.0
+
+* PR#17 Added ability to choose what type of Media to show. Thanks to @Prin53
+* Renamed ChafuMediaType to MediaType
+* Exposed MediaType properties in ViewControllers to utilize PR#17
+* Now also builds on Bitrise
+* Now also builds Sample on every CI build
