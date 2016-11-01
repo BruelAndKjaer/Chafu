@@ -164,6 +164,11 @@ namespace Chafu
             );
         }
 
+        /// <summary>
+        /// Initialize the view. Should not be called manually. Is called by ViewControllers in ViewDidLoad.
+        /// </summary>
+        /// <param name="dataSource">Data source.</param>
+        /// <param name="delegate">Delegate.</param>
         public void Initialize(UICollectionViewDataSource dataSource, UICollectionViewDelegate @delegate)
         {
             Hidden = false;

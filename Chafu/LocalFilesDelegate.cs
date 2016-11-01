@@ -21,6 +21,7 @@ namespace Chafu
             _dataSource = dataSource;
         }
 
+        /// <inheritdoc />
         public override void ItemSelected(UICollectionView collectionView, NSIndexPath indexPath)
         {
             _dataSource.ChangeMediaItem(_dataSource.Files[indexPath.Row]);
