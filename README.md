@@ -48,6 +48,7 @@ Add a `using chafu;` in the top of your class.
 ```
 var chafu = new ChafuViewController();
 chafu.HasVideo = true; // add video tab
+chafu.MediaTypes = MediaType.Image | MediaType.Video // customize what to show
 PresentViewController(chafu, true);
 ```
 
@@ -55,6 +56,7 @@ or if you only want to show gallery:
 
 ```
 var gallery = new AlbumViewController();
+gallery.MediaTypes = MediaType.Image | MediaType.Video // customize what to show
 PresentViewController(gallery, true);
 ```
 
@@ -62,7 +64,8 @@ Both accept custom data source which will be instantiated lazily:
 
 ```
 var chafu = new AlbumViewController {
-    LazyDataSource = (view, size) => new LocalFilesDataSource(view, size) {ImagesPath = path},
+    LazyDataSource = (view, size, mediaTypes) => 
+        new LocalFilesDataSource(view, size, mediaTypes) {ImagesPath = path},
     LazyDelegate = (view, source) => new LocalFilesDelegate(view, (LocalFilesDataSource) source),
 };
 ```
