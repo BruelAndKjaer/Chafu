@@ -3,6 +3,7 @@
 
 var sln = new FilePath("Chafu.sln");
 var project = new FilePath("Chafu/Chafu.csproj");
+var sample = new FilePath("Sample/Sample.csproj");
 var binDir = new DirectoryPath("Chafu/bin/Release");
 var nuspec = new FilePath("chafu.nuspec");
 var outputDir = new DirectoryPath("artifacts");
@@ -42,8 +43,10 @@ Task("Build")
 	.IsDependentOn("Restore")
 	.Does(() =>  {
 	
-	DotNetBuild(project, 
+	DotNetBuild(sln, 
 		settings => settings.SetConfiguration("Release")
+							.WithProperty("DebugSymbols", "true")
+            				.WithProperty("DebugType", "Full")
 							.WithTarget("Build")
 	);
 });
