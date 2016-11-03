@@ -21,6 +21,7 @@ has been simplified and loads of unfixed Fusuma bugs and features have been fixe
 - [x] Cropping of photos into squares
 - [x] Toggling of flash when capturing photos and video
 - [x] Supports front and back cameras
+- [x] Face detection
 - [x] Customizable
 
 ## Installation
