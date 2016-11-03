@@ -47,3 +47,7 @@
 * Exposed MediaType properties in ViewControllers to utilize PR#17
 * Now also builds on Bitrise
 * Now also builds Sample on every CI build
+
+### New in 1.6.0
+
+* Added Face Detection. You can opt out and customize border through Configuration
