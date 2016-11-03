@@ -556,14 +556,6 @@ namespace Chafu
             return CATransform3D.MakeRotation(angle, 0.0f, 0.0f, 1.0f);
         }
 
-        private nfloat DegreesToRadians(nfloat degrees) => degrees * (nfloat)Math.PI / 180f;
-
-        private static CATransform3D MakePerspective(nfloat eyePosition)
-        {   
-            CATransform3D transform = CATransform3D.Identity;
-            transform.m34 = -1.0f / eyePosition;
-            return transform;
-        }
 
         /// <summary>
         /// Sets up the video preview layer.

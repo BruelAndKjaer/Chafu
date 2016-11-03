@@ -210,4 +210,19 @@ namespace Chafu
             return duration.Seconds;
         }
     }
+
+    public static class CoreAnimationExtensions
+    {
+        public static CATransform3D MakePerspective(this CATransform3D transform, nfloat eyePosition)
+        {
+            transform.m34 = -1.0f / eyePosition;
+            return transform;
+        }
+    }
+
+    public static class MathExtensions
+    {
+        public static nfloat ToRadians(this nfloat degrees) =>
+            degrees * (nfloat)Math.PI / 180f;
+    }
 }
