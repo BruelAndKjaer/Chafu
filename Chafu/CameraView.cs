@@ -27,7 +27,7 @@ namespace Chafu
         /// Create a new camera view (used by iOS internally)
         /// </summary>
         /// <param name="handle"><see cref="IntPtr"/> handle</param>
-        public CameraView(IntPtr handle) 
+        public CameraView(IntPtr handle)
             : base(handle) { CreateView(); }
 
         /// <summary>
@@ -76,16 +76,16 @@ namespace Chafu
 
                     var previewWidth = PreviewContainer.Frame.Width;
 
-                    var centerCoordinate = imageHeight*0.5;
+                    var centerCoordinate = imageHeight * 0.5;
 
-                    var imageRef = image.CGImage.WithImageInRect(new CGRect(centerCoordinate - imageWidth*0.5, 0, imageWidth,
+                    var imageRef = image.CGImage.WithImageInRect(new CGRect(centerCoordinate - imageWidth * 0.5, 0, imageWidth,
                         imageWidth));
 
                     DispatchQueue.MainQueue.DispatchAsync(() =>
                     {
                         if (Configuration.CropImage)
                         {
-                            var resizedImage = new UIImage(imageRef, previewWidth/imageWidth, orientation.Item2);
+                            var resizedImage = new UIImage(imageRef, previewWidth / imageWidth, orientation.Item2);
                             SaveToPhotosAlbum(resizedImage);
                             _onImage?.Invoke(resizedImage);
                         }
@@ -134,10 +134,10 @@ namespace Chafu
             if (Configuration.TintIcons)
             {
                 ShutterButton.TintColor = Configuration.TintColor;
-				shutterImage = shutterImage?.ImageWithRenderingMode (UIImageRenderingMode.AlwaysTemplate);
+                shutterImage = shutterImage?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
             }
 
-			ShutterButton.SetImage (shutterImage, UIControlState.Normal);
+            ShutterButton.SetImage(shutterImage, UIControlState.Normal);
 
             Initialize();
 
@@ -151,7 +151,8 @@ namespace Chafu
         /// </summary>
         public override void StartCamera()
         {
-            if (Session == null) {
+            if (Session == null)
+            {
                 Session = new AVCaptureSession();
 
                 Device = Configuration.ShowBackCameraFirst
@@ -167,24 +168,23 @@ namespace Chafu
 
                 FlashButton.Hidden = !Device.HasFlash;
 
-                try {
+                try
+                {
                     NSError error;
                     VideoInput = new AVCaptureDeviceInput(Device, out error);
                     Session.AddInput(VideoInput);
 
                     _imageOutput = new AVCaptureStillImageOutput();
-
                     Session.AddOutput(_imageOutput);
 
-                    var videoLayer = new AVCaptureVideoPreviewLayer(Session) {
-                        Frame = PreviewContainer.Bounds,
-                        VideoGravity = AVLayerVideoGravity.ResizeAspectFill
-                    };
+                    if (Configuration.DetectFaces)
+                        SetupFaceDetection();
 
-                    PreviewContainer.Layer.AddSublayer(videoLayer);
+                    SetupVideoPreviewLayer();
 
                     Session.StartRunning();
-                } catch { /* ignored */ }
+                }
+                catch { /* ignored */ }
 
                 FlashConfiguration(false);
             }

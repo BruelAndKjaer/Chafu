@@ -122,14 +122,11 @@ namespace Chafu
                         if (Session.CanAddInput(_audioInput))
                             Session.AddInput(_audioInput);
                     }
-                    
 
-                    var videoLayer = new AVCaptureVideoPreviewLayer(Session) {
-                        Frame = PreviewContainer.Bounds,
-                        VideoGravity = AVLayerVideoGravity.ResizeAspectFill
-                    };
+                    if (Configuration.DetectFaces)
+                        SetupFaceDetection();
 
-                    PreviewContainer.Layer.AddSublayer(videoLayer);
+                    SetupVideoPreviewLayer();
 
                     Session.StartRunning();
                 } catch { /* ignore */ }

@@ -4,13 +4,15 @@ using CoreGraphics;
 using Foundation;
 using UIKit;
 using Cirrious.FluentLayouts.Touch;
+using CoreFoundation;
+using System.Linq;
 
 namespace Chafu
 {
     /// <summary>
     /// Abstract base class used for camera and video view
     /// </summary>
-    public abstract class BaseCameraView : UIView
+    public abstract class BaseCameraView : UIView, IAVCaptureMetadataOutputObjectsDelegate
     {
         /// <summary>
         /// Get or set the <see cref="AVCaptureSession"/>
@@ -66,6 +68,18 @@ namespace Chafu
         /// Get or set the <see cref="AVCaptureDeviceInput"/>, video input use for preview
         /// </summary>
         protected AVCaptureDeviceInput VideoInput { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="AVCaptureVideoPreviewLayer"/>, video preview layer.
+        /// </summary>
+        /// <value>The video preview layer.</value>
+        protected AVCaptureVideoPreviewLayer VideoPreviewLayer { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="AVCaptureMetadataOutput"/> used for face detection.
+        /// </summary>
+        /// <value>The face detection output.</value>
+        protected AVCaptureMetadataOutput FaceDetectionOutput { get; set; }
 
         /// <summary>
         /// <see cref="EventHandler"/> which fires when access to the camera was rejected
@@ -430,6 +444,95 @@ namespace Chafu
                 noCameraText.WithSameBottom(PreviewContainer),
                 noCameraText.WithSameLeft(PreviewContainer),
                 noCameraText.WithSameRight(PreviewContainer));
+        }
+
+        /// <summary>
+        /// Clear faces from PreviewContainer
+        /// </summary>
+        protected void ClearFaces()
+        {
+            var subviews = PreviewContainer.Subviews.ToArray();
+            foreach (var subview in subviews)
+                subview.RemoveFromSuperview();
+        }
+
+        /// <summary>
+        /// Add face outline to the PreviewContainer
+        /// </summary>
+        /// <param name="faceBounds">Face bounds.</param>
+        /// <param name="faceId">Face identifier.</param>
+        protected void AddFace(CGRect faceBounds, nint faceId)
+        {
+            var face = new UIView(faceBounds);
+            face.Layer.BorderColor = Configuration.DetectedFaceBorderColor.CGColor;
+            face.Layer.BorderWidth = Configuration.DetectedFaceBorderWidth;
+            face.Layer.CornerRadius = Configuration.DetectedFaceCornerRadius;
+            face.Tag = faceId;
+            PreviewContainer.AddSubview(face);
+            PreviewContainer.BringSubviewToFront(face);
+        }
+
+        /// <summary>
+        /// Implementation of <see cref="IAVCaptureMetadataOutputObjectsDelegate"/>.
+        /// 
+        /// Used by <see cref="AVCaptureMetadataOutput"/> as callback when <see cref="AVMetadataObject"/>s
+        /// are found in Session.
+        /// </summary>
+        /// <param name="captureOutput">Capture output.</param>
+        /// <param name="metadataObjects">Metadata objects.</param>
+        /// <param name="connection">Connection.</param>
+        [Export("captureOutput:didOutputMetadataObjects:fromConnection:")]
+        public void DidOutputMetadataObjects(AVCaptureMetadataOutput captureOutput,
+                                             AVMetadataObject[] metadataObjects, AVCaptureConnection connection)
+        {
+            DispatchQueue.MainQueue.DispatchAsync(() => ClearFaces());
+            foreach (var metadata in metadataObjects)
+            {
+                var faceObject = metadata as AVMetadataFaceObject;
+                if (faceObject == null) continue;
+
+                var transformed = VideoPreviewLayer.GetTransformedMetadataObject(metadata);
+
+                var faceBounds = transformed.Bounds;
+                DispatchQueue.MainQueue.DispatchAsync(() => AddFace(faceBounds, faceObject.FaceID));
+            }
+        }
+
+        /// <summary>
+        /// Sets up the video preview layer.
+        /// </summary>
+        protected void SetupVideoPreviewLayer()
+        {
+            VideoPreviewLayer = new AVCaptureVideoPreviewLayer(Session)
+            {
+                Frame = PreviewContainer.Bounds,
+                VideoGravity = AVLayerVideoGravity.ResizeAspectFill
+            };
+
+            PreviewContainer.Layer.AddSublayer(VideoPreviewLayer);
+        }
+
+        /// <summary>
+        /// Setups the face detection.
+        /// </summary>
+        protected void SetupFaceDetection()
+        {
+            FaceDetectionOutput = new AVCaptureMetadataOutput();
+            if (Session.CanAddOutput(FaceDetectionOutput))
+            {
+                Session.AddOutput(FaceDetectionOutput);
+
+                if (FaceDetectionOutput.AvailableMetadataObjectTypes.HasFlag(AVMetadataObjectType.Face))
+                {
+                    FaceDetectionOutput.MetadataObjectTypes = AVMetadataObjectType.Face;
+                    FaceDetectionOutput.SetDelegate(this, DispatchQueue.DefaultGlobalQueue);
+                }
+                else {
+                    Session.RemoveOutput(FaceDetectionOutput);
+                    FaceDetectionOutput.Dispose();
+                    FaceDetectionOutput = null;
+                }
+            }
         }
     }
 }

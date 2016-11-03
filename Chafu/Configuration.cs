@@ -226,5 +226,29 @@ namespace Chafu
         /// Get or set the title of the cancel button when deleting a photo or video.
         /// </summary>
         public static string CancelTitle { get; set; } = "Cancel";
+
+        /// <summary>
+        /// Gets or sets whether camera detects faces.
+        /// </summary>
+        /// <value><c>true</c> if detect faces; otherwise, <c>false</c>.</value>
+        public static bool DetectFaces { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets the border color of the detected face.
+        /// </summary>
+        /// <value>The color of the border. Defaults to <see cref="UIColor.White"/></value>
+        public static UIColor DetectedFaceBorderColor { get; set; } = UIColor.White;
+
+        /// <summary>
+        /// Gets or sets the width of the border around the detected face.
+        /// </summary>
+        /// <value>The width of the border. Defaults to <c>2</c></value>
+        public static int DetectedFaceBorderWidth { get; set; } = 2;
+
+        /// <summary>
+        /// Gets or sets the corner radius on the border around the detected face.
+        /// </summary>
+        /// <value>The detected corner radius. Defaults to <c>5</c></value>
+        public static int DetectedFaceCornerRadius { get; set; } = 5;
     }
 }
