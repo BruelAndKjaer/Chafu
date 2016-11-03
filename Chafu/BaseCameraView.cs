@@ -7,6 +7,7 @@ using Cirrious.FluentLayouts.Touch;
 using CoreFoundation;
 using System.Linq;
 using CoreAnimation;
+using System.Collections.Generic;
 
 namespace Chafu
 {
@@ -16,6 +17,7 @@ namespace Chafu
     public abstract class BaseCameraView : UIView, IAVCaptureMetadataOutputObjectsDelegate
     {
         private CALayer _overlayLayer;
+        private Dictionary<nint, CALayer> _faceLayers = new Dictionary<nint, CALayer>();
 
         /// <summary>
         /// Get or set the <see cref="AVCaptureSession"/>
@@ -450,48 +452,48 @@ namespace Chafu
         }
 
         /// <summary>
-        /// Clear faces from PreviewContainer
+        /// Sets up the video preview layer.
         /// </summary>
-        protected void ClearFaces()
+        protected void SetupVideoPreviewLayer()
         {
-            if (_overlayLayer == null) return;
+            VideoPreviewLayer = new AVCaptureVideoPreviewLayer(Session)
+            {
+                Frame = PreviewContainer.Bounds,
+                VideoGravity = AVLayerVideoGravity.ResizeAspectFill
+            };
 
-            var layers = _overlayLayer.Sublayers?.ToArray();
-            if (layers == null) return;
+            PreviewContainer.Layer.AddSublayer(VideoPreviewLayer);
 
-            foreach (var layer in layers)
-                layer?.RemoveFromSuperLayer();
+            if (Configuration.DetectFaces)
+            {
+                _overlayLayer = new CALayer();
+                _overlayLayer.Frame = Bounds;
+                _overlayLayer.SublayerTransform = CATransform3D.Identity.MakePerspective(1000);
+                VideoPreviewLayer.AddSublayer(_overlayLayer);
+            }
         }
 
         /// <summary>
-        /// Add face outline to the PreviewContainer
+        /// Setups the face detection.
         /// </summary>
-        /// <param name="transformed">Transformed face object.</param>
-        protected void AddFace(AVMetadataObject transformed)
+        protected void SetupFaceDetection()
         {
-            var face = transformed as AVMetadataFaceObject;
-            if (face == null) return;
-
-            var faceLayer = new CALayer();
-            faceLayer.BorderColor = Configuration.DetectedFaceBorderColor.CGColor;
-            faceLayer.BorderWidth = Configuration.DetectedFaceBorderWidth;
-            faceLayer.CornerRadius = Configuration.DetectedFaceCornerRadius;
-            faceLayer.Transform = CATransform3D.Identity;
-            faceLayer.Frame = transformed.Bounds;
-
-            if (face.HasRollAngle && (face.RollAngle > 0 || face.RollAngle < 0))
+            FaceDetectionOutput = new AVCaptureMetadataOutput();
+            if (Session.CanAddOutput(FaceDetectionOutput))
             {
-                var transform = RollTransform(face.RollAngle);
-                faceLayer.Transform = faceLayer.Transform.Concat(transform);
-            }
+                Session.AddOutput(FaceDetectionOutput);
 
-            if (face.HasYawAngle && (face.YawAngle > 0 || face.YawAngle < 0))
-            {
-                var transform = YawTransform(face.YawAngle);
-                faceLayer.Transform = faceLayer.Transform.Concat(transform);
+                if (FaceDetectionOutput.AvailableMetadataObjectTypes.HasFlag(AVMetadataObjectType.Face))
+                {
+                    FaceDetectionOutput.MetadataObjectTypes = AVMetadataObjectType.Face;
+                    FaceDetectionOutput.SetDelegate(this, DispatchQueue.MainQueue);
+                }
+                else {
+                    Session.RemoveOutput(FaceDetectionOutput);
+                    FaceDetectionOutput.Dispose();
+                    FaceDetectionOutput = null;
+                }
             }
-
-            _overlayLayer.AddSublayer(faceLayer);
         }
 
         /// <summary>
@@ -507,27 +509,81 @@ namespace Chafu
         public void DidOutputMetadataObjects(AVCaptureMetadataOutput captureOutput,
                                              AVMetadataObject[] metadataObjects, AVCaptureConnection connection)
         {
-            ClearFaces();
-            foreach (var metadata in metadataObjects)
+            var lostFaces = _faceLayers.Keys.ToList();
+
+            foreach (var metadata in metadataObjects.OfType<AVMetadataFaceObject>())
             {
-                var faceObject = metadata as AVMetadataFaceObject;
-                if (faceObject == null) continue;
-
                 var transformed = VideoPreviewLayer.GetTransformedMetadataObject(metadata);
+                var face = transformed as AVMetadataFaceObject;
+                var bounds = transformed.Bounds;
 
-                AddFace(transformed);
+                if (lostFaces.Contains(face.FaceID))
+                    lostFaces.Remove(face.FaceID);
+
+                CALayer faceLayer;
+                if (!_faceLayers.TryGetValue(face.FaceID, out faceLayer)) 
+                {
+                    faceLayer = CreateFaceLayer();
+                    _overlayLayer.AddSublayer(faceLayer);
+                    _faceLayers.Add(face.FaceID, faceLayer);
+                }
+
+                faceLayer.Transform = CATransform3D.Identity;
+                faceLayer.Frame = bounds;
+
+                if (face.HasRollAngle)
+                {
+                    var transform = RollTransform(face.RollAngle);
+                    faceLayer.Transform = faceLayer.Transform.Concat(transform);
+                }
+
+                if (face.HasYawAngle)
+                {
+                    var transform = YawTransform(face.YawAngle);
+                    faceLayer.Transform = faceLayer.Transform.Concat(transform);
+                }
+            }
+
+            RemoveLostFaces(lostFaces);
+        }
+
+        private CALayer CreateFaceLayer()
+        {
+            var faceLayer = new CALayer
+            {
+                BorderColor = Configuration.DetectedFaceBorderColor.CGColor,
+                BorderWidth = Configuration.DetectedFaceBorderWidth,
+                CornerRadius = Configuration.DetectedFaceCornerRadius
+            };
+
+            return faceLayer;
+        }
+
+        private void RemoveLostFaces(IEnumerable<nint> lostFaces)
+        {
+            foreach (var faceId in lostFaces)
+            {
+                if (_faceLayers.ContainsKey(faceId))
+                {
+                    var layer = _faceLayers[faceId];
+                    _faceLayers.Remove(faceId);
+
+                    layer.RemoveFromSuperLayer();
+                    layer.Dispose();
+                    layer = null;
+                }
             }
         }
 
         private CATransform3D RollTransform(nfloat rollAngle)
         {
-            var radians = DegreesToRadians(rollAngle);
+            var radians = rollAngle.ToRadians();
             return CATransform3D.MakeRotation(radians, 0.0f, 0.0f, 1.0f);
         }
 
         private CATransform3D YawTransform(nfloat yawAngle)
         {
-            var radians = DegreesToRadians(yawAngle);
+            var radians = yawAngle.ToRadians();
 
             var yawTransform = CATransform3D.MakeRotation(radians, 0.0f, -1.0f, 0.0f);
             var orientationTransform = OrientationTransform();
@@ -554,52 +610,6 @@ namespace Chafu
             }
 
             return CATransform3D.MakeRotation(angle, 0.0f, 0.0f, 1.0f);
-        }
-
-
-        /// <summary>
-        /// Sets up the video preview layer.
-        /// </summary>
-        protected void SetupVideoPreviewLayer()
-        {
-            VideoPreviewLayer = new AVCaptureVideoPreviewLayer(Session)
-            {
-                Frame = PreviewContainer.Bounds,
-                VideoGravity = AVLayerVideoGravity.ResizeAspectFill
-            };
-
-            PreviewContainer.Layer.AddSublayer(VideoPreviewLayer);
-
-            if (Configuration.DetectFaces)
-            {
-                _overlayLayer = new CALayer();
-                _overlayLayer.Frame = Bounds;
-                _overlayLayer.SublayerTransform = MakePerspective(1000);
-                VideoPreviewLayer.AddSublayer(_overlayLayer);
-            }
-        }
-
-        /// <summary>
-        /// Setups the face detection.
-        /// </summary>
-        protected void SetupFaceDetection()
-        {
-            FaceDetectionOutput = new AVCaptureMetadataOutput();
-            if (Session.CanAddOutput(FaceDetectionOutput))
-            {
-                Session.AddOutput(FaceDetectionOutput);
-
-                if (FaceDetectionOutput.AvailableMetadataObjectTypes.HasFlag(AVMetadataObjectType.Face))
-                {
-                    FaceDetectionOutput.MetadataObjectTypes = AVMetadataObjectType.Face;
-                    FaceDetectionOutput.SetDelegate(this, DispatchQueue.MainQueue);
-                }
-                else {
-                    Session.RemoveOutput(FaceDetectionOutput);
-                    FaceDetectionOutput.Dispose();
-                    FaceDetectionOutput = null;
-                }
-            }
         }
     }
 }

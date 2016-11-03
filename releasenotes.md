@@ -51,3 +51,11 @@
 ### New in 1.6.0
 
 * Added Face Detection. You can opt out and customize border through Configuration
+
+### New in 1.6.1
+
+* Added yaw and roll to face detection rectangle
+
+### New in 1.6.2
+
+* Make rectangle transitions more smooth by reusing CALayers
