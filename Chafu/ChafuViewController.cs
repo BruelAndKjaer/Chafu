@@ -236,11 +236,11 @@ namespace Chafu
 		    AlbumDelegate = albumDelegate;
 
 			AlbumView.Initialize (AlbumDataSource, AlbumDelegate);
-			_cameraView.Initialize (OnImage);
+			_cameraView.Initialize (OnImageFinished);
 
 			if (HasVideo) {
 				_videoView.LayoutIfNeeded ();
-				_videoView.Initialize (OnVideo);
+				_videoView.Initialize (OnVideoFinished);
                 _videoView.CameraUnauthorized += OnCameraUnauthorized;
 			}
 
@@ -256,6 +256,8 @@ namespace Chafu
 		    ChangeMode(Configuration.ModeOrder == ModeOrder.LibraryFirst ? 
                 Mode.Library : Mode.Camera);
 		}
+
+        
 
         /// <inheritdoc />
         public override void ViewWillDisappear (bool animated)
@@ -323,39 +325,34 @@ namespace Chafu
 			{
 				if (Configuration.CropImage) {
 					Console.WriteLine("Cropping image before handing it over");
-					AlbumDataSource.GetCroppedImage(croppedImage =>
-					{
-						ImageSelected?.Invoke(this, croppedImage);
-					});
+					AlbumDataSource.GetCroppedImage(OnImageFinished);
 				}
 				else {
                     Console.WriteLine("Not cropping image");
-					ImageSelected?.Invoke(this, AlbumView.ImageCropView.Image);
-				}
+                    OnImageFinished(AlbumView.ImageCropView.Image);
+                }
 			}
 
 			if (AlbumDataSource.CurrentMediaType == MediaType.Video)
 			{
 				var url = AlbumView.MoviePlayerController.ContentUrl;
-				VideoSelected?.Invoke(this, url);
-			}
+				OnVideoFinished(url);
+            }
+        }
 
-			DismissViewController(true, () => Closed?.Invoke(this, EventArgs.Empty));
-		}
+        private void OnVideoFinished(NSUrl url)
+        {
+            VideoSelected?.Invoke(this, url);
+            Dismiss();
+        }
 
-		private void OnVideo (NSUrl nsUrl)
-		{
-			VideoSelected?.Invoke (this, nsUrl);
-			DismissViewController (true, () => Closed?.Invoke (this, EventArgs.Empty));
-		}
+        private void OnImageFinished(UIImage image)
+        {
+            ImageSelected?.Invoke(this, image);
+            Dismiss();
+        }
 
-		private void OnImage (UIImage uiImage)
-		{
-			ImageSelected?.Invoke (this, uiImage);
-			DismissViewController (true, () => Closed?.Invoke (this, EventArgs.Empty));
-		}
-
-		private void ChangeMode (Mode mode, bool startStopCamera = true)
+        private void ChangeMode (Mode mode, bool startStopCamera = true)
 		{
 			if (_mode == mode) return;
 

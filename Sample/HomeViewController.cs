@@ -56,7 +56,11 @@ namespace Sample
                 urlLabel.Text = videoUrl.AbsoluteString;
                 CopyVideoToLocalFolder(videoUrl);
             };
-            chafu.Closed += (sender, e) => { /* do stuff on closed */ };
+            chafu.Closed += (sender, e) =>
+            {
+                /* do stuff on closed */ 
+                
+            };
             
             pickerButton.TouchUpInside += (sender, args) =>
             {
