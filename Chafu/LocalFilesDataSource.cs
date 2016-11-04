@@ -313,13 +313,18 @@ namespace Chafu
                     ? Files.FirstOrDefault(f => f.Path == InitialSelectedImagePath)
                     : Files.FirstOrDefault();
 
+                if (item == null)
+                    item = Files.FirstOrDefault();
+
                 var indexOfItem = Files.LastIndexOf(item);
 
-                ChangeMediaItem(item);
                 CurrentIndexPath = NSIndexPath.FromRowSection(indexOfItem, 0);
                 _albumView?.CollectionView.ReloadData();
                 _albumView?.CollectionView.SelectItem(CurrentIndexPath, false,
                     UICollectionViewScrollPosition.None);
+                _albumView?.CollectionView.ScrollToItem(CurrentIndexPath, UICollectionViewScrollPosition.Top, false);
+
+                ChangeMediaItem(item);
             });
         }
 
@@ -341,6 +346,9 @@ namespace Chafu
 			        path = path.Substring(7);
 
                 File.Delete(path);
+
+			    if (CurrentMediaPath == InitialSelectedImagePath)
+			        InitialSelectedImagePath = null;
 
 				CurrentMediaPath = null;
 				CurrentIndexPath = null;
