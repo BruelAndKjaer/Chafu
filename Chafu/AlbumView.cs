@@ -347,7 +347,7 @@ namespace Chafu
         {
             if (MoviePlayerController?.ContentUrl == null) return;
 
-            MoviePlayerController.Stop();
+            MoviePlayerController?.Stop();
         }
 
         /// <summary>
