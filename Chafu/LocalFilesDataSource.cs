@@ -236,10 +236,15 @@ namespace Chafu
             });
         }
 
+        private static void ChangeAlbumViewVisibility(MediaItem item, AlbumView albumView)
+        {
+            albumView.ImageCropView.Hidden = item.MediaType == MediaType.Video;
+            albumView.MovieView.Hidden = item.MediaType == MediaType.Image;
+        }
+
         private static void ChangeImage(MediaItem item, AlbumView albumView)
         {
-            albumView.ImageCropView.Hidden = false;
-            albumView.MovieView.Hidden = true;
+            ChangeAlbumViewVisibility(item, albumView);
 
             var image = UIImage.FromFile(item.Path);
 
@@ -249,8 +254,7 @@ namespace Chafu
 
         private static void ChangeVideo(MediaItem item, AlbumView albumView)
         {
-            albumView.ImageCropView.Hidden = true;
-            albumView.MovieView.Hidden = false;
+            ChangeAlbumViewVisibility(item, albumView);
 
             var sourceMovieUrl = new NSUrl(item.Path);
 
