@@ -65,3 +65,7 @@
 * Fix crash when all images are deleted in LocalFilesDataSource
 * Added InitialSelectedImagePath to choose what image is selected initially
 * Potential fix for first image not being selected in LocalFilesDataSource leaving ImageCropView blank until image is manually selected
+
+### New in 1.6.6
+
+* Added XML doc

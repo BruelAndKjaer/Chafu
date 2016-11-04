@@ -211,8 +211,17 @@ namespace Chafu
         }
     }
 
+    /// <summary>
+    /// Extension methods for CoreAnimation classes
+    /// </summary>
     public static class CoreAnimationExtensions
     {
+        /// <summary>
+        /// Make perspective, such that layers can be rotated around Z-axis
+        /// </summary>
+        /// <param name="transform"><see cref="CATransform3D"/> to add perspective to</param>
+        /// <param name="eyePosition">Eye position</param>
+        /// <returns></returns>
         public static CATransform3D MakePerspective(this CATransform3D transform, nfloat eyePosition)
         {
             transform.m34 = -1.0f / eyePosition;
@@ -220,8 +229,16 @@ namespace Chafu
         }
     }
 
+    /// <summary>
+    /// Maths extensions
+    /// </summary>
     public static class MathExtensions
     {
+        /// <summary>
+        /// Convert degrees to radians
+        /// </summary>
+        /// <param name="degrees">Angle in degrees</param>
+        /// <returns>Angle in radians</returns>
         public static nfloat ToRadians(this nfloat degrees) =>
             degrees * (nfloat)Math.PI / 180f;
     }
