@@ -65,6 +65,13 @@ namespace Chafu
         public static string[] ImageFileExtensions { get; set; } = {".jpg", ".jpeg", ".png"};
 
         /// <summary>
+        /// Get or set the initial path of the first selected image.
+        /// 
+        /// Default is null
+        /// </summary>
+        public string InitialSelectedImagePath { get; set; }
+
+        /// <summary>
         /// Creates a new data source for showing images and video from a local folder
         /// </summary>
         /// <param name="albumView"><see cref="AlbumView"/> this data source is feeding</param>
@@ -298,8 +305,14 @@ namespace Chafu
         {
             DispatchQueue.MainQueue.DispatchAsync(() =>
             {
-                ChangeMediaItem(Files.FirstOrDefault());
-                CurrentIndexPath = NSIndexPath.FromRowSection(0, 0);
+                var item = !string.IsNullOrEmpty(InitialSelectedImagePath)
+                    ? Files.FirstOrDefault(f => f.Path == InitialSelectedImagePath)
+                    : Files.FirstOrDefault();
+
+                var indexOfItem = Files.LastIndexOf(item);
+
+                ChangeMediaItem(item);
+                CurrentIndexPath = NSIndexPath.FromRowSection(indexOfItem, 0);
                 _albumView?.CollectionView.ReloadData();
                 _albumView?.CollectionView.SelectItem(CurrentIndexPath, false,
                     UICollectionViewScrollPosition.None);
