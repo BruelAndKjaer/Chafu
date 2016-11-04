@@ -93,7 +93,13 @@ namespace Sample
                 var dirPath = TempPath();
                 if (!Directory.Exists(dirPath))
                     Directory.CreateDirectory(dirPath);
-                ((LocalFilesDataSource)albumViewController.AlbumDataSource)?.UpdateImageSource(dirPath);
+                var dataSource = (LocalFilesDataSource) albumViewController.AlbumDataSource;
+                dataSource?.UpdateImageSource(dirPath);
+
+                // Test InitialSelectedImage by selecting random path
+                //if (dataSource != null)
+                //    dataSource.InitialSelectedImagePath = GetRandomPath();
+                    
                 NavigationController.PresentModalViewController(albumViewController, true);
             };
 
@@ -133,6 +139,17 @@ namespace Sample
                 albumButton.Height().EqualTo(50),
                 albumButton.AtBottomOf(View, 10f)
                 );
+        }
+
+        private string GetRandomPath()
+        {
+            var dirPath = TempPath();
+            if (!Directory.Exists(dirPath))
+                return null;
+
+            var files = Directory.GetFiles(dirPath);
+            var random = new Random().Next(files.Length - 1);
+            return files[random];
         }
 
         private void CopyImageToLocalFolder(UIImage image)
