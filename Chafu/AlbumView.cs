@@ -188,8 +188,6 @@ namespace Chafu
 
             CollectionView.DataSource = dataSource;
             CollectionView.Delegate = @delegate;
-
-            //CollectionView.ScrollToItem(NSIndexPath.FromItemSection(0,0),UICollectionViewScrollPosition.Top, false);
         }
 
         private void Panned(UIPanGestureRecognizer sender)
