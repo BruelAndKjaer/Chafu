@@ -156,6 +156,9 @@ namespace Chafu
             _menu.Closed += OnClosed;
             _menu.Extra += OnExtra;
 			_menu.Deleted += OnDelete;
+
+            if (AlbumDataSource != null && AlbumDataSource.GetType() == typeof(LocalFilesDataSource))
+                ((LocalFilesDataSource)AlbumDataSource).ShowFirstImage();
         }
 
         /// <inheritdoc />
