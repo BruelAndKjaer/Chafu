@@ -309,12 +309,17 @@ namespace Chafu
         {
             DispatchQueue.MainQueue.DispatchAsync(() =>
             {
+                if (!Files.Any()) return;
+
                 var item = !string.IsNullOrEmpty(InitialSelectedImagePath)
                     ? Files.FirstOrDefault(f => f.Path == InitialSelectedImagePath)
                     : Files.FirstOrDefault();
 
                 if (item == null)
                     item = Files.FirstOrDefault();
+
+                if (item == null)
+                    return;
 
                 var indexOfItem = Files.LastIndexOf(item);
 
