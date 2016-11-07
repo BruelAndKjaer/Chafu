@@ -16,6 +16,9 @@ namespace Chafu
     /// </summary>
     public class LocalFilesDataSource : BaseAlbumDataSource
     {
+        /// <inheritdoc />
+        public override event EventHandler CameraRollUnauthorized;
+
         private readonly AlbumView _albumView;
         private readonly CGSize _cellSize;
         private string _imagesPath;
@@ -103,6 +106,149 @@ namespace Chafu
             ShowFirstImage();
         }
 
+        /// <inheritdoc />
+        public override UICollectionViewCell GetCell(UICollectionView collectionView,
+            NSIndexPath indexPath)
+        {
+            var cell = collectionView.DequeueReusableCell(AlbumViewCell.Key, indexPath)
+                as AlbumViewCell ?? new AlbumViewCell();
+
+            var file = Files?[indexPath.Row];
+            if (file?.Path == null) return cell;
+
+            var row = indexPath.Row;
+
+            cell.IsVideo = file.MediaType == MediaType.Video;
+            cell.Image = null;
+            cell.Tag = row;
+
+            if (file.MediaType == MediaType.Image)
+                SetImageCell(cell, file, row);
+            else
+                SetVideoCell(cell, file, row);
+
+            return cell;
+        }
+
+        /// <inheritdoc />
+        public override nint GetItemsCount(UICollectionView collectionView, nint section)
+            => Files?.Count ?? 0;
+
+        /// <summary>
+        /// Change the the currently shown <see cref="MediaItem"/>
+        /// </summary>
+        /// <param name="item"><see cref="MediaItem"/> to change to</param>
+        public void ChangeMediaItem(MediaItem item)
+        {
+            Console.WriteLine($"Changing media item to {item?.Path}");
+            if (item?.Path == null) return;
+            if (_albumView?.ImageCropView == null) return;
+
+            DispatchQueue.MainQueue.DispatchAsync(() =>
+            {
+                StopVideo();
+
+                _albumView.ClearPreview();
+                CurrentMediaPath = item.Path;
+                CurrentMediaType = item.MediaType;
+
+                if (item.MediaType == MediaType.Image)
+                    ChangeImage(item, _albumView);
+                else
+                    ChangeVideo(item, _albumView);
+            });
+        }
+
+        /// <inheritdoc />
+        public override void GetCroppedImage(Action<UIImage> onImage)
+        {
+            var view = _albumView?.ImageCropView;
+            var image = view?.Image;
+
+            if (image == null)
+            {
+                onImage?.Invoke(null);
+                return;
+            }
+
+            var scale = UIScreen.MainScreen.Scale;
+            var offset = view.ContentOffset;
+            var size = view.Bounds.Size;
+
+            DispatchQueue.DefaultGlobalQueue.DispatchAsync(() =>
+            {
+                UIGraphics.BeginImageContextWithOptions(size, true, scale);
+
+                using (var context = UIGraphics.GetCurrentContext())
+                {
+                    context.TranslateCTM(-offset.X, -offset.Y);
+                    view.Layer.RenderInContext(context);
+
+                    var result = UIGraphics.GetImageFromCurrentImageContext();
+
+                    DispatchQueue.MainQueue.DispatchAsync(() =>
+                        onImage?.Invoke(result));
+                }
+                UIGraphics.EndImageContext();
+            });
+        }
+
+        /// <inheritdoc />
+        public override void ShowFirstImage()
+        {
+            var itemAndIndex = GetItemAndIndex(Files, InitialSelectedImagePath);
+            var item = itemAndIndex.Item1;
+            var indexOfItem = itemAndIndex.Item2;
+
+            if (item == null) return;
+
+            ChangeMediaItem(item);
+
+            var indexPath = NSIndexPath.FromRowSection(indexOfItem, 0);
+            if (CurrentIndexPath != null && CurrentIndexPath.Length == indexPath.Length && CurrentIndexPath.Row == indexPath.Row &&
+                CurrentIndexPath.Section == indexPath.Section)
+                return; // no need to update if same selection
+
+            CurrentIndexPath = indexPath;
+
+            DispatchQueue.MainQueue.DispatchAsync(() =>
+            {
+                _albumView?.CollectionView.ReloadData();
+                _albumView?.CollectionView.SelectItem(CurrentIndexPath, false,
+                    UICollectionViewScrollPosition.None);
+                _albumView?.CollectionView.ScrollToItem(CurrentIndexPath,
+                    UICollectionViewScrollPosition.Top, false);   
+            });
+        }
+
+        /// <inheritdoc />
+		public override MediaItem DeleteCurrentMediaItem()
+        {
+            var mediaItem = MediaItemFromPath(CurrentMediaPath);
+            if (mediaItem == null) return null;
+
+            _albumView.CollectionView.PerformBatchUpdates(() =>
+            {
+                Files.Remove(mediaItem);
+
+                _albumView.ClearPreview();
+                _albumView.CollectionView.DeleteItems(new[] { CurrentIndexPath });
+
+                var path = PathWithoutPrefix(CurrentMediaPath);
+                File.Delete(path);
+
+                if (CurrentMediaPath == InitialSelectedImagePath)
+                    InitialSelectedImagePath = null;
+
+                CurrentMediaPath = null;
+                CurrentIndexPath = null;
+            }, null);
+
+            ShowFirstImage();
+
+            return mediaItem;
+        }
+
         private IEnumerable<string> GetOrderedFiles(string imagesPath)
         {
             if (string.IsNullOrEmpty(imagesPath))
@@ -131,30 +277,6 @@ namespace Chafu
                 _mediaTypes.HasFlag(MediaType.Image))
                 return new MediaItem { MediaType = MediaType.Image, Path = file };
             return null;
-        }
-
-        /// <inheritdoc />
-        public override UICollectionViewCell GetCell(UICollectionView collectionView,
-            NSIndexPath indexPath)
-        {
-            var cell = collectionView.DequeueReusableCell(AlbumViewCell.Key, indexPath)
-                as AlbumViewCell ?? new AlbumViewCell();
-
-            var file = Files?[indexPath.Row];
-            if (file?.Path == null) return cell;
-
-            var row = indexPath.Row;
-
-            cell.IsVideo = file.MediaType == MediaType.Video;
-            cell.Image = null;
-            cell.Tag = row;
-
-            if (file.MediaType == MediaType.Image)
-                SetImageCell(cell, file, row);
-            else
-                SetVideoCell(cell, file, row);
-
-            return cell;
         }
 
         private void SetImageCell(AlbumViewCell cell, MediaItem item, int row)
@@ -217,35 +339,6 @@ namespace Chafu
         private static int Clamp(int value, int min, int max)
             => value < min ? min : value > max ? max : value;
 
-        /// <inheritdoc />
-        public override nint GetItemsCount(UICollectionView collectionView, nint section)
-            => Files?.Count ?? 0;
-
-        /// <summary>
-        /// Change the the currently shown <see cref="MediaItem"/>
-        /// </summary>
-        /// <param name="item"><see cref="MediaItem"/> to change to</param>
-        public void ChangeMediaItem(MediaItem item)
-        {
-            if (item?.Path == null) return;
-            if (_albumView?.ImageCropView == null) return;
-
-            DispatchQueue.MainQueue.DispatchAsync(() =>
-            {
-                StopVideo();
-
-                _albumView.ImageCropView.Image = null;
-                _albumView.MoviePlayerController.ContentUrl = null;
-                CurrentMediaPath = item.Path;
-                CurrentMediaType = item.MediaType;
-
-                if (item.MediaType == MediaType.Image)
-                    ChangeImage(item, _albumView);
-                else
-                    ChangeVideo(item, _albumView);
-            });
-        }
-
         private static void ChangeAlbumViewVisibility(MediaItem item, AlbumView albumView)
         {
             albumView.ImageCropView.Hidden = item.MediaType == MediaType.Video;
@@ -278,101 +371,29 @@ namespace Chafu
             _albumView.StopVideo();
         }
 
-        /// <inheritdoc />
-        public override void GetCroppedImage(Action<UIImage> onImage)
+        private static Tuple<MediaItem, int> GetItemAndIndex(List<MediaItem> files, 
+            string initialSelectedImagePath)
         {
-            var view = _albumView?.ImageCropView;
-            var image = view?.Image;
+            if (!files.Any()) return new Tuple<MediaItem, int>(null, 0);
 
-            if (image == null)
-            {
-                onImage?.Invoke(null);
-                return;
-            }
+            var item = !string.IsNullOrEmpty(initialSelectedImagePath)
+                ? files.FirstOrDefault(f =>
+                    f.Path == initialSelectedImagePath ||
+                    f.Path == "file://" + initialSelectedImagePath)
+                : files.FirstOrDefault();
 
-            var scale = UIScreen.MainScreen.Scale;
-            var offset = view.ContentOffset;
-            var size = view.Bounds.Size;
+            if (item == null)
+                item = files.FirstOrDefault();
 
-            DispatchQueue.DefaultGlobalQueue.DispatchAsync(() =>
-            {
-                UIGraphics.BeginImageContextWithOptions(size, true, scale);
+            if (item == null)
+                return new Tuple<MediaItem, int>(null, 0);
 
-                using (var context = UIGraphics.GetCurrentContext())
-                {
-                    context.TranslateCTM(-offset.X, -offset.Y);
-                    view.Layer.RenderInContext(context);
+            var indexOfItem = files.LastIndexOf(item);
 
-                    var result = UIGraphics.GetImageFromCurrentImageContext();
-
-                    DispatchQueue.MainQueue.DispatchAsync(() =>
-                        onImage?.Invoke(result));
-                }
-                UIGraphics.EndImageContext();
-            });
+            return new Tuple<MediaItem, int>(item, indexOfItem);
         }
 
-        /// <inheritdoc />
-        public override void ShowFirstImage()
-        {
-            DispatchQueue.MainQueue.DispatchAsync(() =>
-            {
-                if (!Files.Any()) return;
-
-                var item = !string.IsNullOrEmpty(InitialSelectedImagePath)
-                    ? Files.FirstOrDefault(f =>
-                        f.Path == InitialSelectedImagePath ||
-                        f.Path == "file://" + InitialSelectedImagePath)
-                    : Files.FirstOrDefault();
-
-                if (item == null)
-                    item = Files.FirstOrDefault();
-
-                if (item == null)
-                    return;
-
-                var indexOfItem = Files.LastIndexOf(item);
-
-                CurrentIndexPath = NSIndexPath.FromRowSection(indexOfItem, 0);
-                _albumView?.CollectionView.ReloadData();
-                _albumView?.CollectionView.SelectItem(CurrentIndexPath, false,
-                    UICollectionViewScrollPosition.None);
-                _albumView?.CollectionView.ScrollToItem(CurrentIndexPath,
-                    UICollectionViewScrollPosition.Top, false);
-
-                ChangeMediaItem(item);
-            });
-        }
-
-        /// <inheritdoc />
-		public override MediaItem DeleteCurrentMediaItem()
-        {
-            var mediaItem = MediaItemFromPath(CurrentMediaPath);
-            if (mediaItem == null) return null;
-
-            _albumView.CollectionView.PerformBatchUpdates(() =>
-            {
-                Files.Remove(mediaItem);
-
-                _albumView.ClearPreview();
-                _albumView.CollectionView.DeleteItems(new[] { CurrentIndexPath });
-
-                var path = PathWithoutPrefix(CurrentMediaPath);
-                File.Delete(path);
-
-                if (CurrentMediaPath == InitialSelectedImagePath)
-                    InitialSelectedImagePath = null;
-
-                CurrentMediaPath = null;
-                CurrentIndexPath = null;
-            }, null);
-
-            ShowFirstImage();
-
-            return mediaItem;
-        }
-
-        private string PathWithoutPrefix(string path)
+        private static string PathWithoutPrefix(string path)
         {
             if (path.StartsWith("file://", StringComparison.Ordinal))
                 path = path.Substring(7);
@@ -383,8 +404,5 @@ namespace Chafu
             => string.IsNullOrEmpty(path) ?
                null :
                Files.FirstOrDefault(f => f.Path == path);
-
-        /// <inheritdoc />
-        public override event EventHandler CameraRollUnauthorized;
     }
 }
