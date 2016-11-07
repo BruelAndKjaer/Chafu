@@ -41,7 +41,7 @@ namespace Chafu
         private MenuView _menu;
         private bool _showExtraButton;
         private bool _showDoneButton;
-		private bool _showDeleteButton;
+        private bool _showDeleteButton;
 
         /// <summary>
         /// Gets or sets the media types shown from Photo Library.
@@ -82,27 +82,27 @@ namespace Chafu
         /// Get or set whether to show the Delete button in the Menu
         /// </summary>
 		public bool ShowDeleteButton
-		{
-			get { return _showDeleteButton; }
-			set
-			{
-				_showDeleteButton = value;
-				if (_menu != null)
-					_menu.DeleteButtonHidden = !_showDeleteButton;
-			}
-		}
+        {
+            get { return _showDeleteButton; }
+            set
+            {
+                _showDeleteButton = value;
+                if (_menu != null)
+                    _menu.DeleteButtonHidden = !_showDeleteButton;
+            }
+        }
 
         /// <inheritdoc />
         public override void ViewDidLoad()
         {
             base.ViewDidLoad();
-            
+
             CreateViews();
             CreateConstraints();
 
             _menu.ExtraButtonHidden = !ShowExtraButton;
             _menu.DoneButtonHidden = !ShowDoneButton;
-			_menu.DeleteButtonHidden = !ShowDeleteButton;
+            _menu.DeleteButtonHidden = !ShowDeleteButton;
         }
 
         private void CreateViews()
@@ -112,7 +112,8 @@ namespace Chafu
             if (CellSize == CGSize.Empty)
                 CellSize = CalculateCellSize();
 
-            _album = new AlbumView(CellSize) {
+            _album = new AlbumView(CellSize)
+            {
                 TranslatesAutoresizingMaskIntoConstraints = false,
                 BackgroundColor = Configuration.BackgroundColor
             };
@@ -121,7 +122,8 @@ namespace Chafu
             AlbumDelegate = LazyDelegate(_album, AlbumDataSource);
             _album.Initialize(AlbumDataSource, AlbumDelegate);
 
-            _menu = new MenuView {
+            _menu = new MenuView
+            {
                 TranslatesAutoresizingMaskIntoConstraints = false,
                 BackgroundColor = Configuration.BackgroundColor
             };
@@ -155,7 +157,7 @@ namespace Chafu
             _menu.Done += OnDone;
             _menu.Closed += OnClosed;
             _menu.Extra += OnExtra;
-			_menu.Deleted += OnDelete;
+            _menu.Deleted += OnDelete;
 
 
             _album.ImageCropView.SetNeedsLayout();
@@ -169,7 +171,7 @@ namespace Chafu
             _menu.Done -= OnDone;
             _menu.Closed -= OnClosed;
             _menu.Extra -= OnExtra;
-			_menu.Deleted -= OnDelete;
+            _menu.Deleted -= OnDelete;
 
             base.ViewDidDisappear(animated);
         }
@@ -200,17 +202,19 @@ namespace Chafu
         {
             if (_deleteAlertController == null)
             {
-                _deleteAlertController = UIAlertController.Create(null, null, UIAlertControllerStyle.ActionSheet);
-                _deleteAlertController.AddAction(UIAlertAction.Create(Configuration.DeleteTitle,
-                    UIAlertActionStyle.Destructive, Delete));
-                _deleteAlertController.AddAction(UIAlertAction.Create(Configuration.CancelTitle, UIAlertActionStyle.Cancel,
-                    action => { }));
+                _deleteAlertController = UIAlertController.Create(null, null,
+                    UIAlertControllerStyle.ActionSheet);
+                _deleteAlertController.AddAction(UIAlertAction.Create(
+                    Configuration.DeleteTitle, UIAlertActionStyle.Destructive, Delete));
+                _deleteAlertController.AddAction(UIAlertAction.Create(
+                    Configuration.CancelTitle, UIAlertActionStyle.Cancel, action => { }));
             }
 
             return _deleteAlertController;
         }
 
-        private static void SetAlertControllerTitleAndMessage(MediaItem item, UIAlertController controller)
+        private static void SetAlertControllerTitleAndMessage(MediaItem item,
+            UIAlertController controller)
         {
             if (item == null) return;
             if (controller == null) return;
@@ -275,7 +279,8 @@ namespace Chafu
             if (Configuration.CropImage)
             {
                 Console.WriteLine("Cropping image before handing it over");
-                AlbumDataSource.GetCroppedImage(croppedImage => {
+                AlbumDataSource.GetCroppedImage(croppedImage =>
+                {
                     ImageSelected?.Invoke(this, croppedImage);
                     Dismiss();
                 });
@@ -296,13 +301,16 @@ namespace Chafu
         }
 
         /// <inheritdoc />
-        public override UIInterfaceOrientationMask GetSupportedInterfaceOrientations() => UIInterfaceOrientationMask.Portrait;
+        public override UIInterfaceOrientationMask GetSupportedInterfaceOrientations() =>
+            UIInterfaceOrientationMask.Portrait;
 
         /// <inheritdoc />
-        public override UIInterfaceOrientation InterfaceOrientation => UIInterfaceOrientation.Portrait;
+        public override UIInterfaceOrientation InterfaceOrientation =>
+            UIInterfaceOrientation.Portrait;
 
         /// <inheritdoc />
-        public override bool PrefersStatusBarHidden() => Configuration.PreferStatusbarHidden;
+        public override bool PrefersStatusBarHidden() =>
+            Configuration.PreferStatusbarHidden;
 
         /// <inheritdoc />
         protected override void Dispose(bool disposing)
@@ -311,8 +319,8 @@ namespace Chafu
             {
                 _menu.Done -= OnDone;
                 _menu.Closed -= OnClosed;
-				_menu.Extra -= OnExtra;
-				_menu.Deleted -= OnDelete;
+                _menu.Extra -= OnExtra;
+                _menu.Deleted -= OnDelete;
             }
 
             base.Dispose(disposing);

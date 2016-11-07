@@ -108,7 +108,8 @@ namespace Chafu
                 SectionInset = new UIEdgeInsets(0, 0, 0, 0)
             };
 
-            CollectionView = new UICollectionView(new CGRect(0, 450, 400, 150), collectionFlowLayout)
+            CollectionView = new UICollectionView(
+                new CGRect(0, 450, 400, 150), collectionFlowLayout)
             {
                 AccessibilityLabel = "CollectionView",
                 TranslatesAutoresizingMaskIntoConstraints = false,
@@ -131,22 +132,22 @@ namespace Chafu
 
         private void CreateConstraints()
         {
-            CollectionViewConstraintHeight = NSLayoutConstraint.Create(CollectionView, NSLayoutAttribute.Height,
-                NSLayoutRelation.Equal);
+            CollectionViewConstraintHeight = NSLayoutConstraint.Create(CollectionView,
+                NSLayoutAttribute.Height, NSLayoutRelation.Equal);
             CollectionViewConstraintHeight.Constant = 0;
             CollectionView.AddConstraint(CollectionViewConstraintHeight);
 
             AddConstraints(new[]
             {
                 ImageCropViewConstraintTop =
-                    NSLayoutConstraint.Create(ImageCropView, NSLayoutAttribute.Top, NSLayoutRelation.Equal,
-                        this, NSLayoutAttribute.Top, 1, 0),
+                    NSLayoutConstraint.Create(ImageCropView, NSLayoutAttribute.Top,
+                        NSLayoutRelation.Equal, this, NSLayoutAttribute.Top, 1, 0),
                 MovieViewConstraintTop =
-                    NSLayoutConstraint.Create(MovieView, NSLayoutAttribute.Top, NSLayoutRelation.Equal,
-                        this, NSLayoutAttribute.Top, 1, 0),
+                    NSLayoutConstraint.Create(MovieView, NSLayoutAttribute.Top,
+                        NSLayoutRelation.Equal, this, NSLayoutAttribute.Top, 1, 0),
                 CollectionViewConstraintTop =
-                    NSLayoutConstraint.Create(CollectionView, NSLayoutAttribute.Top, NSLayoutRelation.Equal,
-                        ImageCropView, NSLayoutAttribute.Bottom, 1, 0)
+                    NSLayoutConstraint.Create(CollectionView, NSLayoutAttribute.Top,
+                        NSLayoutRelation.Equal, ImageCropView, NSLayoutAttribute.Bottom, 1, 0)
             });
 
             this.AddConstraints(
@@ -169,7 +170,8 @@ namespace Chafu
         /// </summary>
         /// <param name="dataSource">Data source.</param>
         /// <param name="delegate">Delegate.</param>
-        public void Initialize(UICollectionViewDataSource dataSource, UICollectionViewDelegate @delegate)
+        public void Initialize(UICollectionViewDataSource dataSource,
+            UICollectionViewDelegate @delegate)
         {
             Hidden = false;
 
@@ -228,9 +230,10 @@ namespace Chafu
 
             if (DragDirection == DragDirection.Stop)
             {
-                DragDirection = ImageCropViewConstraintTop.Constant == ImageCropViewOriginalConstraintTop
-                    ? DragDirection.Up
-                    : DragDirection.Down;
+                DragDirection = ImageCropViewConstraintTop.Constant ==
+                    ImageCropViewOriginalConstraintTop
+                        ? DragDirection.Up
+                        : DragDirection.Down;
             }
 
             if ((DragDirection == DragDirection.Up && _dragStartPos.Y < _cropBottomY + _dragDiff) ||
@@ -247,16 +250,20 @@ namespace Chafu
 
         private void PannedChanged(CGPoint currentPosition)
         {
-            if (DragDirection == DragDirection.Up && currentPosition.Y < _cropBottomY - _dragDiff)
+            if (DragDirection == DragDirection.Up &&
+                currentPosition.Y < _cropBottomY - _dragDiff)
             {
                 MovieViewConstraintTop.Constant = ImageCropViewConstraintTop.Constant =
-                    (nfloat)Math.Max(_imageCropViewMinimalVisibleHeight - ImageCropView.Frame.Height,
-                        currentPosition.Y + _dragDiff - ImageCropView.Frame.Height);
+                    (nfloat)Math.Max(_imageCropViewMinimalVisibleHeight -
+                        ImageCropView.Frame.Height, currentPosition.Y + _dragDiff -
+                        ImageCropView.Frame.Height);
                 CollectionViewConstraintHeight.Constant =
                     (nfloat)Math.Min(Frame.Height - _imageCropViewMinimalVisibleHeight,
-                        Frame.Height - ImageCropViewConstraintTop.Constant - ImageCropView.Frame.Height);
+                        Frame.Height - ImageCropViewConstraintTop.Constant -
+                        ImageCropView.Frame.Height);
             }
-            else if (DragDirection == DragDirection.Down && currentPosition.Y > _cropBottomY)
+            else if (DragDirection == DragDirection.Down &&
+                currentPosition.Y > _cropBottomY)
             {
                 MovieViewConstraintTop.Constant = ImageCropViewConstraintTop.Constant =
                     (nfloat)Math.Min(ImageCropViewOriginalConstraintTop,
@@ -264,32 +271,40 @@ namespace Chafu
                 CollectionViewConstraintHeight.Constant =
                     (nfloat)
                         Math.Max(
-                            Frame.Height - ImageCropViewOriginalConstraintTop - ImageCropView.Frame.Height,
-                            Frame.Height - ImageCropViewConstraintTop.Constant - ImageCropView.Frame.Height);
+                            Frame.Height - ImageCropViewOriginalConstraintTop -
+                                ImageCropView.Frame.Height,
+                            Frame.Height - ImageCropViewConstraintTop.Constant -
+                                ImageCropView.Frame.Height);
             }
-            else if (DragDirection == DragDirection.Stop && CollectionView.ContentOffset.Y < 0)
+            else if (DragDirection == DragDirection.Stop &&
+                CollectionView.ContentOffset.Y < 0)
             {
                 DragDirection = DragDirection.Scroll;
                 _imaginaryCollectionViewOffsetStartPosY = currentPosition.Y;
             }
             else if (DragDirection == DragDirection.Scroll)
             {
-                MovieViewConstraintTop.Constant = ImageCropViewConstraintTop.Constant = _imageCropViewMinimalVisibleHeight -
-                                                      ImageCropView.Frame.Height + currentPosition.Y -
-                                                      _imaginaryCollectionViewOffsetStartPosY;
+                MovieViewConstraintTop.Constant =
+                    ImageCropViewConstraintTop.Constant =
+                        _imageCropViewMinimalVisibleHeight - ImageCropView.Frame.Height +
+                        currentPosition.Y - _imaginaryCollectionViewOffsetStartPosY;
                 CollectionViewConstraintHeight.Constant =
                     (nfloat)
                         Math.Max(
-                            Frame.Height - ImageCropViewOriginalConstraintTop - ImageCropView.Frame.Height,
-                            Frame.Height - ImageCropViewConstraintTop.Constant - ImageCropView.Frame.Height);
+                            Frame.Height - ImageCropViewOriginalConstraintTop -
+                                ImageCropView.Frame.Height,
+                            Frame.Height - ImageCropViewConstraintTop.Constant -
+                                ImageCropView.Frame.Height);
             }
         }
 
-        private nfloat PannedOtherwise(UIGestureRecognizer sender, CGPoint currentPosition, nfloat alpha)
+        private nfloat PannedOtherwise(UIGestureRecognizer sender,
+            CGPoint currentPosition, nfloat alpha)
         {
             _imaginaryCollectionViewOffsetStartPosY = 0;
 
-            if (sender.State == UIGestureRecognizerState.Ended && DragDirection == DragDirection.Stop)
+            if (sender.State == UIGestureRecognizerState.Ended &&
+                DragDirection == DragDirection.Stop)
             {
                 ImageCropView.Scrollable = true;
                 return alpha;
@@ -301,9 +316,11 @@ namespace Chafu
                 // The largest movement
                 ImageCropView.Scrollable = false;
                 alpha = 0.3f;
-                MovieViewConstraintTop.Constant = ImageCropViewConstraintTop.Constant = _imageCropViewMinimalVisibleHeight -
-                                                      ImageCropView.Frame.Height;
-                CollectionViewConstraintHeight.Constant = Frame.Height - _imageCropViewMinimalVisibleHeight;
+                MovieViewConstraintTop.Constant =
+                    ImageCropViewConstraintTop.Constant =
+                        _imageCropViewMinimalVisibleHeight - ImageCropView.Frame.Height;
+                CollectionViewConstraintHeight.Constant =
+                    Frame.Height - _imageCropViewMinimalVisibleHeight;
                 CollectionViewConstraintTop.Constant = ImageCropViewOriginalConstraintTop;
 
                 DragDirection = DragDirection.Down;
@@ -321,15 +338,18 @@ namespace Chafu
 
         private void SetOriginalConstraints()
         {
-            MovieViewConstraintTop.Constant = ImageCropViewConstraintTop.Constant = ImageCropViewOriginalConstraintTop;
-            CollectionViewConstraintHeight.Constant = Frame.Height - ImageCropViewOriginalConstraintTop -
-                                                      ImageCropView.Frame.Height;
+            MovieViewConstraintTop.Constant = ImageCropViewConstraintTop.Constant =
+                ImageCropViewOriginalConstraintTop;
+            CollectionViewConstraintHeight.Constant =
+                Frame.Height - ImageCropViewOriginalConstraintTop -
+                ImageCropView.Frame.Height;
             CollectionViewConstraintTop.Constant = 0;
             DragDirection = DragDirection.Up;
         }
 
         /// <summary>
-        /// Clear the contents of <see cref="ImageCropView"/> and <see cref="MoviePlayerController"/>
+        /// Clear the contents of <see cref="ImageCropView"/> and 
+        /// <see cref="MoviePlayerController"/>
         /// </summary>
         public void ClearPreview()
         {
@@ -353,13 +373,14 @@ namespace Chafu
         /// <summary>
         /// Create a <see cref="AlbumView"/>
         /// </summary>
-        /// <param name="cellSize"><see cref="CGSize"/> with the size of the <see cref="AlbumViewCell"/> displayed</param>
+        /// <param name="cellSize"><see cref="CGSize"/> with the size of the 
+        /// <see cref="AlbumViewCell"/> displayed</param>
         public AlbumView(CGSize cellSize)
         {
             CellSize = cellSize;
             CreateView();
         }
-        
+
         /// <summary>
         /// Don't use this
         /// </summary>

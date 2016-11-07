@@ -24,14 +24,16 @@ namespace Chafu
         /// <summary>
         /// Lazy initializer for the <see cref="AlbumDataSource"/>
         /// </summary>
-        public Func<AlbumView, CGSize, MediaType, BaseAlbumDataSource> LazyDataSource { get; set; } =
-            (view, size, mediaTypes) => new PhotoGalleryDataSource(view, size, mediaTypes);
+        public Func<AlbumView, CGSize, MediaType, BaseAlbumDataSource> LazyDataSource
+        { get; set; } = (view, size, mediaTypes) =>
+            new PhotoGalleryDataSource(view, size, mediaTypes);
 
         /// <summary>
         /// Lazy initializer for the <see cref="AlbumDelegate"/>
         /// </summary>
-        public Func<AlbumView, BaseAlbumDataSource, BaseAlbumDelegate> LazyDelegate { get; set; } =
-            (view, source) => new PhotoGalleryDelegate(view, (PhotoGalleryDataSource)source);
+        public Func<AlbumView, BaseAlbumDataSource, BaseAlbumDelegate> LazyDelegate
+        { get; set; } = (view, source) =>
+            new PhotoGalleryDelegate(view, (PhotoGalleryDataSource)source);
 
         /// <summary>
         /// Get or set the cell size. If not set, cell size will be calculated from 
@@ -52,7 +54,8 @@ namespace Chafu
             var screenWidth = screenBounds.Width;
             if (Configuration.NumberOfCells <= 0)
                 throw new InvalidOperationException(
-                    "Cannot create cells for AlbumView, because Configuration.NumberOfCells is equal to or less than 0");
+                    "Cannot create cells for AlbumView, " +
+                    "because Configuration.NumberOfCells is equal to or less than 0");
 
             // separators between cells
             var totalSeparators = Configuration.NumberOfCells - 1;

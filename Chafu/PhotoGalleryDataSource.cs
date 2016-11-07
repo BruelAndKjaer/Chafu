@@ -50,7 +50,7 @@ namespace Chafu
         /// it will default to 100x100</param>
         /// <param name="mediaTypes"><see cref="MediaType"/> media types to show. 
         /// Default is both <see cref="MediaType.Image"/> and <see cref="MediaType.Video"/>.</param>
-        public PhotoGalleryDataSource(AlbumView albumView, CGSize cellSize, 
+        public PhotoGalleryDataSource(AlbumView albumView, CGSize cellSize,
             MediaType mediaTypes = MediaType.Image | MediaType.Video)
         {
             _albumView = albumView;
@@ -69,7 +69,7 @@ namespace Chafu
 
                 var options = new PHFetchOptions
                 {
-                    SortDescriptors = new[] {new NSSortDescriptor("creationDate", false)}
+                    SortDescriptors = new[] { new NSSortDescriptor("creationDate", false) }
                 };
 
                 var assets = new List<PHAsset>();
@@ -139,7 +139,6 @@ namespace Chafu
         {
             DispatchQueue.MainQueue.DispatchAsync(() =>
             {
-                //var collectionView = _albumView.CollectionView;
                 _images = TryAdjustAssets(_images, changeInstance);
                 _videos = TryAdjustAssets(_videos, changeInstance);
             });
@@ -166,7 +165,7 @@ namespace Chafu
             if (assets == null)
                 return null;
 
-			var before = assets;
+            var before = assets;
             assets = changes.FetchResultAfterChanges;
 
             foreach (var asset in before.OfType<PHAsset>())
@@ -267,10 +266,10 @@ namespace Chafu
         public void UpdateCachedAssets()
         {
             var collectionView = _albumView.CollectionView;
-            var preheatRect = CGRect.Inflate(collectionView.Bounds, 0.0f, 0.5f* collectionView.Bounds.Height);
+            var preheatRect = CGRect.Inflate(collectionView.Bounds, 0.0f, 0.5f * collectionView.Bounds.Height);
 
             var delta = Math.Abs(preheatRect.GetMidY() - _previousPreheatRect.GetMidY());
-            if (delta > collectionView.Bounds.Height/3.0)
+            if (delta > collectionView.Bounds.Height / 3.0)
             {
                 var rects = ComputeDifferenceBetweenRect(_previousPreheatRect, preheatRect);
 
@@ -288,7 +287,8 @@ namespace Chafu
             }
         }
 
-        private static IEnumerable<NSIndexPath> GetIndexPathsForRects(UICollectionView collectionView, IEnumerable<CGRect> rects)
+        private static IEnumerable<NSIndexPath> GetIndexPathsForRects(
+            UICollectionView collectionView, IEnumerable<CGRect> rects)
         {
             var indexPaths = new List<NSIndexPath>();
 
@@ -302,7 +302,8 @@ namespace Chafu
             CGRect oldRect, CGRect newRect)
         {
             if (!newRect.IntersectsWith(oldRect))
-                return new Tuple<IEnumerable<CGRect>, IEnumerable<CGRect>>(new[] {newRect}, new[] {oldRect});
+                return new Tuple<IEnumerable<CGRect>, IEnumerable<CGRect>>(
+                    new[] { newRect }, new[] { oldRect });
 
             var oldMaxY = oldRect.GetMaxY();
             var oldMinY = oldRect.GetMinY();
@@ -313,20 +314,28 @@ namespace Chafu
             var removedRects = new List<CGRect>();
 
             if (newMaxY > oldMaxY)
-                addedRects.Add(new CGRect(newRect.X, oldMaxY, newRect.Width, newMaxY - oldMaxY));
+                addedRects.Add(
+                    new CGRect(newRect.X, oldMaxY, newRect.Width, newMaxY - oldMaxY));
             if (oldMinY > newMinY)
-                addedRects.Add(new CGRect(newRect.X, newMinY, newRect.Width, oldMinY - newMinY));
+                addedRects.Add(
+                    new CGRect(newRect.X, newMinY, newRect.Width, oldMinY - newMinY));
             if (newMaxY < oldMaxY)
-                removedRects.Add(new CGRect(newRect.X, newMaxY, newRect.Width, oldMaxY - newMaxY));
+                removedRects.Add(
+                    new CGRect(newRect.X, newMaxY, newRect.Width, oldMaxY - newMaxY));
             if (oldMinY < newMinY)
-                removedRects.Add(new CGRect(newRect.X, oldMinY, newRect.Width, newMinY - oldMinY));
+                removedRects.Add(
+                    new CGRect(newRect.X, oldMinY, newRect.Width, newMinY - oldMinY));
 
-            return new Tuple<IEnumerable<CGRect>, IEnumerable<CGRect>>(addedRects, removedRects);
+            return new Tuple<IEnumerable<CGRect>, IEnumerable<CGRect>>(
+                addedRects, removedRects);
         }
 
-        private static IEnumerable<NSIndexPath> IndexPathsForElementsInRect(UICollectionView collectionView, CGRect rect)
+        private static IEnumerable<NSIndexPath> IndexPathsForElementsInRect(
+            UICollectionView collectionView, CGRect rect)
         {
-            var allLayoutAttributes = collectionView?.CollectionViewLayout?.LayoutAttributesForElementsInRect(rect);
+            var collectionViewLayout = collectionView?.CollectionViewLayout;
+            var allLayoutAttributes =
+                collectionViewLayout?.LayoutAttributesForElementsInRect(rect);
             if (allLayoutAttributes == null) return new NSIndexPath[0];
             if (allLayoutAttributes.Length == 0) return new NSIndexPath[0];
 
@@ -337,8 +346,8 @@ namespace Chafu
         {
             if (indexPaths == null) return new PHAsset[0];
             var paths = indexPaths.ToArray();
-            return !paths.Any() ? 
-                new PHAsset[0] : 
+            return !paths.Any() ?
+                new PHAsset[0] :
                 paths.Select(path => AllAssets[(int)path.Item]).ToArray();
         }
 
@@ -379,12 +388,15 @@ namespace Chafu
             });
 
             if (asset.MediaType == PHAssetMediaType.Image)
-                ChangeImage(asset, _imageManager, new PHImageRequestOptions { NetworkAccessAllowed = true });
+                ChangeImage(asset, _imageManager,
+                    new PHImageRequestOptions { NetworkAccessAllowed = true });
             else if (asset.MediaType == PHAssetMediaType.Video)
-                ChangeVideo(asset, _imageManager, new PHVideoRequestOptions { NetworkAccessAllowed = true });
+                ChangeVideo(asset, _imageManager,
+                    new PHVideoRequestOptions { NetworkAccessAllowed = true });
         }
 
-        private void ChangeImage(PHAsset asset, PHImageManager imageManager, PHImageRequestOptions options)
+        private void ChangeImage(PHAsset asset, PHImageManager imageManager,
+            PHImageRequestOptions options)
         {
             var assetSize = new CGSize(asset.PixelWidth, asset.PixelHeight);
 
@@ -402,12 +414,13 @@ namespace Chafu
                         })));
         }
 
-        private void ChangeVideo(PHAsset asset, PHImageManager imageManager, PHVideoRequestOptions options)
+        private void ChangeVideo(PHAsset asset, PHImageManager imageManager,
+            PHVideoRequestOptions options)
         {
             DispatchQueue.DefaultGlobalQueue.DispatchAsync(() =>
                 imageManager?.RequestAvAsset(asset, options,
                     (ass, mix, info) =>
-                        DispatchQueue.MainQueue.DispatchAsync(() => 
+                        DispatchQueue.MainQueue.DispatchAsync(() =>
                         {
                             CurrentMediaType = MediaType.Video;
                             _albumView.ImageCropView.Hidden = true;
@@ -429,22 +442,25 @@ namespace Chafu
         {
             var cropRect = GetCropRect(_albumView.ImageCropView);
 
-            DispatchQueue.DefaultGlobalQueue.DispatchAsync (() =>
+            DispatchQueue.DefaultGlobalQueue.DispatchAsync(() =>
             {
                 var options = GetRequestOptions(cropRect);
                 var targetSize = GetTargetSize(cropRect, _asset, _scale);
 
-				PHImageManager.DefaultManager.RequestImageForAsset (_asset, targetSize, PHImageContentMode.AspectFill,
-                    options, (result, info) => DispatchQueue.MainQueue.DispatchAsync(() => onImage?.Invoke (result)));
-			});
+                PHImageManager.DefaultManager.RequestImageForAsset(_asset, targetSize,
+                    PHImageContentMode.AspectFill, options, (result, info) =>
+                        DispatchQueue.MainQueue.DispatchAsync(() =>
+                            onImage?.Invoke(result)));
+            });
         }
 
         private static PHImageRequestOptions GetRequestOptions(CGRect cropRect) =>
-            new PHImageRequestOptions {
-					DeliveryMode = PHImageRequestOptionsDeliveryMode.HighQualityFormat,
-					NetworkAccessAllowed = true,
-					NormalizedCropRect = cropRect,
-					ResizeMode = PHImageRequestOptionsResizeMode.Exact
+            new PHImageRequestOptions
+            {
+                DeliveryMode = PHImageRequestOptionsDeliveryMode.HighQualityFormat,
+                NetworkAccessAllowed = true,
+                NormalizedCropRect = cropRect,
+                ResizeMode = PHImageRequestOptionsResizeMode.Exact
             };
 
         private static CGRect GetCropRect(UIScrollView view)
@@ -455,16 +471,17 @@ namespace Chafu
             var normalizedWidth = view.Frame.Width / view.ContentSize.Width;
             var normalizedHeight = view.Frame.Height / view.ContentSize.Height;
 
-            var cropRect = new CGRect(normalizedX, normalizedY, normalizedWidth, normalizedHeight);
+            var cropRect =
+                new CGRect(normalizedX, normalizedY, normalizedWidth, normalizedHeight);
 
             return cropRect;
         }
 
         private static CGSize GetTargetSize(CGRect cropRect, PHAsset asset, nfloat scale)
         {
-            var targetWidth = Math.Floor((float) asset.PixelWidth*cropRect.Width);
-            var targetHeight = Math.Floor((float) asset.PixelHeight*cropRect.Height);
-            var dimension = Math.Max(Math.Min(targetHeight, targetWidth), 1024*scale);
+            var targetWidth = Math.Floor((float)asset.PixelWidth * cropRect.Width);
+            var targetHeight = Math.Floor((float)asset.PixelHeight * cropRect.Height);
+            var dimension = Math.Max(Math.Min(targetHeight, targetWidth), 1024 * scale);
 
             var targetSize = new CGSize(dimension, dimension);
 
@@ -480,7 +497,8 @@ namespace Chafu
             {
                 ChangeAsset(AllAssets.FirstOrDefault());
                 _albumView.CollectionView.ReloadData();
-                _albumView.CollectionView.SelectItem(NSIndexPath.FromRowSection(0, 0), false, UICollectionViewScrollPosition.None);
+                _albumView.CollectionView.SelectItem(
+                    NSIndexPath.FromRowSection(0, 0), false, UICollectionViewScrollPosition.None);
             });
         }
 
@@ -489,9 +507,9 @@ namespace Chafu
         /// </summary>
         /// <returns></returns>
 		public override MediaItem DeleteCurrentMediaItem()
-		{
-			throw new NotImplementedException();
-		}
+        {
+            throw new NotImplementedException();
+        }
 
         /// <inheritdoc />
         protected override void Dispose(bool disposing)

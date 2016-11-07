@@ -95,23 +95,26 @@ namespace Chafu
         /// Get whether the usage of the camera is authorized
         /// </summary>
         protected static bool CameraAvailable
-            => AVCaptureDevice.GetAuthorizationStatus(AVMediaType.Video) == AVAuthorizationStatus.Authorized;
+            => AVCaptureDevice.GetAuthorizationStatus(AVMediaType.Video) ==
+                              AVAuthorizationStatus.Authorized;
 
         /// <summary>
         /// Initialize
         /// </summary>
         /// <param name="handle"></param>
-        protected BaseCameraView(IntPtr handle) 
+        protected BaseCameraView(IntPtr handle)
             : base(handle) { }
 
         /// <summary>
         /// Initialize a new Camera View
         /// </summary>
-        protected BaseCameraView() { 
+        protected BaseCameraView()
+        {
             Hidden = true;
             BackgroundColor = Configuration.BackgroundColor;
 
-            PreviewContainer = new UIView {
+            PreviewContainer = new UIView
+            {
                 AccessibilityLabel = "PreviewContainer",
                 BackgroundColor = UIColor.Black,
                 TranslatesAutoresizingMaskIntoConstraints = false,
@@ -119,7 +122,8 @@ namespace Chafu
             };
             Add(PreviewContainer);
 
-            ButtonContainer = new UIView {
+            ButtonContainer = new UIView
+            {
                 TranslatesAutoresizingMaskIntoConstraints = false,
                 ContentMode = UIViewContentMode.ScaleToFill,
                 AccessibilityLabel = "ButtonContainer",
@@ -128,7 +132,8 @@ namespace Chafu
 
             Add(ButtonContainer);
 
-            FlipButton = new UIButton {
+            FlipButton = new UIButton
+            {
                 TranslatesAutoresizingMaskIntoConstraints = false,
                 VerticalAlignment = UIControlContentVerticalAlignment.Center,
                 HorizontalAlignment = UIControlContentHorizontalAlignment.Center,
@@ -138,8 +143,9 @@ namespace Chafu
                 LineBreakMode = UILineBreakMode.MiddleTruncation
             };
             FlipButton.SetImage(UIImage.FromBundle("ic_loop"), UIControlState.Normal);
-        
-            FlashButton = new UIButton {
+
+            FlashButton = new UIButton
+            {
                 TranslatesAutoresizingMaskIntoConstraints = false,
                 VerticalAlignment = UIControlContentVerticalAlignment.Center,
                 HorizontalAlignment = UIControlContentHorizontalAlignment.Center,
@@ -150,7 +156,8 @@ namespace Chafu
             };
             FlashButton.SetImage(UIImage.FromBundle("ic_flash_off"), UIControlState.Normal);
 
-            ShutterButton = new UIButton {
+            ShutterButton = new UIButton
+            {
                 TranslatesAutoresizingMaskIntoConstraints = false,
                 VerticalAlignment = UIControlContentVerticalAlignment.Center,
                 HorizontalAlignment = UIControlContentHorizontalAlignment.Center,
@@ -159,22 +166,25 @@ namespace Chafu
                 Opaque = false,
                 LineBreakMode = UILineBreakMode.MiddleTruncation
             };
-            ShutterButton.SetImage(UIImage.FromBundle("ic_radio_button_checked"), UIControlState.Normal);
-        
+            ShutterButton.SetImage(UIImage.FromBundle("ic_radio_button_checked"),
+                                   UIControlState.Normal);
+
             ButtonContainer.Add(FlipButton);
             ButtonContainer.Add(FlashButton);
             ButtonContainer.Add(ShutterButton);
 
-            if (Configuration.ShowSquare) {
+            if (Configuration.ShowSquare)
+            {
                 ButtonContainer.BackgroundColor = Configuration.BackgroundColor;
 
                 this.AddConstraints(
-                    ButtonContainer.Below(PreviewContainer), 
+                    ButtonContainer.Below(PreviewContainer),
                     PreviewContainer.Width().EqualTo().HeightOf(PreviewContainer)
                 );
-            } else {
+            }
+            else {
                 this.AddConstraints(
-                    ButtonContainer.Height().EqualTo(100), 
+                    ButtonContainer.Height().EqualTo(100),
                     PreviewContainer.AtBottomOf(this)
                 );
             }
@@ -222,7 +232,8 @@ namespace Chafu
             FlashOffImage = Configuration.FlashOffImage ?? UIImage.FromBundle("ic_flash_off");
             var flipImage = Configuration.FlipImage ?? UIImage.FromBundle("ic_loop");
 
-            if (Configuration.TintIcons) {
+            if (Configuration.TintIcons)
+            {
                 FlashButton.TintColor = Configuration.TintColor;
                 FlipButton.TintColor = Configuration.TintColor;
 
@@ -249,7 +260,9 @@ namespace Chafu
             var status = AVCaptureDevice.GetAuthorizationStatus(AVMediaType.Video);
             if (status == AVAuthorizationStatus.Authorized)
                 Session?.StartRunning();
-            else if (status == AVAuthorizationStatus.Denied || status == AVAuthorizationStatus.Restricted) {
+            else if (status == AVAuthorizationStatus.Denied ||
+                     status == AVAuthorizationStatus.Restricted)
+            {
                 CameraUnauthorized?.Invoke(this, EventArgs.Empty);
                 Session?.StopRunning();
             }
@@ -267,7 +280,8 @@ namespace Chafu
         {
             var point = recognizer.LocationInView(this);
             var viewSize = Bounds.Size;
-            var newPoint = new CGPoint(point.Y / viewSize.Height, 1.0 - point.X / viewSize.Width);
+            var newPoint =
+                new CGPoint(point.Y / viewSize.Height, 1.0 - point.X / viewSize.Width);
 
             var device = AVCaptureDevice.DefaultDeviceWithMediaType(AVMediaType.Video);
 
@@ -280,7 +294,8 @@ namespace Chafu
                     device.FocusPointOfInterest = newPoint;
                 }
 
-                if (device.IsExposureModeSupported(AVCaptureExposureMode.ContinuousAutoExposure))
+                if (device.IsExposureModeSupported(
+                    AVCaptureExposureMode.ContinuousAutoExposure))
                 {
                     device.ExposureMode = AVCaptureExposureMode.ContinuousAutoExposure;
                     device.ExposurePointOfInterest = newPoint;
@@ -328,11 +343,13 @@ namespace Chafu
                         Session.RemoveInput(input);
                     }
 
-                    var position = VideoInput.Device.Position == AVCaptureDevicePosition.Front
+                    var position =
+                        VideoInput.Device.Position == AVCaptureDevicePosition.Front
                         ? AVCaptureDevicePosition.Back
                         : AVCaptureDevicePosition.Front;
 
-                    foreach (var device in AVCaptureDevice.DevicesWithMediaType(AVMediaType.Video))
+                    foreach (var device in
+                             AVCaptureDevice.DevicesWithMediaType(AVMediaType.Video))
                     {
                         if (device.Position == position)
                         {
@@ -361,23 +378,30 @@ namespace Chafu
             try
             {
                 NSError error;
-                if (Device.LockForConfiguration(out error)) {
-                    if (torch && Device.HasTorch) {
+                if (Device.LockForConfiguration(out error))
+                {
+                    if (torch && Device.HasTorch)
+                    {
                         var mode = Device.TorchMode;
-                        if (mode == AVCaptureTorchMode.Off){
+                        if (mode == AVCaptureTorchMode.Off)
+                        {
                             Device.TorchMode = AVCaptureTorchMode.On;
                             FlashButton.SetImage(FlashOnImage, UIControlState.Normal);
-                        } else {
+                        }
+                        else {
                             Device.TorchMode = AVCaptureTorchMode.Off;
                             FlashButton.SetImage(FlashOffImage, UIControlState.Normal);
                         }
                     }
-                    else if (!torch && Device.HasFlash){
+                    else if (!torch && Device.HasFlash)
+                    {
                         var mode = Device.FlashMode;
-                        if (mode == AVCaptureFlashMode.Off) {
+                        if (mode == AVCaptureFlashMode.Off)
+                        {
                             Device.FlashMode = AVCaptureFlashMode.On;
                             FlashButton.SetImage(FlashOnImage, UIControlState.Normal);
-                        } else {
+                        }
+                        else {
                             Device.FlashMode = AVCaptureFlashMode.Off;
                             FlashButton.SetImage(FlashOffImage, UIControlState.Normal);
                         }
@@ -403,14 +427,14 @@ namespace Chafu
                 if (Device == null) return;
 
                 NSError error;
-                if (Device.LockForConfiguration(out error)) 
+                if (Device.LockForConfiguration(out error))
                 {
-                    if (!torch && Device.HasFlash) 
+                    if (!torch && Device.HasFlash)
                     {
                         Device.FlashMode = AVCaptureFlashMode.Off;
                         FlashButton.SetImage(FlashOffImage, UIControlState.Normal);
-                    } 
-                    else if (torch && Device.HasTorch) 
+                    }
+                    else if (torch && Device.HasTorch)
                     {
                         Device.TorchMode = AVCaptureTorchMode.Off;
                         FlashButton.SetImage(FlashOffImage, UIControlState.Normal);
@@ -468,7 +492,8 @@ namespace Chafu
             {
                 _overlayLayer = new CALayer();
                 _overlayLayer.Frame = Bounds;
-                _overlayLayer.SublayerTransform = CATransform3D.Identity.MakePerspective(1000);
+                _overlayLayer.SublayerTransform =
+                    CATransform3D.Identity.MakePerspective(1000);
                 VideoPreviewLayer.AddSublayer(_overlayLayer);
             }
         }
@@ -483,7 +508,8 @@ namespace Chafu
             {
                 Session.AddOutput(FaceDetectionOutput);
 
-                if (FaceDetectionOutput.AvailableMetadataObjectTypes.HasFlag(AVMetadataObjectType.Face))
+                if (FaceDetectionOutput.AvailableMetadataObjectTypes.HasFlag(
+                    AVMetadataObjectType.Face))
                 {
                     FaceDetectionOutput.MetadataObjectTypes = AVMetadataObjectType.Face;
                     FaceDetectionOutput.SetDelegate(this, DispatchQueue.MainQueue);
@@ -507,7 +533,7 @@ namespace Chafu
         /// <param name="connection">Connection.</param>
         [Export("captureOutput:didOutputMetadataObjects:fromConnection:")]
         public void DidOutputMetadataObjects(AVCaptureMetadataOutput captureOutput,
-                                             AVMetadataObject[] metadataObjects, AVCaptureConnection connection)
+            AVMetadataObject[] metadataObjects, AVCaptureConnection connection)
         {
             var lostFaces = _faceLayers.Keys.ToList();
 
@@ -521,7 +547,7 @@ namespace Chafu
                     lostFaces.Remove(face.FaceID);
 
                 CALayer faceLayer;
-                if (!_faceLayers.TryGetValue(face.FaceID, out faceLayer)) 
+                if (!_faceLayers.TryGetValue(face.FaceID, out faceLayer))
                 {
                     faceLayer = CreateFaceLayer();
                     _overlayLayer.AddSublayer(faceLayer);

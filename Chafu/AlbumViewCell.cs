@@ -31,7 +31,8 @@ namespace Chafu
             set
             {
                 base.Selected = value;
-                Layer.BorderColor = value ? Configuration.TintColor.CGColor : UIColor.Clear.CGColor;
+                Layer.BorderColor = value ?
+                    Configuration.TintColor.CGColor : UIColor.Clear.CGColor;
                 Layer.BorderWidth = value ? 2 : 0;
             }
         }
@@ -130,13 +131,13 @@ namespace Chafu
                 _imageView.AtTopOf(this),
                 _imageView.AtLeftOf(this),
                 _imageView.AtRightOf(this),
-                
+
                 _videoImage.AtLeftOf(this, 2f),
                 _videoImage.AtBottomOf(this, 2f),
                 _videoImage.ToLeftOf(_timeStamp),
                 _videoImage.Width().EqualTo().HeightOf(_videoImage),
                 _videoImage.Height().EqualTo().HeightOf(_timeStamp),
-                
+
                 _timeStamp.AtRightOf(this, 2f),
                 _timeStamp.AtBottomOf(this, 2f));
         }

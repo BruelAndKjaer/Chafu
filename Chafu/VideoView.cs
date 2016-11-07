@@ -31,7 +31,7 @@ namespace Chafu
         /// Create a VideoView
         /// </summary>
         /// <param name="handle"></param>
-        public VideoView(IntPtr handle) 
+        public VideoView(IntPtr handle)
             : base(handle) { CreateView(); }
         /// <summary>
         /// Create a VideoView
@@ -63,7 +63,8 @@ namespace Chafu
             _videoStartImage = Configuration.VideoStartImage ?? UIImage.FromBundle("video_button");
             _videoStopImage = Configuration.VideoStopImage ?? UIImage.FromBundle("video_button_rec");
 
-            if (Configuration.TintIcons) {
+            if (Configuration.TintIcons)
+            {
                 ShutterButton.TintColor = Configuration.TintColor;
 
                 _videoStartImage = _videoStartImage?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
@@ -74,6 +75,7 @@ namespace Chafu
 
             Initialize();
 
+            // Start camera when views enters foreground
             _willEnterForegroundObserver = UIApplication.Notifications.ObserveWillEnterForeground(WillEnterForeground);
 
             _initialized = true;
@@ -89,7 +91,8 @@ namespace Chafu
         /// </summary>
         public override void StartCamera()
         {
-            if (Session == null) {
+            if (Session == null)
+            {
                 Session = new AVCaptureSession();
 
                 Device = Configuration.ShowBackCameraFirst
@@ -103,13 +106,14 @@ namespace Chafu
                     return;
                 }
 
-                try {
+                try
+                {
                     NSError error;
                     VideoInput = new AVCaptureDeviceInput(Device, out error);
 
                     Session.AddInput(VideoInput);
 
-                    _videoOutput = new AVCaptureMovieFileOutput {MinFreeDiskSpaceLimit = 1024*1024};
+                    _videoOutput = new AVCaptureMovieFileOutput { MinFreeDiskSpaceLimit = 1024 * 1024 };
 
                     if (Session.CanAddOutput(_videoOutput))
                         Session.AddOutput(_videoOutput);
@@ -129,7 +133,8 @@ namespace Chafu
                     SetupVideoPreviewLayer();
 
                     Session.StartRunning();
-                } catch { /* ignore */ }
+                }
+                catch { /* ignore */ }
 
                 FlashConfiguration(true);
             }
@@ -205,7 +210,7 @@ namespace Chafu
         }
 
         /// <inheritdoc cref="IAVCaptureFileOutputRecordingDelegate"/>
-        public void FinishedRecording(AVCaptureFileOutput captureOutput, NSUrl outputFileUrl, NSObject[] connections, 
+        public void FinishedRecording(AVCaptureFileOutput captureOutput, NSUrl outputFileUrl, NSObject[] connections,
             NSError error)
         {
             if (error != null)

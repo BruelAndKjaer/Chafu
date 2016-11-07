@@ -184,10 +184,9 @@ namespace Chafu
         /// <summary>
         /// Gets or sets how many cells are allowed to be displayed on a row.
         /// 
-        /// Default is 4.
+        /// Default is 3.
         /// </summary>
         public static int NumberOfCells { get; set; } = 3;
-
 
         /// <summary>
         /// Get or set whether to show a Action Sheet when deleting a photo or video.

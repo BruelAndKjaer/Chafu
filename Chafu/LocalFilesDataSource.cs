@@ -44,7 +44,8 @@ namespace Chafu
         public string ImagesPath
         {
             get { return _imagesPath; }
-            set {
+            set
+            {
                 _imagesPath = value;
                 UpdateImageSource(_imagesPath);
             }
@@ -55,14 +56,14 @@ namespace Chafu
         /// 
         /// Defaults to .mov and .mp4
         /// </summary>
-        public static string[] MovieFileExtensions { get; set; } = {".mov", ".mp4"};
+        public static string[] MovieFileExtensions { get; set; } = { ".mov", ".mp4" };
 
         /// <summary>
         /// Get or set the accepted extensions for image files.
         /// 
         /// Defaults to .jpg, .jpeg and .png
         /// </summary>
-        public static string[] ImageFileExtensions { get; set; } = {".jpg", ".jpeg", ".png"};
+        public static string[] ImageFileExtensions { get; set; } = { ".jpg", ".jpeg", ".png" };
 
         /// <summary>
         /// Get or set the initial path of the first selected image.
@@ -107,7 +108,8 @@ namespace Chafu
             if (string.IsNullOrEmpty(imagesPath))
                 throw new ArgumentNullException(nameof(imagesPath));
             if (!Directory.Exists(imagesPath))
-                throw new InvalidOperationException($"Cannot load images from non-existing Directory: {imagesPath}");
+                throw new InvalidOperationException(
+                    $"Cannot load images from non-existing Directory: {imagesPath}");
 
             var dirInfo = new DirectoryInfo(imagesPath);
             var fileInfo = dirInfo.GetFiles();
@@ -116,20 +118,27 @@ namespace Chafu
 
         private MediaItem GetMediaItem(string file)
         {
-            if (MovieFileExtensions.Any(ex => file.ToLower().EndsWith(ex, StringComparison.Ordinal)) && 
+            if (MovieFileExtensions.Any(ex =>
+                file.ToLower().EndsWith(ex, StringComparison.Ordinal)) &&
                 _mediaTypes.HasFlag(MediaType.Video))
-                return new MediaItem { MediaType = MediaType.Video, Path = "file://" + file };
-            if (ImageFileExtensions.Any(ex => file.ToLower().EndsWith(ex, StringComparison.Ordinal)) &&
+                return new MediaItem
+                {
+                    MediaType = MediaType.Video,
+                    Path = "file://" + file
+                };
+            if (ImageFileExtensions.Any(ex =>
+                file.ToLower().EndsWith(ex, StringComparison.Ordinal)) &&
                 _mediaTypes.HasFlag(MediaType.Image))
                 return new MediaItem { MediaType = MediaType.Image, Path = file };
             return null;
         }
 
         /// <inheritdoc />
-        public override UICollectionViewCell GetCell(UICollectionView collectionView, NSIndexPath indexPath)
+        public override UICollectionViewCell GetCell(UICollectionView collectionView,
+            NSIndexPath indexPath)
         {
-            var cell = collectionView.DequeueReusableCell(AlbumViewCell.Key, indexPath) as AlbumViewCell ??
-                       new AlbumViewCell();
+            var cell = collectionView.DequeueReusableCell(AlbumViewCell.Key, indexPath)
+                as AlbumViewCell ?? new AlbumViewCell();
 
             var file = Files?[indexPath.Row];
             if (file?.Path == null) return cell;
@@ -187,7 +196,8 @@ namespace Chafu
             });
         }
 
-        private static UIImage GetVideoThumbnail(AVAssetImageGenerator generator, double seconds, CGSize cellSize)
+        private static UIImage GetVideoThumbnail(AVAssetImageGenerator generator,
+            double seconds, CGSize cellSize)
         {
             var time = new CMTime(Clamp(1, 0, (int)seconds), 1);
 
@@ -197,19 +207,19 @@ namespace Chafu
             using (var cgImage = generator.CopyCGImageAtTime(time, out actual, out error))
             using (var uiImage = new UIImage(cgImage))
             {
-                var scaledImage = uiImage.ScaleImage(cellSize, UiKitExtensions.UIImageScaleMode.AspectFill,
+                var scaledImage = uiImage.ScaleImage(cellSize,
+                    UiKitExtensions.UIImageScaleMode.AspectFill,
                     UiKitExtensions.UIImageAlignment.Center, true);
                 return scaledImage;
             }
         }
 
         private static int Clamp(int value, int min, int max)
-        {
-            return value < min ? min : value > max ? max : value;
-        }
+            => value < min ? min : value > max ? max : value;
 
         /// <inheritdoc />
-        public override nint GetItemsCount(UICollectionView collectionView, nint section) => Files?.Count ?? 0;
+        public override nint GetItemsCount(UICollectionView collectionView, nint section)
+            => Files?.Count ?? 0;
 
         /// <summary>
         /// Change the the currently shown <see cref="MediaItem"/>
@@ -287,7 +297,7 @@ namespace Chafu
             DispatchQueue.DefaultGlobalQueue.DispatchAsync(() =>
             {
                 UIGraphics.BeginImageContextWithOptions(size, true, scale);
-                
+
                 using (var context = UIGraphics.GetCurrentContext())
                 {
                     context.TranslateCTM(-offset.X, -offset.Y);
@@ -296,9 +306,7 @@ namespace Chafu
                     var result = UIGraphics.GetImageFromCurrentImageContext();
 
                     DispatchQueue.MainQueue.DispatchAsync(() =>
-                    {
-                        onImage?.Invoke(result);
-                    });
+                        onImage?.Invoke(result));
                 }
                 UIGraphics.EndImageContext();
             });
@@ -312,7 +320,9 @@ namespace Chafu
                 if (!Files.Any()) return;
 
                 var item = !string.IsNullOrEmpty(InitialSelectedImagePath)
-                    ? Files.FirstOrDefault(f => f.Path == InitialSelectedImagePath)
+                    ? Files.FirstOrDefault(f =>
+                        f.Path == InitialSelectedImagePath ||
+                        f.Path == "file://" + InitialSelectedImagePath)
                     : Files.FirstOrDefault();
 
                 if (item == null)
@@ -327,7 +337,8 @@ namespace Chafu
                 _albumView?.CollectionView.ReloadData();
                 _albumView?.CollectionView.SelectItem(CurrentIndexPath, false,
                     UICollectionViewScrollPosition.None);
-                _albumView?.CollectionView.ScrollToItem(CurrentIndexPath, UICollectionViewScrollPosition.Top, false);
+                _albumView?.CollectionView.ScrollToItem(CurrentIndexPath,
+                    UICollectionViewScrollPosition.Top, false);
 
                 ChangeMediaItem(item);
             });
@@ -335,39 +346,43 @@ namespace Chafu
 
         /// <inheritdoc />
 		public override MediaItem DeleteCurrentMediaItem()
-		{
-		    var mediaItem = MediaItemFromPath(CurrentMediaPath);
-			if (mediaItem == null) return null;
+        {
+            var mediaItem = MediaItemFromPath(CurrentMediaPath);
+            if (mediaItem == null) return null;
 
-			_albumView.CollectionView.PerformBatchUpdates(() =>
-			{
+            _albumView.CollectionView.PerformBatchUpdates(() =>
+            {
                 Files.Remove(mediaItem);
 
                 _albumView.ClearPreview();
-				_albumView.CollectionView.DeleteItems(new [] { CurrentIndexPath });
+                _albumView.CollectionView.DeleteItems(new[] { CurrentIndexPath });
 
-			    var path = CurrentMediaPath;
-			    if (path.StartsWith("file://"))
-			        path = path.Substring(7);
-
+                var path = PathWithoutPrefix(CurrentMediaPath);
                 File.Delete(path);
 
-			    if (CurrentMediaPath == InitialSelectedImagePath)
-			        InitialSelectedImagePath = null;
+                if (CurrentMediaPath == InitialSelectedImagePath)
+                    InitialSelectedImagePath = null;
 
-				CurrentMediaPath = null;
-				CurrentIndexPath = null;
-			}, null);
+                CurrentMediaPath = null;
+                CurrentIndexPath = null;
+            }, null);
 
-			ShowFirstImage();
+            ShowFirstImage();
 
-		    return mediaItem;
-		}
+            return mediaItem;
+        }
+
+        private string PathWithoutPrefix(string path)
+        {
+            if (path.StartsWith("file://", StringComparison.Ordinal))
+                path = path.Substring(7);
+            return path;
+        }
 
         private MediaItem MediaItemFromPath(string path)
-        {
-            return string.IsNullOrEmpty(path) ? null : Files.FirstOrDefault(f => f.Path == path);
-        }
+            => string.IsNullOrEmpty(path) ?
+               null :
+               Files.FirstOrDefault(f => f.Path == path);
 
         /// <inheritdoc />
         public override event EventHandler CameraRollUnauthorized;

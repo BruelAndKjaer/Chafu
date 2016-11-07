@@ -20,7 +20,8 @@ namespace Chafu
         }
 
         /// <inheritdoc />
-        public override void ItemSelected(UICollectionView collectionView, NSIndexPath indexPath)
+        public override void ItemSelected(
+            UICollectionView collectionView, NSIndexPath indexPath)
         {
             UIView.AnimateNotify(0.2, 0.0, UIViewAnimationOptions.CurveEaseOut, () =>
             {
@@ -28,7 +29,8 @@ namespace Chafu
                 _albumView.ImageCropView.Alpha = 1.0f;
                 _albumView.MovieView.Alpha = 1.0f;
                 _albumView.MovieViewConstraintTop.Constant =
-                    _albumView.ImageCropViewConstraintTop.Constant = AlbumView.ImageCropViewOriginalConstraintTop;
+                    _albumView.ImageCropViewConstraintTop.Constant =
+                        AlbumView.ImageCropViewOriginalConstraintTop;
                 _albumView.CollectionViewConstraintHeight.Constant =
                     _albumView.Frame.Height - AlbumView.ImageCropViewOriginalConstraintTop -
                     _albumView.ImageCropView.Frame.Height;

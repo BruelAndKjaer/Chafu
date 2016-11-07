@@ -60,11 +60,13 @@ namespace Chafu
 
             DispatchQueue.DefaultGlobalQueue.DispatchAsync(() =>
             {
-                var videoConnection = _imageOutput.ConnectionFromMediaType(AVMediaType.Video);
+                var videoConnection =
+                    _imageOutput.ConnectionFromMediaType(AVMediaType.Video);
                 if (videoConnection.SupportsVideoOrientation)
                     videoConnection.VideoOrientation = orientation.Item1;
 
-                _imageOutput.CaptureStillImageAsynchronously(videoConnection, (buffer, error) =>
+                _imageOutput.CaptureStillImageAsynchronously(videoConnection,
+                    (buffer, error) =>
                 {
                     Session?.StopRunning();
 
@@ -78,14 +80,17 @@ namespace Chafu
 
                     var centerCoordinate = imageHeight * 0.5;
 
-                    var imageRef = image.CGImage.WithImageInRect(new CGRect(centerCoordinate - imageWidth * 0.5, 0, imageWidth,
+                    var imageRef = image.CGImage.WithImageInRect(
+                        new CGRect(centerCoordinate - imageWidth * 0.5, 0, imageWidth,
                         imageWidth));
 
                     DispatchQueue.MainQueue.DispatchAsync(() =>
                     {
                         if (Configuration.CropImage)
                         {
-                            var resizedImage = new UIImage(imageRef, previewWidth / imageWidth, orientation.Item2);
+                            var resizedImage =
+                                new UIImage(imageRef, previewWidth / imageWidth,
+                                    orientation.Item2);
                             SaveToPhotosAlbum(resizedImage);
                             _onImage?.Invoke(resizedImage);
                         }
@@ -129,19 +134,22 @@ namespace Chafu
 
             _onImage = onImage;
 
-            var shutterImage = Configuration.ShutterImage ?? UIImage.FromBundle("ic_radio_button_checked");
+            var shutterImage = Configuration.ShutterImage ??
+                UIImage.FromBundle("ic_radio_button_checked");
 
             if (Configuration.TintIcons)
             {
                 ShutterButton.TintColor = Configuration.TintColor;
-                shutterImage = shutterImage?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
+                shutterImage =
+                    shutterImage?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
             }
 
             ShutterButton.SetImage(shutterImage, UIControlState.Normal);
 
             Initialize();
 
-            _willEnterForegroundObserver = UIApplication.Notifications.ObserveWillEnterForeground(WillEnterForeground);
+            _willEnterForegroundObserver =
+                UIApplication.Notifications.ObserveWillEnterForeground(WillEnterForeground);
 
             _initialized = true;
         }
@@ -156,8 +164,10 @@ namespace Chafu
                 Session = new AVCaptureSession();
 
                 Device = Configuration.ShowBackCameraFirst
-                    ? AVCaptureDevice.Devices.FirstOrDefault(d => d.Position == AVCaptureDevicePosition.Back)
-                    : AVCaptureDevice.Devices.FirstOrDefault(d => d.Position == AVCaptureDevicePosition.Front);
+                    ? AVCaptureDevice.Devices.FirstOrDefault(
+                        d => d.Position == AVCaptureDevicePosition.Back)
+                    : AVCaptureDevice.Devices.FirstOrDefault(
+                        d => d.Position == AVCaptureDevicePosition.Front);
 
                 if (Device == null)
                 {
@@ -192,7 +202,8 @@ namespace Chafu
             base.StartCamera();
         }
 
-        private void WillEnterForeground(object sender, NSNotificationEventArgs nsNotificationEventArgs)
+        private void WillEnterForeground(object sender,
+            NSNotificationEventArgs nsNotificationEventArgs)
         {
             StartCamera();
         }
@@ -200,7 +211,8 @@ namespace Chafu
         /// <summary>
         /// Get the orientation of view and preview
         /// </summary>
-        /// <returns><see cref="Tuple{T,T}"/> with <see cref="AVCaptureVideoOrientation"/> and <see cref="UIImageOrientation"/>
+        /// <returns><see cref="Tuple{T,T}"/> with <see cref="AVCaptureVideoOrientation"/> 
+        /// and <see cref="UIImageOrientation"/>
         /// </returns>
         public Tuple<AVCaptureVideoOrientation, UIImageOrientation> GetOrientation()
         {
