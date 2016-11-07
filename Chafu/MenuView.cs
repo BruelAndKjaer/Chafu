@@ -81,16 +81,16 @@ namespace Chafu
         /// Get or set whether to hide the Delete button
         /// </summary>
 		public bool DeleteButtonHidden
-		{
-			get { return DeleteButton.Hidden; }
-			set
-			{
-				if (DeleteButton.Hidden == value) return;
+        {
+            get { return DeleteButton.Hidden; }
+            set
+            {
+                if (DeleteButton.Hidden == value) return;
 
-				DeleteButton.Hidden = value;
-				UpdateConstraints();
-			}
-		}
+                DeleteButton.Hidden = value;
+                UpdateConstraints();
+            }
+        }
 
         /// <summary>
         /// Get the Done button
@@ -123,9 +123,9 @@ namespace Chafu
         public MenuView()
         {
             CloseButton = CreateButton("CloseButton");
-            DoneButton = CreateButton("DoneButton");            
+            DoneButton = CreateButton("DoneButton");
             ExtraButton = CreateButton("ExtraButton");
-			DeleteButton = CreateButton("DeleteButton");
+            DeleteButton = CreateButton("DeleteButton");
 
             MenuTitle = new UILabel
             {
@@ -146,23 +146,27 @@ namespace Chafu
             Add(DoneButton);
             Add(ExtraButton);
             Add(MenuTitle);
-			Add(DeleteButton);
+            Add(DeleteButton);
 
             var checkImage = Configuration.CheckImage ?? UIImage.FromBundle("ic_check");
             var closeImage = Configuration.CloseImage ?? UIImage.FromBundle("ic_close");
             var extraImage = Configuration.ExtraImage ?? UIImage.FromBundle("ic_add");
-			var deleteImage = Configuration.DeleteImage ?? UIImage.FromBundle("ic_delete");
+            var deleteImage = Configuration.DeleteImage ?? UIImage.FromBundle("ic_delete");
 
             if (Configuration.TintIcons)
             {
-                checkImage = checkImage?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
-                closeImage = closeImage?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
-                extraImage = extraImage?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
-				deleteImage = deleteImage?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
+                checkImage =
+                    checkImage?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
+                closeImage =
+                    closeImage?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
+                extraImage =
+                    extraImage?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
+                deleteImage =
+                    deleteImage?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
                 DoneButton.TintColor = Configuration.TintColor;
                 CloseButton.TintColor = Configuration.TintColor;
                 ExtraButton.TintColor = Configuration.TintColor;
-				DeleteButton.TintColor = Configuration.DeleteTintColor;
+                DeleteButton.TintColor = Configuration.DeleteTintColor;
             }
 
             CloseButton.SetImage(closeImage, UIControlState.Normal);
@@ -173,35 +177,35 @@ namespace Chafu
 
             ExtraButton.SetImage(extraImage, UIControlState.Normal);
 
-			DeleteButton.SetImage(deleteImage, UIControlState.Normal);
+            DeleteButton.SetImage(deleteImage, UIControlState.Normal);
 
             MenuTitle.TextColor = Configuration.BaseTintColor;
 
             CloseButton.TouchUpInside += OnClose;
             DoneButton.TouchUpInside += OnDone;
             ExtraButton.TouchUpInside += OnExtra;
-			DeleteButton.TouchUpInside += OnDelete;
+            DeleteButton.TouchUpInside += OnDelete;
 
             CloseButtonHidden = false;
             DoneButtonHidden = false;
             ExtraButtonHidden = true;
-			DeleteButtonHidden = true;
+            DeleteButtonHidden = true;
         }
 
-		private static UIButton CreateButton(string accessibilityLabel)
-		{
-			return new UIButton
-			{
-				TranslatesAutoresizingMaskIntoConstraints = false,
-				LineBreakMode = UILineBreakMode.MiddleTruncation,
-				VerticalAlignment = UIControlContentVerticalAlignment.Center,
-				HorizontalAlignment = UIControlContentHorizontalAlignment.Center,
-				ContentMode = UIViewContentMode.ScaleToFill,
-				Opaque = false,
-				ContentEdgeInsets = new UIEdgeInsets(8, 8, 8, 8),
-				AccessibilityLabel = accessibilityLabel
-			};
-		}
+        private static UIButton CreateButton(string accessibilityLabel)
+        {
+            return new UIButton
+            {
+                TranslatesAutoresizingMaskIntoConstraints = false,
+                LineBreakMode = UILineBreakMode.MiddleTruncation,
+                VerticalAlignment = UIControlContentVerticalAlignment.Center,
+                HorizontalAlignment = UIControlContentHorizontalAlignment.Center,
+                ContentMode = UIViewContentMode.ScaleToFill,
+                Opaque = false,
+                ContentEdgeInsets = new UIEdgeInsets(8, 8, 8, 8),
+                AccessibilityLabel = accessibilityLabel
+            };
+        }
 
         private void OnDone(object sender, EventArgs e)
         {
@@ -218,10 +222,10 @@ namespace Chafu
             Extra?.Invoke(sender, e);
         }
 
-		private void OnDelete(object sender, EventArgs e)
-		{
-			Deleted?.Invoke(sender, e);
-		}
+        private void OnDelete(object sender, EventArgs e)
+        {
+            Deleted?.Invoke(sender, e);
+        }
 
         /// <inheritdoc />
         public override void UpdateConstraints()
@@ -234,12 +238,12 @@ namespace Chafu
                 CloseButton.Width().EqualTo(40),
                 CloseButton.Height().EqualTo(40),
 
-				DeleteButton.ToRightOf(CloseButton, 8),
-				DeleteButton.AtTopOf(this, 8),
-				DeleteButton.Height().EqualTo(40),
-				DeleteButtonHidden
-					? DeleteButton.Width().EqualTo(0)
-					: DeleteButton.Width().EqualTo(40),
+                DeleteButton.ToRightOf(CloseButton, 8),
+                DeleteButton.AtTopOf(this, 8),
+                DeleteButton.Height().EqualTo(40),
+                DeleteButtonHidden
+                    ? DeleteButton.Width().EqualTo(0)
+                    : DeleteButton.Width().EqualTo(40),
 
                 MenuTitle.WithSameCenterY(this).Plus(2),
                 MenuTitle.WithSameCenterX(this),
@@ -272,7 +276,7 @@ namespace Chafu
                 CloseButton.TouchUpInside -= OnClose;
                 DoneButton.TouchUpInside -= OnDone;
                 ExtraButton.TouchUpInside -= OnExtra;
-				DeleteButton.TouchUpInside -= OnDelete;
+                DeleteButton.TouchUpInside -= OnDelete;
             }
 
             base.Dispose(disposing);
