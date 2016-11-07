@@ -69,3 +69,7 @@
 ### New in 1.6.6
 
 * Added XML doc
+
+### New in 1.6.8
+
+* Fixed image not selected in AlbumViewController on first appearance
