@@ -1,5 +1,6 @@
 using System;
 using Cirrious.FluentLayouts.Touch;
+using CoreFoundation;
 using CoreGraphics;
 using Foundation;
 using UIKit;
@@ -118,10 +119,6 @@ namespace Chafu
                 BackgroundColor = Configuration.BackgroundColor
             };
 
-            AlbumDataSource = LazyDataSource(_album, CellSize, MediaTypes);
-            AlbumDelegate = LazyDelegate(_album, AlbumDataSource);
-            _album.Initialize(AlbumDataSource, AlbumDelegate);
-
             _menu = new MenuView
             {
                 TranslatesAutoresizingMaskIntoConstraints = false,
@@ -159,10 +156,10 @@ namespace Chafu
             _menu.Extra += OnExtra;
             _menu.Deleted += OnDelete;
 
+            AlbumDataSource = LazyDataSource(_album, CellSize, MediaTypes);
+            AlbumDelegate = LazyDelegate(_album, AlbumDataSource);
 
-            _album.ImageCropView.SetNeedsLayout();
-            _album.MovieView.SetNeedsLayout();
-            _album.CollectionView.SetNeedsLayout();
+            _album.Initialize(AlbumDataSource, AlbumDelegate);
         }
 
         /// <inheritdoc />
