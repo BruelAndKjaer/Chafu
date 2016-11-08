@@ -73,3 +73,7 @@
 ### New in 1.6.8
 
 * Fixed image not selected in AlbumViewController on first appearance
+
+### New in 1.6.9
+
+* Added InitialSelectedImagePath to AlbumViewController and ChafuViewController. It is used with LocalFilesDataSource for selecting the initial image. This property, needs to be set before ViewDidAppear is called, so before the ViewController is presented.
