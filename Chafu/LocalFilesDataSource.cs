@@ -138,7 +138,6 @@ namespace Chafu
         /// <param name="item"><see cref="MediaItem"/> to change to</param>
         public void ChangeMediaItem(MediaItem item)
         {
-            Console.WriteLine($"Changing media item to {item?.Path}");
             if (item?.Path == null) return;
             if (_albumView?.ImageCropView == null) return;
 
@@ -374,12 +373,7 @@ namespace Chafu
         {
             if (!files.Any()) return new Tuple<MediaItem, int>(null, 0);
 
-            var item = !string.IsNullOrEmpty(initialSelectedImagePath)
-                ? files.FirstOrDefault(f =>
-                    f.Path == initialSelectedImagePath ||
-                    f.Path == "file://" + initialSelectedImagePath)
-                : files.FirstOrDefault();
-
+            var item = GetItemFromInitialSelected(files, initialSelectedImagePath);
             if (item == null)
                 item = files.FirstOrDefault();
 
@@ -389,6 +383,24 @@ namespace Chafu
             var indexOfItem = files.LastIndexOf(item);
 
             return new Tuple<MediaItem, int>(item, indexOfItem);
+        }
+
+        private static MediaItem GetItemFromInitialSelected(List<MediaItem> files,
+            string initialSelectedImagePath)
+        {
+            var item = !string.IsNullOrEmpty(initialSelectedImagePath)
+                ? files.FirstOrDefault(f =>
+                    NormalizePath(f.Path) == NormalizePath(initialSelectedImagePath) ||
+                    NormalizePath(f.Path) == NormalizePath("file://" + initialSelectedImagePath))
+                : files.FirstOrDefault();
+            return item;
+        }
+
+        private static string NormalizePath(string path)
+        {
+            return Path.GetFullPath(new Uri(path).LocalPath)
+                .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+                .ToUpperInvariant();
         }
 
         private static string PathWithoutPrefix(string path)
