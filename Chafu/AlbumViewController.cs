@@ -159,7 +159,13 @@ namespace Chafu
             AlbumDataSource = LazyDataSource(_album, CellSize, MediaTypes);
             AlbumDelegate = LazyDelegate(_album, AlbumDataSource);
 
+            var local = AlbumDataSource as LocalFilesDataSource;
+            if (local != null)
+                local.InitialSelectedImagePath = InitialSelectedImagePath;
+
             _album.Initialize(AlbumDataSource, AlbumDelegate);
+
+            local?.ShowFirstImage();
         }
 
         /// <inheritdoc />

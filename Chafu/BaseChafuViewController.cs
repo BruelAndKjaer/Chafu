@@ -42,6 +42,16 @@ namespace Chafu
         public CGSize CellSize { get; set; }
 
         /// <summary>
+        /// Get or set the initial path of the first selected image.
+        /// 
+        /// Used when <see cref="AlbumDataSource"/> is a <see cref="LocalFilesDataSource"/>,
+        /// to select what image is selected when controller appears.
+        /// 
+        /// Default is <c>null</c>
+        /// </summary>
+        public string InitialSelectedImagePath { get; set; }
+
+        /// <summary>
         /// Calculate the cell size for the <see cref="AlbumView"/>.
         /// 
         /// Default behavior takes screen width and divides with

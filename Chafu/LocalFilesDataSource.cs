@@ -102,8 +102,6 @@ namespace Chafu
             Files.Clear();
             var items = files.Select(GetMediaItem).Where(f => f != null);
             Files.AddRange(items);
-
-            ShowFirstImage();
         }
 
         /// <inheritdoc />

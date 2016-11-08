@@ -90,16 +90,9 @@ namespace Sample
             
             albumButton.TouchUpInside += (sender, args) =>
             {
-                var dirPath = TempPath();
-                if (!Directory.Exists(dirPath))
-                    Directory.CreateDirectory(dirPath);
-                var dataSource = (LocalFilesDataSource) albumViewController.AlbumDataSource;
-                dataSource?.UpdateImageSource(dirPath);
-
                 // Test InitialSelectedImage by selecting random path
-                //if (dataSource != null)
-                //    dataSource.InitialSelectedImagePath = GetRandomPath();
-                    
+                albumViewController.InitialSelectedImagePath = GetRandomPath();
+
                 NavigationController.PresentModalViewController(albumViewController, true);
             };
 

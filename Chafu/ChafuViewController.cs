@@ -235,10 +235,16 @@ namespace Chafu
 		    AlbumDataSource = albumDataSource;
 		    AlbumDelegate = albumDelegate;
 
-			AlbumView.Initialize (AlbumDataSource, AlbumDelegate);
+            var local = AlbumDataSource as LocalFilesDataSource;
+            if (local != null)
+                local.InitialSelectedImagePath = InitialSelectedImagePath;
+
+            AlbumView.Initialize (AlbumDataSource, AlbumDelegate);
 			_cameraView.Initialize (OnImageFinished);
 
-			if (HasVideo) {
+            local?.ShowFirstImage();
+
+            if (HasVideo) {
 				_videoView.LayoutIfNeeded ();
 				_videoView.Initialize (OnVideoFinished);
                 _videoView.CameraUnauthorized += OnCameraUnauthorized;
@@ -256,8 +262,6 @@ namespace Chafu
 		    ChangeMode(Configuration.ModeOrder == ModeOrder.LibraryFirst ? 
                 Mode.Library : Mode.Camera);
 		}
-
-        
 
         /// <inheritdoc />
         public override void ViewWillDisappear (bool animated)
