@@ -1,9 +1,17 @@
 # Chafu
 
-[![AppVeyor Build status](https://ci.appveyor.com/api/projects/status/k4nhuf35dnwr42av?svg=true)](https://ci.appveyor.com/project/Cheesebaron/chafu)
-![Bitrise](https://www.bitrise.io/app/f0120017f7ea5f31.svg?token=_ib-YfmU9rlOoJ700ET43g)
+## Continuous Integration
+
+| Build Server | Platform | Build Status |
+|--------------|----------|--------------|
+| AppVeyor     | Windows  | [![AppVeyor Build status](https://ci.appveyor.com/api/projects/status/k4nhuf35dnwr42av?svg=true)](https://ci.appveyor.com/project/Cheesebaron/chafu) |
+| Bitrise      | macOS    | ![Bitrise](https://www.bitrise.io/app/f0120017f7ea5f31.svg?token=_ib-YfmU9rlOoJ700ET43g) |
+| VSTS         | Windows  | [![Visual Studio Team services](https://img.shields.io/vso/build/osteost/c29638c3-fef2-4228-b760-97c3d9496e88/2.svg)](https://osteost.visualstudio.com/_apis/public/build/definitions/c29638c3-fef2-4228-b760-97c3d9496e88/2/badge) |
+
+## Packages
 [![NuGet](https://img.shields.io/nuget/v/Chafu.svg?maxAge=2592000)](https://www.nuget.org/packages/Chafu/)
 
+## Description
 Chafu is a photo browser and camera library for Xamarin.iOS. It is heavily inspired from [Fusuma][1], which is a Swift library written by [ytakzk][2].
 
 It has been tweaked for ease of use in a C# environment, all xibs converted to C# code and unnecessary wrapper views have been removed. The library
