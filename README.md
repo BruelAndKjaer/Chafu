@@ -7,7 +7,7 @@
 | AppVeyor     | Windows  | [![AppVeyor Build status](https://ci.appveyor.com/api/projects/status/k4nhuf35dnwr42av?svg=true)](https://ci.appveyor.com/project/Cheesebaron/chafu) |
 | Bitrise      | macOS    | ![Bitrise](https://www.bitrise.io/app/f0120017f7ea5f31.svg?token=_ib-YfmU9rlOoJ700ET43g) |
 | VSTS         | Windows  | [![Visual Studio Team services](https://img.shields.io/vso/build/osteost/c29638c3-fef2-4228-b760-97c3d9496e88/2.svg)](https://osteost.visualstudio.com/_apis/public/build/definitions/c29638c3-fef2-4228-b760-97c3d9496e88/2/badge) |
-| MyGet        | Windows  | [![chafu MyGet Build Status](https://www.myget.org/BuildSource/Badge/chafu?identifier=952884d8-81cb-40d0-a0f7-df629f5b593c)](https://www.myget.org/) |
+| MyGet        | Windows  | [![chafu MyGet Build Status](https://www.myget.org/BuildSource/Badge/chafu?identifier=46b6aebc-6608-4fe4-8c90-776f121a61de)](https://www.myget.org/) |
 
 ## Packages
 [![NuGet](https://img.shields.io/nuget/v/Chafu.svg?maxAge=2592000)](https://www.nuget.org/packages/Chafu/)
