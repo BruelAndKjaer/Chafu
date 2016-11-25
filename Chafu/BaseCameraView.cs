@@ -559,13 +559,13 @@ namespace Chafu
 
                 if (face.HasRollAngle)
                 {
-                    var transform = RollTransform(face.RollAngle);
+                    var transform = face.RollAngle.ToRollTransform();
                     faceLayer.Transform = faceLayer.Transform.Concat(transform);
                 }
 
                 if (face.HasYawAngle)
                 {
-                    var transform = YawTransform(face.YawAngle);
+                    var transform = face.YawAngle.ToYawTransform();
                     faceLayer.Transform = faceLayer.Transform.Concat(transform);
                 }
             }
@@ -599,43 +599,6 @@ namespace Chafu
                     layer = null;
                 }
             }
-        }
-
-        private CATransform3D RollTransform(nfloat rollAngle)
-        {
-            var radians = rollAngle.ToRadians();
-            return CATransform3D.MakeRotation(radians, 0.0f, 0.0f, 1.0f);
-        }
-
-        private CATransform3D YawTransform(nfloat yawAngle)
-        {
-            var radians = yawAngle.ToRadians();
-
-            var yawTransform = CATransform3D.MakeRotation(radians, 0.0f, -1.0f, 0.0f);
-            var orientationTransform = OrientationTransform();
-            return orientationTransform.Concat(yawTransform);
-        }
-
-        private CATransform3D OrientationTransform()
-        {
-            nfloat angle = 0.0f;
-            switch (UIDevice.CurrentDevice.Orientation)
-            {
-                case UIDeviceOrientation.PortraitUpsideDown:
-                    angle = (nfloat)Math.PI;
-                    break;
-                case UIDeviceOrientation.LandscapeRight:
-                    angle = (nfloat)(-Math.PI / 2.0f);
-                    break;
-                case UIDeviceOrientation.LandscapeLeft:
-                    angle = (nfloat)Math.PI / 2.0f;
-                    break;
-                default:
-                    angle = 0.0f;
-                    break;
-            }
-
-            return CATransform3D.MakeRotation(angle, 0.0f, 0.0f, 1.0f);
         }
     }
 }

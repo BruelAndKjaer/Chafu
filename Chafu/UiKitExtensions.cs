@@ -14,7 +14,7 @@ namespace Chafu
         /// <summary>
         /// Name for border added to tab items
         /// </summary>
-        public const string BorderLayerName = "FSBottomBorder";
+        public const string BorderLayerName = "ChafuBottomBorder";
 
         /// <summary>
         /// Add bottom border to UIView
@@ -25,6 +25,8 @@ namespace Chafu
         public static void AddBottomBorder(this UIView self, UIColor color, float width)
         {
             if (self == null) return;
+            if (width <= 0)
+                throw new ArgumentOutOfRangeException(nameof(width), "Width must be bigger than 0");
 
             var border = new CALayer
             {
@@ -221,11 +223,72 @@ namespace Chafu
         /// </summary>
         /// <param name="transform"><see cref="CATransform3D"/> to add perspective to</param>
         /// <param name="eyePosition">Eye position</param>
-        /// <returns></returns>
-        public static CATransform3D MakePerspective(this CATransform3D transform, nfloat eyePosition)
+        /// <returns>The <see cref="CATransform3D"/> for the perspective.</returns>
+        public static CATransform3D MakePerspective(this CATransform3D transform,
+                                                    nfloat eyePosition)
         {
             transform.m34 = -1.0f / eyePosition;
             return transform;
+        }
+
+        /// <summary>
+        /// Creates the transform for the roll angle around the Z axis
+        /// </summary>
+        /// <returns>The roll <see cref="CATransform3D"/>.</returns>
+        /// <param name="rollAngle">Roll angle as <see cref="nfloat"/>.</param>
+        public static CATransform3D ToRollTransform(this nfloat rollAngle)
+        {
+            var radians = rollAngle.ToRadians();
+            return CATransform3D.MakeRotation(radians, 0.0f, 0.0f, 1.0f);
+        }
+
+        /// <summary>
+        /// Creates the transform for the yaw angle around the Y axis, while
+        /// taking the orientation of the screen in consideration.
+        /// </summary>
+        /// <returns>The yaw <see cref="CATransform3D"/>.</returns>
+        /// <param name="yawAngle">Yaw angle as <see cref="nfloat"/>.</param>
+        public static CATransform3D ToYawTransform(this nfloat yawAngle)
+        {
+            var radians = yawAngle.ToRadians();
+
+            var yawTransform = CATransform3D.MakeRotation(radians, 0.0f, -1.0f, 0.0f);
+            var orientationTransform = OrientationTransform();
+            return orientationTransform.Concat(yawTransform);
+        }
+
+        private static CATransform3D OrientationTransform()
+        {
+            return OrientationTransform(UIDevice.CurrentDevice.Orientation);
+        }
+
+        /// <summary>
+        /// Creates rotation tranformation around the Z axis for the orientation of 
+        /// the device.
+        /// </summary>
+        /// <returns>The orientation <see cref="CATransform3D"/>.</returns>
+        /// <param name="orientation">Orientation.</param>
+        public static CATransform3D OrientationTransform(
+            this UIDeviceOrientation orientation)
+        {
+            nfloat angle = 0.0f;
+            switch (orientation)
+            {
+                case UIDeviceOrientation.PortraitUpsideDown:
+                    angle = (nfloat)Math.PI;
+                    break;
+                case UIDeviceOrientation.LandscapeRight:
+                    angle = (nfloat)(-Math.PI / 2.0f);
+                    break;
+                case UIDeviceOrientation.LandscapeLeft:
+                    angle = (nfloat)Math.PI / 2.0f;
+                    break;
+                default:
+                    angle = 0.0f;
+                    break;
+            }
+
+            return CATransform3D.MakeRotation(angle, 0.0f, 0.0f, 1.0f);
         }
     }
 
