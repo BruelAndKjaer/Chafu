@@ -6,6 +6,7 @@ using Foundation;
 using UIKit;
 
 using Xunit.Runner;
+using Xunit.Runners.UI;
 using Xunit.Sdk;
 
 
