@@ -95,6 +95,7 @@ namespace Chafu
             MovieView = MoviePlayerController.View;
             MovieView.TranslatesAutoresizingMaskIntoConstraints = false;
             MovieView.Hidden = true;
+            MovieView.AccessibilityLabel = "VideoView";
 
             Add(MovieView);
 

@@ -67,9 +67,9 @@ namespace Chafu
         public MediaType MediaTypes { get; set; } = MediaType.Image | MediaType.Video;
 
         /// <inheritdoc />
-        public override void ViewDidLoad ()
-		{
-			base.ViewDidLoad ();
+        public override void ViewDidLoad()
+        {
+            base.ViewDidLoad();
 
             _menuView = new MenuView
             {
@@ -79,211 +79,226 @@ namespace Chafu
                 AccessibilityLabel = "MenuView"
             };
             _menuView.AddBottomBorder(UIColor.Black, 1);
-            View.AddSubviews (_menuView);
+            View.AddSubviews(_menuView);
 
-			_libraryButton = new UIButton {
-				TranslatesAutoresizingMaskIntoConstraints = false,
-				LineBreakMode = UILineBreakMode.MiddleTruncation,
-				HorizontalAlignment = UIControlContentHorizontalAlignment.Center,
-				VerticalAlignment = UIControlContentVerticalAlignment.Center,
-				ContentMode = UIViewContentMode.ScaleToFill,
-				ContentEdgeInsets = new UIEdgeInsets (2, 2, 2, 2),
-				AccessibilityLabel = "LibraryButton"
-			};
-
-			_videoButton = new UIButton {
-				TranslatesAutoresizingMaskIntoConstraints = false,
-				LineBreakMode = UILineBreakMode.MiddleTruncation,
-				HorizontalAlignment = UIControlContentHorizontalAlignment.Center,
-				VerticalAlignment = UIControlContentVerticalAlignment.Center,
-				ContentMode = UIViewContentMode.ScaleToFill,
-				ContentEdgeInsets = new UIEdgeInsets (2, 2, 2, 2),
-				AccessibilityLabel = "VideoButton"
-			};
-
-			_cameraButton = new UIButton {
-				TranslatesAutoresizingMaskIntoConstraints = false,
-				LineBreakMode = UILineBreakMode.MiddleTruncation,
-				HorizontalAlignment = UIControlContentHorizontalAlignment.Center,
-				VerticalAlignment = UIControlContentVerticalAlignment.Center,
-				ContentMode = UIViewContentMode.ScaleToFill,
-				ContentEdgeInsets = new UIEdgeInsets (2, 2, 2, 2),
-				AccessibilityLabel = "PhotoButton"
-			};
-
-			View.AddSubviews (_libraryButton, _cameraButton);
-
-			_cameraView = new CameraView {
-				BackgroundColor = Configuration.BackgroundColor,
-				TranslatesAutoresizingMaskIntoConstraints = false
-			};
-
-            if (CellSize == CGSize.Empty)
-		        CellSize = CalculateCellSize();
-
-			AlbumView = new AlbumView(CellSize) {
-				BackgroundColor = Configuration.BackgroundColor,
-				TranslatesAutoresizingMaskIntoConstraints = false
+            _libraryButton = new UIButton
+            {
+                TranslatesAutoresizingMaskIntoConstraints = false,
+                LineBreakMode = UILineBreakMode.MiddleTruncation,
+                HorizontalAlignment = UIControlContentHorizontalAlignment.Center,
+                VerticalAlignment = UIControlContentVerticalAlignment.Center,
+                ContentMode = UIViewContentMode.ScaleToFill,
+                ContentEdgeInsets = new UIEdgeInsets(2, 2, 2, 2),
+                AccessibilityLabel = "LibraryButton"
             };
 
-			View.AddSubviews (_cameraView, AlbumView);
+            _videoButton = new UIButton
+            {
+                TranslatesAutoresizingMaskIntoConstraints = false,
+                LineBreakMode = UILineBreakMode.MiddleTruncation,
+                HorizontalAlignment = UIControlContentHorizontalAlignment.Center,
+                VerticalAlignment = UIControlContentVerticalAlignment.Center,
+                ContentMode = UIViewContentMode.ScaleToFill,
+                ContentEdgeInsets = new UIEdgeInsets(2, 2, 2, 2),
+                AccessibilityLabel = "VideoButton"
+            };
 
-			View.AddConstraints (
-				_menuView.Height ().EqualTo (50),
-				_menuView.AtTopOf (View),
-				_menuView.AtLeftOf (View),
-				_menuView.AtRightOf (View),
+            _cameraButton = new UIButton
+            {
+                TranslatesAutoresizingMaskIntoConstraints = false,
+                LineBreakMode = UILineBreakMode.MiddleTruncation,
+                HorizontalAlignment = UIControlContentHorizontalAlignment.Center,
+                VerticalAlignment = UIControlContentVerticalAlignment.Center,
+                ContentMode = UIViewContentMode.ScaleToFill,
+                ContentEdgeInsets = new UIEdgeInsets(2, 2, 2, 2),
+                AccessibilityLabel = "PhotoButton"
+            };
 
-				AlbumView.AtLeftOf (View),
-				AlbumView.AtRightOf (View),
+            View.AddSubviews(_libraryButton, _cameraButton);
+
+            _cameraView = new CameraView
+            {
+                BackgroundColor = Configuration.BackgroundColor,
+                TranslatesAutoresizingMaskIntoConstraints = false,
+                AccessibilityLabel = "CameraView"
+            };
+
+            if (CellSize == CGSize.Empty)
+                CellSize = CalculateCellSize();
+
+            AlbumView = new AlbumView(CellSize)
+            {
+                BackgroundColor = Configuration.BackgroundColor,
+                TranslatesAutoresizingMaskIntoConstraints = false,
+                AccessibilityLabel = "AlbumView"
+            };
+
+            View.AddSubviews(_cameraView, AlbumView);
+
+            View.AddConstraints(
+                _menuView.Height().EqualTo(50),
+                _menuView.AtTopOf(View),
+                _menuView.AtLeftOf(View),
+                _menuView.AtRightOf(View),
+
+                AlbumView.AtLeftOf(View),
+                AlbumView.AtRightOf(View),
                 AlbumView.Below(_menuView),
 
-				_cameraView.WithSameLeft (AlbumView),
-				_cameraView.WithSameRight (AlbumView),
+                _cameraView.WithSameLeft(AlbumView),
+                _cameraView.WithSameRight(AlbumView),
                 _cameraView.Below(_menuView),
 
-                _libraryButton.AtLeftOf (View),
-				_libraryButton.AtBottomOf (View),
+                _libraryButton.AtLeftOf(View),
+                _libraryButton.AtBottomOf(View),
 
-				_cameraButton.ToRightOf (_libraryButton),
-				_cameraButton.AtBottomOf (View),
+                _cameraButton.ToRightOf(_libraryButton),
+                _cameraButton.AtBottomOf(View),
 
-				_libraryButton.Height ().EqualTo (45),
-				_cameraButton.Height ().EqualTo (45),
+                _libraryButton.Height().EqualTo(45),
+                _cameraButton.Height().EqualTo(45),
 
-				_cameraButton.WithSameWidth (_libraryButton),
+                _cameraButton.WithSameWidth(_libraryButton),
 
-				AlbumView.Above (_libraryButton),
-				_cameraView.Above (_libraryButton)
-			);
+                AlbumView.Above(_libraryButton),
+                _cameraView.Above(_libraryButton)
+            );
 
-			View.BackgroundColor = Configuration.BackgroundColor;
+            View.BackgroundColor = Configuration.BackgroundColor;
 
-			var albumImage = Configuration.AlbumImage ?? UIImage.FromBundle ("ic_insert_photo");
-			var cameraImage = Configuration.CameraImage ?? UIImage.FromBundle ("ic_photo_camera");
-			var videoImage = Configuration.VideoImage ?? UIImage.FromBundle ("ic_videocam");
+            var albumImage = Configuration.AlbumImage ?? UIImage.FromBundle("ic_insert_photo");
+            var cameraImage = Configuration.CameraImage ?? UIImage.FromBundle("ic_photo_camera");
+            var videoImage = Configuration.VideoImage ?? UIImage.FromBundle("ic_videocam");
 
-			if (Configuration.TintIcons) {
-				albumImage = albumImage?.ImageWithRenderingMode (UIImageRenderingMode.AlwaysTemplate);
-				cameraImage = cameraImage?.ImageWithRenderingMode (UIImageRenderingMode.AlwaysTemplate);
-				videoImage = videoImage?.ImageWithRenderingMode (UIImageRenderingMode.AlwaysTemplate);
-			}
+            if (Configuration.TintIcons)
+            {
+                albumImage = albumImage?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
+                cameraImage = cameraImage?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
+                videoImage = videoImage?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
+            }
 
-			_libraryButton.SetImage (albumImage, UIControlState.Normal);
-			_libraryButton.SetImage (albumImage, UIControlState.Highlighted);
-			_libraryButton.SetImage (albumImage, UIControlState.Selected);
+            _libraryButton.SetImage(albumImage, UIControlState.Normal);
+            _libraryButton.SetImage(albumImage, UIControlState.Highlighted);
+            _libraryButton.SetImage(albumImage, UIControlState.Selected);
 
-			_cameraButton.SetImage (cameraImage, UIControlState.Normal);
-			_cameraButton.SetImage (cameraImage, UIControlState.Highlighted);
-			_cameraButton.SetImage (cameraImage, UIControlState.Selected);
+            _cameraButton.SetImage(cameraImage, UIControlState.Normal);
+            _cameraButton.SetImage(cameraImage, UIControlState.Highlighted);
+            _cameraButton.SetImage(cameraImage, UIControlState.Selected);
 
-			_videoButton.SetImage (videoImage, UIControlState.Normal);
-			_videoButton.SetImage (videoImage, UIControlState.Highlighted);
-			_videoButton.SetImage (videoImage, UIControlState.Selected);
+            _videoButton.SetImage(videoImage, UIControlState.Normal);
+            _videoButton.SetImage(videoImage, UIControlState.Highlighted);
+            _videoButton.SetImage(videoImage, UIControlState.Selected);
 
-			if (Configuration.TintIcons) {
-				_libraryButton.TintColor = Configuration.TintColor;
-				_libraryButton.AdjustsImageWhenHighlighted = false;
-				_cameraButton.TintColor = Configuration.TintColor;
-				_cameraButton.AdjustsImageWhenHighlighted = false;
-				_videoButton.TintColor = Configuration.TintColor;
-				_videoButton.AdjustsImageWhenHighlighted = false;
-			}
+            if (Configuration.TintIcons)
+            {
+                _libraryButton.TintColor = Configuration.TintColor;
+                _libraryButton.AdjustsImageWhenHighlighted = false;
+                _cameraButton.TintColor = Configuration.TintColor;
+                _cameraButton.AdjustsImageWhenHighlighted = false;
+                _videoButton.TintColor = Configuration.TintColor;
+                _videoButton.AdjustsImageWhenHighlighted = false;
+            }
 
-			_cameraButton.ClipsToBounds = true;
-			_libraryButton.ClipsToBounds = true;
-			_videoButton.ClipsToBounds = true;
+            _cameraButton.ClipsToBounds = true;
+            _libraryButton.ClipsToBounds = true;
+            _videoButton.ClipsToBounds = true;
 
-			if (HasVideo) {
-				_videoView = new VideoView {
-					BackgroundColor = Configuration.BackgroundColor,
-					TranslatesAutoresizingMaskIntoConstraints = false
-				};
+            if (HasVideo)
+            {
+                _videoView = new VideoView
+                {
+                    BackgroundColor = Configuration.BackgroundColor,
+                    TranslatesAutoresizingMaskIntoConstraints = false,
+                    AccessibilityLabel = "VideoView"
+                };
 
-				View.AddSubviews (_videoView, _videoButton);
+                View.AddSubviews(_videoView, _videoButton);
 
-				View.AddConstraints (
-					_videoView.WithSameLeft (AlbumView),
-					_videoView.WithSameRight (AlbumView),
+                View.AddConstraints(
+                    _videoView.WithSameLeft(AlbumView),
+                    _videoView.WithSameRight(AlbumView),
                     _videoView.Below(_menuView),
 
-                    _videoButton.ToRightOf (_cameraButton),
-					_videoButton.AtBottomOf (View),
-					_videoButton.AtRightOf (View),
-					_videoButton.WithSameWidth (_cameraButton),
-					_videoButton.Height ().EqualTo (45),
+                    _videoButton.ToRightOf(_cameraButton),
+                    _videoButton.AtBottomOf(View),
+                    _videoButton.AtRightOf(View),
+                    _videoButton.WithSameWidth(_cameraButton),
+                    _videoButton.Height().EqualTo(45),
 
-					_videoView.Above (_libraryButton)
-				);
-			} else {
-				View.AddConstraints (
-					_cameraButton.AtRightOf (View)
-				);
-			}
-		}
+                    _videoView.Above(_libraryButton)
+                );
+            }
+            else {
+                View.AddConstraints(
+                    _cameraButton.AtRightOf(View)
+                );
+            }
+        }
 
         /// <inheritdoc />
-        public override void ViewDidAppear (bool animated)
-		{
-			base.ViewDidAppear (animated);
+        public override void ViewDidAppear(bool animated)
+        {
+            base.ViewDidAppear(animated);
 
-			AlbumView.LayoutIfNeeded ();
-			_cameraView.LayoutIfNeeded ();
+            AlbumView.LayoutIfNeeded();
+            _cameraView.LayoutIfNeeded();
 
             var albumDataSource = LazyDataSource(AlbumView, AlbumView.CellSize, MediaTypes);
-		    var albumDelegate = LazyDelegate(AlbumView, albumDataSource);
-		    AlbumDataSource = albumDataSource;
-		    AlbumDelegate = albumDelegate;
+            var albumDelegate = LazyDelegate(AlbumView, albumDataSource);
+            AlbumDataSource = albumDataSource;
+            AlbumDelegate = albumDelegate;
 
             var local = AlbumDataSource as LocalFilesDataSource;
             if (local != null)
                 local.InitialSelectedImagePath = InitialSelectedImagePath;
 
-            AlbumView.Initialize (AlbumDataSource, AlbumDelegate);
-			_cameraView.Initialize (OnImageFinished);
+            AlbumView.Initialize(AlbumDataSource, AlbumDelegate);
+            _cameraView.Initialize(OnImageFinished);
 
             local?.ShowFirstImage();
 
-            if (HasVideo) {
-				_videoView.LayoutIfNeeded ();
-				_videoView.Initialize (OnVideoFinished);
+            if (HasVideo)
+            {
+                _videoView.LayoutIfNeeded();
+                _videoView.Initialize(OnVideoFinished);
                 _videoView.CameraUnauthorized += OnCameraUnauthorized;
-			}
+            }
 
-			_libraryButton.TouchUpInside += LibraryButtonPressed;
-		    _menuView.Closed += CloseButtonPressed;
-		    _menuView.Done += DoneButtonPressed;
+            _libraryButton.TouchUpInside += LibraryButtonPressed;
+            _menuView.Closed += CloseButtonPressed;
+            _menuView.Done += DoneButtonPressed;
             _cameraButton.TouchUpInside += CameraButtonPressed;
-			_videoButton.TouchUpInside += VideoButtonPressed;
-			
+            _videoButton.TouchUpInside += VideoButtonPressed;
+
             AlbumDataSource.CameraRollUnauthorized += OnCameraRollUnauthorized;
             _cameraView.CameraUnauthorized += OnCameraUnauthorized;
 
-		    ChangeMode(Configuration.ModeOrder == ModeOrder.LibraryFirst ? 
+            ChangeMode(Configuration.ModeOrder == ModeOrder.LibraryFirst ?
                 Mode.Library : Mode.Camera);
-		}
+        }
 
         /// <inheritdoc />
-        public override void ViewWillDisappear (bool animated)
-		{
-			base.ViewWillDisappear (animated);
-			StopAll ();
+        public override void ViewWillDisappear(bool animated)
+        {
+            base.ViewWillDisappear(animated);
+            StopAll();
 
-			_libraryButton.TouchUpInside -= LibraryButtonPressed;
+            _libraryButton.TouchUpInside -= LibraryButtonPressed;
             _menuView.Closed -= CloseButtonPressed;
             _menuView.Done -= DoneButtonPressed;
             _cameraButton.TouchUpInside -= CameraButtonPressed;
-			_videoButton.TouchUpInside -= VideoButtonPressed;
+            _videoButton.TouchUpInside -= VideoButtonPressed;
             AlbumDataSource.CameraRollUnauthorized -= OnCameraRollUnauthorized;
             _cameraView.CameraUnauthorized -= OnCameraUnauthorized;
             if (_videoView != null)
                 _videoView.CameraUnauthorized -= OnCameraUnauthorized;
-		}
+        }
 
         /// <inheritdoc />
-        public override bool PrefersStatusBarHidden () => Configuration.PreferStatusbarHidden;
+        public override bool PrefersStatusBarHidden() => Configuration.PreferStatusbarHidden;
 
-        private void OnCameraUnauthorized(object sender, EventArgs e){
+        private void OnCameraUnauthorized(object sender, EventArgs e)
+        {
             CameraUnauthorized?.Invoke(this, e);
         }
 
@@ -292,10 +307,10 @@ namespace Chafu
             CameraRollUnauthorized?.Invoke(this, e);
         }
 
-		private void CloseButtonPressed (object sender, EventArgs e)
-		{
-			Dismiss();
-		}
+        private void CloseButtonPressed(object sender, EventArgs e)
+        {
+            Dismiss();
+        }
 
         /// <summary>
         /// Dismiss the View Controller
@@ -303,44 +318,46 @@ namespace Chafu
         /// <param name="animated"><see cref="bool"/> indicating whether to dismiss animated</param>
         public void Dismiss(bool animated = true)
         {
-            DismissViewController(animated, () => {
+            DismissViewController(animated, () =>
+            {
                 Closed?.Invoke(this, EventArgs.Empty);
             });
         }
 
-		private void LibraryButtonPressed (object sender, EventArgs eventArgs)
-		{
-			ChangeMode(Mode.Library);
-		}
+        private void LibraryButtonPressed(object sender, EventArgs eventArgs)
+        {
+            ChangeMode(Mode.Library);
+        }
 
-		private void CameraButtonPressed (object sender, EventArgs e)
-		{
-			ChangeMode(Mode.Camera);
-		}
+        private void CameraButtonPressed(object sender, EventArgs e)
+        {
+            ChangeMode(Mode.Camera);
+        }
 
-		private void VideoButtonPressed (object sender, EventArgs e)
-		{
-			ChangeMode(Mode.Video);
-		}
+        private void VideoButtonPressed(object sender, EventArgs e)
+        {
+            ChangeMode(Mode.Video);
+        }
 
-		private void DoneButtonPressed (object sender, EventArgs e)
-		{
-			if (AlbumDataSource.CurrentMediaType == MediaType.Image)
-			{
-				if (Configuration.CropImage) {
-					Console.WriteLine("Cropping image before handing it over");
-					AlbumDataSource.GetCroppedImage(OnImageFinished);
-				}
-				else {
+        private void DoneButtonPressed(object sender, EventArgs e)
+        {
+            if (AlbumDataSource.CurrentMediaType == MediaType.Image)
+            {
+                if (Configuration.CropImage)
+                {
+                    Console.WriteLine("Cropping image before handing it over");
+                    AlbumDataSource.GetCroppedImage(OnImageFinished);
+                }
+                else {
                     Console.WriteLine("Not cropping image");
                     OnImageFinished(AlbumView.ImageCropView.Image);
                 }
-			}
+            }
 
-			if (AlbumDataSource.CurrentMediaType == MediaType.Video)
-			{
-				var url = AlbumView.MoviePlayerController.ContentUrl;
-				OnVideoFinished(url);
+            if (AlbumDataSource.CurrentMediaType == MediaType.Video)
+            {
+                var url = AlbumView.MoviePlayerController.ContentUrl;
+                OnVideoFinished(url);
             }
         }
 
@@ -356,12 +373,14 @@ namespace Chafu
             Dismiss();
         }
 
-        private void ChangeMode (Mode mode, bool startStopCamera = true)
-		{
-			if (_mode == mode) return;
+        private void ChangeMode(Mode mode, bool startStopCamera = true)
+        {
+            if (_mode == mode) return;
 
-            if (startStopCamera) {
-                switch (_mode) {
+            if (startStopCamera)
+            {
+                switch (_mode)
+                {
                     case Mode.Camera:
                         _cameraView?.StopCamera();
                         break;
@@ -370,89 +389,92 @@ namespace Chafu
                         break;
                 }
             }
-			
-			_mode = mode;
 
-			DisHighlightButtons ();
+            _mode = mode;
 
-			switch (mode) {
-    			case Mode.Library:
-    				AlbumView.Hidden = false;
-    				_cameraView.Hidden = true;
-    				if (_videoView != null)
-    					_videoView.Hidden = true;
+            DisHighlightButtons();
+
+            switch (mode)
+            {
+                case Mode.Library:
+                    AlbumView.Hidden = false;
+                    _cameraView.Hidden = true;
+                    if (_videoView != null)
+                        _videoView.Hidden = true;
                     _menuView.DoneButtonHidden = false;
-    				_menuView.Title = Configuration.CameraRollTitle;
+                    _menuView.Title = Configuration.CameraRollTitle;
 
-    				HighlightButton (_libraryButton);
-    				View.BringSubviewToFront (AlbumView);
-    				break;
-    			case Mode.Camera:
-    				AlbumView.Hidden = true;
-    				_cameraView.Hidden = false;
-    				if (_videoView != null)
-    					_videoView.Hidden = true;
+                    HighlightButton(_libraryButton);
+                    View.BringSubviewToFront(AlbumView);
+                    break;
+                case Mode.Camera:
+                    AlbumView.Hidden = true;
+                    _cameraView.Hidden = false;
+                    if (_videoView != null)
+                        _videoView.Hidden = true;
                     _menuView.DoneButtonHidden = true;
                     _menuView.Title = Configuration.CameraTitle;
 
-    				HighlightButton (_cameraButton);
-    				View.BringSubviewToFront (_cameraView);
+                    HighlightButton(_cameraButton);
+                    View.BringSubviewToFront(_cameraView);
                     if (startStopCamera)
-    				    _cameraView.StartCamera ();
-    				break;
-    			case Mode.Video:
-    				AlbumView.Hidden = true;
-    				_cameraView.Hidden = true;
-    				_videoView.Hidden = false;
+                        _cameraView.StartCamera();
+                    break;
+                case Mode.Video:
+                    AlbumView.Hidden = true;
+                    _cameraView.Hidden = true;
+                    _videoView.Hidden = false;
                     _menuView.DoneButtonHidden = true;
                     _menuView.Title = Configuration.VideoTitle;
 
-    				HighlightButton (_videoButton);
-    				View.BringSubviewToFront (_videoView);
+                    HighlightButton(_videoButton);
+                    View.BringSubviewToFront(_videoView);
                     if (startStopCamera)
-    				    _videoView.StartCamera ();
-    				break;
-			}
+                        _videoView.StartCamera();
+                    break;
+            }
 
-			View.BringSubviewToFront (_menuView);
-		}
+            View.BringSubviewToFront(_menuView);
+        }
 
-		private void DisHighlightButtons ()
-		{
-			_cameraButton.TintColor = Configuration.BaseTintColor;
-			_libraryButton.TintColor = Configuration.BaseTintColor;
+        private void DisHighlightButtons()
+        {
+            _cameraButton.TintColor = Configuration.BaseTintColor;
+            _libraryButton.TintColor = Configuration.BaseTintColor;
 
-			var buttons = new [] { _cameraButton, _videoButton, _libraryButton };
+            var buttons = new[] { _cameraButton, _videoButton, _libraryButton };
 
-			foreach (var button in buttons) {
-			    if (button?.Layer.Sublayers == null) continue;
+            foreach (var button in buttons)
+            {
+                if (button?.Layer.Sublayers == null) continue;
 
-				foreach (var layer in button.Layer.Sublayers) {
-					if (layer.Name == UiKitExtensions.BorderLayerName)
-						layer.RemoveFromSuperLayer ();
-				}
-			}
+                foreach (var layer in button.Layer.Sublayers)
+                {
+                    if (layer.Name == UiKitExtensions.BorderLayerName)
+                        layer.RemoveFromSuperLayer();
+                }
+            }
 
-			if (_videoButton != null)
-				_videoButton.TintColor = Configuration.BaseTintColor;
-		}
+            if (_videoButton != null)
+                _videoButton.TintColor = Configuration.BaseTintColor;
+        }
 
-		private static void HighlightButton (UIView button)
-		{
-			button.TintColor = Configuration.TintColor;
-			button.AddBottomBorder (Configuration.TintColor, 3);
-		}
+        private static void HighlightButton(UIView button)
+        {
+            button.TintColor = Configuration.TintColor;
+            button.AddBottomBorder(Configuration.TintColor, 3);
+        }
 
-		private void StopAll()
-		{
-			_videoView?.StopCamera();
-			_cameraView?.StopCamera();
-		}
+        private void StopAll()
+        {
+            _videoView?.StopCamera();
+            _cameraView?.StopCamera();
+        }
 
         /// <inheritdoc />
-        public override UIInterfaceOrientationMask GetSupportedInterfaceOrientations () => UIInterfaceOrientationMask.Portrait;
+        public override UIInterfaceOrientationMask GetSupportedInterfaceOrientations() => UIInterfaceOrientationMask.Portrait;
 
         /// <inheritdoc />
         public override UIInterfaceOrientation InterfaceOrientation => UIInterfaceOrientation.Portrait;
-	}
+    }
 }

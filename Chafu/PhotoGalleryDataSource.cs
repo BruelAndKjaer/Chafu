@@ -86,7 +86,8 @@ namespace Chafu
                     assets.AddRange(_videos.OfType<PHAsset>());
                 }
 
-                foreach (var asset in assets.OrderByDescending(a => a.CreationDate.SecondsSinceReferenceDate))
+                foreach (var asset in assets.OrderByDescending(
+                    a => a.CreationDate.SecondsSinceReferenceDate))
                     AllAssets.Add(asset);
 
                 ShowFirstImage();
@@ -97,10 +98,11 @@ namespace Chafu
         }
 
         /// <inheritdoc />
-        public override UICollectionViewCell GetCell(UICollectionView collectionView, NSIndexPath indexPath)
+        public override UICollectionViewCell GetCell(UICollectionView collectionView,
+                                                     NSIndexPath indexPath)
         {
-            var cell = collectionView.DequeueReusableCell(AlbumViewCell.Key, indexPath) as AlbumViewCell ??
-                       new AlbumViewCell();
+            var cell = collectionView.DequeueReusableCell(AlbumViewCell.Key, indexPath)
+                                     as AlbumViewCell ?? new AlbumViewCell();
 
             if (_imageManager == null) return cell;
 
@@ -112,8 +114,9 @@ namespace Chafu
             cell.IsVideo = asset.MediaType == PHAssetMediaType.Video;
             cell.Duration = asset.Duration;
 
-            cell.Tag = _imageManager.RequestImageForAsset(asset, _cellSize, PHImageContentMode.AspectFit, null,
-                (result, info) => SetImageCellImage(cell, result));
+            cell.Tag = _imageManager.RequestImageForAsset(asset, _cellSize,
+                PHImageContentMode.AspectFit, null, (result, info) =>
+                    SetImageCellImage(cell, result));
 
             return cell;
         }
@@ -128,7 +131,8 @@ namespace Chafu
         public override nint NumberOfSections(UICollectionView collectionView) => 1;
 
         /// <inheritdoc />
-        public override nint GetItemsCount(UICollectionView collectionView, nint section) => AllAssets?.Count ?? 0;
+        public override nint GetItemsCount(UICollectionView collectionView, nint section)
+            => AllAssets?.Count ?? 0;
 
         /// <summary>
         /// Photo Library change observer. Triggers when changes are made to the photo library such as 
@@ -174,7 +178,8 @@ namespace Chafu
                     AllAssets.Remove(asset);
             }
 
-            foreach (var asset in assets.OfType<PHAsset>().OrderBy(a => a.CreationDate.SecondsSinceReferenceDate))
+            foreach (var asset in assets.OfType<PHAsset>().OrderBy(
+                a => a.CreationDate.SecondsSinceReferenceDate))
             {
                 if (!AllAssets.Contains(asset))
                     AllAssets.Insert(0, asset);

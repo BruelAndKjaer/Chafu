@@ -103,7 +103,8 @@ namespace Chafu
             _imageView = new UIImageView
             {
                 TranslatesAutoresizingMaskIntoConstraints = false,
-                ContentMode = UIViewContentMode.ScaleAspectFill
+                ContentMode = UIViewContentMode.ScaleAspectFill,
+                AccessibilityLabel = "Image"
             };
 
             _videoImage = new UIImageView
@@ -111,7 +112,8 @@ namespace Chafu
                 TranslatesAutoresizingMaskIntoConstraints = false,
                 Hidden = true,
                 TintColor = UIColor.White,
-                Image = Configuration.VideoImage ?? UIImage.FromBundle("ic_videocam")
+                Image = Configuration.VideoImage ?? UIImage.FromBundle("ic_videocam"),
+                AccessibilityLabel = "VideoThumbnail"
             };
 
             _timeStamp = new UILabel
@@ -119,7 +121,8 @@ namespace Chafu
                 TranslatesAutoresizingMaskIntoConstraints = false,
                 Hidden = true,
                 TextColor = UIColor.White,
-                TextAlignment = UITextAlignment.Right
+                TextAlignment = UITextAlignment.Right,
+                AccessibilityLabel = "VideoTimeStamp"
             };
 
             Add(_imageView);

@@ -116,13 +116,15 @@ namespace Chafu
             _album = new AlbumView(CellSize)
             {
                 TranslatesAutoresizingMaskIntoConstraints = false,
-                BackgroundColor = Configuration.BackgroundColor
+                BackgroundColor = Configuration.BackgroundColor,
+                AccessibilityLabel = "AlbumView"
             };
 
             _menu = new MenuView
             {
                 TranslatesAutoresizingMaskIntoConstraints = false,
-                BackgroundColor = Configuration.BackgroundColor
+                BackgroundColor = Configuration.BackgroundColor,
+                AccessibilityLabel = "MenuView"
             };
 
             Add(_menu);
