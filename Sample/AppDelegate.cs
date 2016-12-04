@@ -27,6 +27,10 @@ namespace Sample
             // make the window visible
             Window.MakeKeyAndVisible();
 
+#if ENABLE_TEST_CLOUD
+            Xamarin.Calabash.Start();
+#endif
+
             return true;
         }
 
