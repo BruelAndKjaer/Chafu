@@ -458,7 +458,8 @@ namespace Chafu
                 TextColor = Configuration.BaseTintColor,
                 BackgroundColor = Configuration.TintColor,
                 TranslatesAutoresizingMaskIntoConstraints = false,
-                TextAlignment = UITextAlignment.Center
+                TextAlignment = UITextAlignment.Center,
+                AccessibilityLabel = "NoCamera"
             };
 
             Add(noCameraText);

@@ -15,8 +15,8 @@ namespace Sample
             base.ViewDidLoad();
             Title = "Chafu";
 
-            var deleteAll = new UIBarButtonItem(UIBarButtonSystemItem.Trash) {TintColor = Configuration.BackgroundColor};
-            
+            var deleteAll = new UIBarButtonItem(UIBarButtonSystemItem.Trash) { TintColor = Configuration.BackgroundColor };
+
 
             NavigationController.NavigationBar.BarTintColor = Configuration.TintColor;
             NavigationController.NavigationBar.TintColor = Configuration.BaseTintColor;
@@ -26,22 +26,37 @@ namespace Sample
 
             Configuration.CropImage = true;
 
-            var imageView = new UIImageView {BackgroundColor = UIColor.Black};
-            var urlLabel = new UILabel();
+            var imageView = new UIImageView
+            {
+                BackgroundColor = UIColor.Black,
+                AccessibilityLabel = "SelectedImage"
+            };
+
+            var urlLabel = new UILabel
+            {
+                AccessibilityLabel = "UrlLabel",
+                TextColor = UIColor.White,
+                Font = UIFont.SystemFontOfSize(10),
+                Lines = 4
+            };
+
             var pickerButton = new UIButton(UIButtonType.System)
             {
                 BackgroundColor = Configuration.TintColor,
-                TintColor = UIColor.Black
+                TintColor = UIColor.Black,
+                AccessibilityLabel = "PickImage"
             };
             pickerButton.SetTitle("Pick Image", UIControlState.Normal);
+
             var albumButton = new UIButton(UIButtonType.System)
             {
                 BackgroundColor = Configuration.TintColor,
-                TintColor = UIColor.Black
+                TintColor = UIColor.Black,
+                AccessibilityLabel = "ShowAlbum"
             };
             albumButton.SetTitle("Show Album", UIControlState.Normal);
 
-            var chafu = new ChafuViewController { HasVideo = true};
+            var chafu = new ChafuViewController { HasVideo = true };
             chafu.ImageSelected += (sender, image) =>
             {
                 DispatchQueue.MainQueue.DispatchAsync(() =>
@@ -49,7 +64,7 @@ namespace Sample
                     imageView.Image = image;
                 });
 
-                CopyImageToLocalFolder(image);
+                urlLabel.Text = CopyImageToLocalFolder(image);
             };
             chafu.VideoSelected += (sender, videoUrl) =>
             {
@@ -58,23 +73,23 @@ namespace Sample
             };
             chafu.Closed += (sender, e) =>
             {
-                /* do stuff on closed */ 
-                
+                /* do stuff on closed */
+
             };
-            
+
             pickerButton.TouchUpInside += (sender, args) =>
             {
-				NavigationController.PresentModalViewController (chafu, true);
+                NavigationController.PresentModalViewController(chafu, true);
             };
 
             var albumViewController = new AlbumViewController
             {
-                LazyDataSource = (view, size, mediaTypes) => 
-                    new LocalFilesDataSource(view, size, mediaTypes) {ImagesPath = TempPath()},
-                LazyDelegate = (view, source) => new LocalFilesDelegate(view, (LocalFilesDataSource) source),
+                LazyDataSource = (view, size, mediaTypes) =>
+                    new LocalFilesDataSource(view, size, mediaTypes) { ImagesPath = TempPath() },
+                LazyDelegate = (view, source) => new LocalFilesDelegate(view, (LocalFilesDataSource)source),
                 ShowExtraButton = true,
                 ShowDoneButton = false,
-				ShowDeleteButton = true
+                ShowDeleteButton = true
             };
 
             albumViewController.Extra += (sender, args) =>
@@ -87,7 +102,7 @@ namespace Sample
             {
                 imageView.Image = image;
             };
-            
+
             albumButton.TouchUpInside += (sender, args) =>
             {
                 // Test InitialSelectedImage by selecting random path
@@ -104,7 +119,7 @@ namespace Sample
 
             Add(imageView);
             Add(urlLabel);
-			Add(pickerButton);
+            Add(pickerButton);
             Add(albumButton);
 
             View.SubviewsDoNotTranslateAutoresizingMaskIntoConstraints();
@@ -145,14 +160,14 @@ namespace Sample
             return files[random];
         }
 
-        private void CopyImageToLocalFolder(UIImage image)
+        private string CopyImageToLocalFolder(UIImage image)
         {
+            var dirPath = TempPath();
+            var fileName = $"{Guid.NewGuid().ToString("N")}.jpg";
+            var tempPath = Path.Combine(dirPath, fileName);
+
             DispatchQueue.DefaultGlobalQueue.DispatchAsync(() =>
             {
-                var dirPath = TempPath();
-                var fileName = $"{Guid.NewGuid().ToString("N")}.jpg";
-                var tempPath = Path.Combine(dirPath, fileName);
-
                 if (!Directory.Exists(dirPath))
                     Directory.CreateDirectory(dirPath);
 
@@ -163,6 +178,8 @@ namespace Sample
                     stream.CopyTo(fileStream);
                 }
             });
+
+            return tempPath;
         }
 
         private void CopyVideoToLocalFolder(NSUrl videoUrl)
