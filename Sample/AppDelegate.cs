@@ -18,6 +18,10 @@ namespace Sample
 
         public override bool FinishedLaunching(UIApplication application, NSDictionary launchOptions)
         {
+#if DEBUG
+            Xamarin.Calabash.Start();
+#endif
+
             // create a new window instance based on the screen size
             Window = new UIWindow(UIScreen.MainScreen.Bounds);
 
@@ -26,10 +30,6 @@ namespace Sample
 
             // make the window visible
             Window.MakeKeyAndVisible();
-
-#if ENABLE_TEST_CLOUD
-            Xamarin.Calabash.Start();
-#endif
 
             return true;
         }
