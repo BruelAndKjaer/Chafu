@@ -19,11 +19,11 @@ namespace Chafu
         /// <value>The color of the tint.</value>
         public static UIColor TintColor { get; set; } = UIColor.FromRGBA(0, 0x96, 0x88, 255);
 
-		/// <summary>
-		/// Gets or sets the tint color of the delete button.
-		/// </summary>
-		/// <value>The color of the tint.</value>
-		public static UIColor DeleteTintColor { get; set; } = UIColor.FromRGBA(230, 46, 52, 255);
+        /// <summary>
+        /// Gets or sets the tint color of the delete button.
+        /// </summary>
+        /// <value>The color of the tint.</value>
+        public static UIColor DeleteTintColor { get; set; } = UIColor.FromRGBA(230, 46, 52, 255);
 
         /// <summary>
         /// Gets or sets the background color.
@@ -145,11 +145,11 @@ namespace Chafu
         /// <value>The extra image.</value>
         public static UIImage ExtraImage { get; set; }
 
-		/// <summary>
-		/// Gets or sets the delete button image.
-		/// </summary>
-		/// <value>The delete button image.</value>
-		public static UIImage DeleteImage { get; set; }
+        /// <summary>
+        /// Gets or sets the delete button image.
+        /// </summary>
+        /// <value>The delete button image.</value>
+        public static UIImage DeleteImage { get; set; }
 
         /// <summary>
         /// Gets or sets whether Statusbar should be hidden.
@@ -249,5 +249,39 @@ namespace Chafu
         /// </summary>
         /// <value>The detected corner radius. Defaults to <c>5</c></value>
         public static int DetectedFaceCornerRadius { get; set; } = 5;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to show default camera roll
+        /// unauthorized dialog, when permission is denied or restricted to camera roll.
+        /// </summary>
+        /// <value><c>true</c> if show default dialog; otherwise, <c>false</c>.</value>
+        public static bool ShowDefaultCameraRollUnauthorizedDialog { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets the camera roll unauthorized dialog title.
+        /// </summary>
+        /// <value>The camera roll unauthorized dialog title.</value>
+        public static string CameraRollUnauthorizedDialogTitle { get; set; } =
+            "Camera Roll Unauthorized";
+
+        /// <summary>
+        /// Gets or sets the camera roll unauthorized dialog message.
+        /// </summary>
+        /// <value>The camera roll unauthorized dialog message.</value>
+        public static string CameraRollUnauthorizedDialogMessage { get; set; } =
+            "The App does not have permission to access the Camera Roll. " +
+            "If you want to pick images, please go to Settings and change the permissions";
+
+        /// <summary>
+        /// Gets or sets the settings button title on camera roll unauthorized dialog.
+        /// </summary>
+        /// <value>The settings title.</value>
+        public static string SettingsTitle { get; set; } = "Settings";
+
+        /// <summary>
+        /// Gets or sets the ok button title on camera roll unauthorized dialog.
+        /// </summary>
+        /// <value>The ok title.</value>
+        public static string OkTitle { get; set; } = "Ok";
     }
 }
