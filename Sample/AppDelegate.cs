@@ -1,4 +1,6 @@
-﻿using Foundation;
+﻿using System.IO;
+using System.Linq;
+using Foundation;
 using UIKit;
 
 namespace Sample
@@ -34,37 +36,70 @@ namespace Sample
             return true;
         }
 
-        public override void OnResignActivation(UIApplication application)
+        [Export("ensureImages")]
+        public void EnsureImages()
         {
-            // Invoked when the application is about to move from active to inactive state.
-            // This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) 
-            // or when the user quits the application and it begins the transition to the background state.
-            // Games should use this method to pause the game.
+            var rice = UIImage.FromBundle("DefaultImages/rice.jpg");
+            var corn = UIImage.FromBundle("DefaultImages/corn.jpg");
+            foreach (var image in new UIImage[] { rice, corn })
+            {
+                image.SaveToPhotosAlbum((img, error) =>
+                {
+
+                });
+            }
         }
 
-        public override void DidEnterBackground(UIApplication application)
+        [Export("ensureLocalImages")]
+        public void EnsureLocalImages()
         {
-            // Use this method to release shared resources, save user data, invalidate timers and store the application state.
-            // If your application supports background exection this method is called instead of WillTerminate when the user quits.
+            var tempPath = TempPath();
+
+            var files = Directory.GetFiles(tempPath);
+
+            foreach (var file in files)
+            {
+                var fileName = Path.GetFileNameWithoutExtension(file);
+                if (fileName.Contains("__test_1") ||
+                    fileName.Contains("__test_2"))
+                    return;
+            }
+
+            var rice = UIImage.FromBundle("DefaultImages/rice.jpg");
+            var corn = UIImage.FromBundle("DefaultImages/corn.jpg");
+            var bundleImages = new UIImage[] { rice, corn };
+
+            var index = 0;
+            foreach (var image in bundleImages)
+            {
+                using (var data = image.AsPNG())
+                using (var imageStream = data.AsStream())
+                using (var fileStream = new FileStream(
+                    Path.Combine(tempPath, $"__test_{index++}.png"), FileMode.Create))
+                {
+                    CopyStream(imageStream, fileStream);
+                }
+            }
         }
 
-        public override void WillEnterForeground(UIApplication application)
+        public static void CopyStream(Stream input, Stream output)
         {
-            // Called as part of the transiton from background to active state.
-            // Here you can undo many of the changes made on entering the background.
+            var buffer = new byte[8 * 1024];
+            int len;
+            while ((len = input.Read(buffer, 0, buffer.Length)) > 0)
+            {
+                output.Write(buffer, 0, len);
+            }
         }
 
-        public override void OnActivated(UIApplication application)
+        public static string TempPath()
         {
-            // Restart any tasks that were paused (or not yet started) while the application was inactive. 
-            // If the application was previously in the background, optionally refresh the user interface.
-        }
+            var ret = Path.Combine(Path.GetTempPath(), "Chafu");
 
-        public override void WillTerminate(UIApplication application)
-        {
-            // Called when the application is about to terminate. Save data, if needed. See also DidEnterBackground.
+            if (!Directory.Exists(ret))
+                Directory.CreateDirectory(ret);
+
+            return ret;
         }
     }
 }
-
-
