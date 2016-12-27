@@ -26,10 +26,11 @@ namespace Chafu.UITest
             //    Xamarin.Calabash.Start();
             //    #endif
             app = ConfigureApp
-                .iOS
+                .iOS.Debug()
+                //.DeviceIdentifier("58927E11-7EF8-426F-8907-25D487B36D40")
                 // TODO: Update this path to point to your iOS app and uncomment the
                 // code if the app is not included in the solution.
-                //.AppBundle ("../../../iOS/bin/iPhoneSimulator/Debug/Chafu.UITest.iOS.app")
+                //.AppBundle("../../../../Sample/bin/iPhoneSimulator/Debug/Sample.app")
                 .StartApp();
         }
 
@@ -52,6 +53,8 @@ namespace Chafu.UITest
         [Test]
         public void PickImageTest()
         {
+            app.Invoke("ensureImages");
+
             var pickImage = app.WaitForElement(t => t.Marked("PickImage"));
             Assert.True(pickImage.Count() == 1);
 
@@ -69,8 +72,6 @@ namespace Chafu.UITest
 
             if (cells.Count() > 0)
             {
-                // probably sim or device with images in gallery
-
                 app.Tap(a => a.Class("Chafu_AlbumViewCell"));
                 app.Screenshot("Image Selected");
 
@@ -156,6 +157,73 @@ namespace Chafu.UITest
             Assert.IsNotEmpty(text);
         }
 
+        [Test]
+        public void SelectFromLocal()
+        {
+            app.Invoke("ensureLocalImages");
 
+            var showAlbum = app.WaitForElement(t => t.Marked("ShowAlbum"));
+            Assert.True(showAlbum.Count() == 1);
+
+            app.Tap(a => a.Marked("ShowAlbum"));
+            app.Screenshot("Album View");
+
+            var collectionView =
+                app.WaitForElement(a => a.Class("UICollectionView").Marked("CollectionView"));
+
+            Assert.True(collectionView.Count() == 1);
+
+            var cells = app.WaitForElement(a => a.Class("Chafu_AlbumViewCell"));
+
+            Assert.True(cells.Count() >= 0);
+
+            if (cells.Count() > 0)
+            {
+                app.Tap(a => a.Class("Chafu_AlbumViewCell"));
+                app.Screenshot("Image Selected");
+
+                app.Tap(a => a.Marked("DoneButton"));
+                app.Screenshot("Back to start, selected image");
+
+                app.WaitForElement(a => a.Marked("UrlLabel"));
+
+                var text = app.Query(a => a.Marked("UrlLabel"));
+
+                Assert.IsNotEmpty(text);
+            }
+        }
+
+        [Test]
+        public void DeleteLocalImage()
+        {
+            app.Invoke("ensureLocalImages");
+
+            var showAlbum = app.WaitForElement(t => t.Marked("ShowAlbum"));
+            Assert.True(showAlbum.Count() == 1);
+
+            app.Tap(a => a.Marked("ShowAlbum"));
+            app.Screenshot("Before Delete");
+
+            var collectionView =
+                app.WaitForElement(a => a.Class("UICollectionView").Marked("CollectionView"));
+
+            Assert.True(collectionView.Count() == 1);
+
+            var cells = app.WaitForElement(a => a.Class("Chafu_AlbumViewCell"));
+
+            Assert.True(cells.Count() >= 0);
+
+            if (cells.Count() > 0)
+            {
+                app.Tap(a => a.Class("Chafu_AlbumViewCell"));
+                app.Screenshot("Image Selected");
+
+                app.Tap(a => a.Marked("DeleteButton"));
+                app.Screenshot("Delete Dialog");
+
+                app.Tap(a => a.Marked("Delete"));
+                app.Screenshot("After Delete");
+            }
+        }
     }
 }
