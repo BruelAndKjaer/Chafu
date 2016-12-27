@@ -112,5 +112,12 @@
       <Name>Chafu</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Resources\DefaultImages\" />
+  </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="Resources\DefaultImages\rice.jpg" />
+    <BundleResource Include="Resources\DefaultImages\corn.jpg" />
+  </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
 </Project>
