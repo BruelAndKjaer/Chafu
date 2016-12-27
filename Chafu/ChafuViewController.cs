@@ -303,9 +303,61 @@ namespace Chafu
             CameraUnauthorized?.Invoke(this, e);
         }
 
+        private UIAlertController _permissionAlertController;
+
+        private UIAlertController EnsureAlertController()
+        {
+            if (_permissionAlertController == null)
+            {
+                _permissionAlertController = UIAlertController.Create(null, null,
+                    UIAlertControllerStyle.ActionSheet);
+
+                var url = UIApplication.OpenSettingsUrlString;
+
+                if (url != null)
+                {
+                    _permissionAlertController.AddAction(UIAlertAction.Create(
+                        Configuration.SettingsTitle, UIAlertActionStyle.Default,
+                        OpenSettings));
+                }
+                else
+                {
+                    _permissionAlertController.AddAction(UIAlertAction.Create(
+                        Configuration.OkTitle, UIAlertActionStyle.Default,
+                        action => { }));
+                }
+
+                _permissionAlertController.AddAction(UIAlertAction.Create(
+                    Configuration.CancelTitle, UIAlertActionStyle.Cancel, action => { }));
+
+                _permissionAlertController.Title =
+                    Configuration.CameraRollUnauthorizedDialogTitle;
+                _permissionAlertController.Message =
+                    Configuration.CameraRollUnauthorizedDialogMessage;
+            }
+
+            return _permissionAlertController;
+        }
+
+        private void OpenSettings(UIAlertAction obj)
+        {
+            var url = UIApplication.OpenSettingsUrlString;
+            UIApplication.SharedApplication.OpenUrl(new NSUrl(url));
+        }
+
         private void OnCameraRollUnauthorized(object sender, EventArgs e)
         {
-            CameraRollUnauthorized?.Invoke(this, e);
+            BeginInvokeOnMainThread(() =>
+            {
+                if (Configuration.ShowDefaultCameraRollUnauthorizedDialog)
+                {
+                    var controller = EnsureAlertController();
+
+                    PresentViewController(controller, true, () => { });
+                }
+
+                CameraRollUnauthorized?.Invoke(this, e);
+            });
         }
 
         private void CloseButtonPressed(object sender, EventArgs e)
