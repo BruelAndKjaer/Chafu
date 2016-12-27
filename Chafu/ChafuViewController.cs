@@ -240,10 +240,14 @@ namespace Chafu
         {
             base.ViewDidAppear(animated);
 
+            _cameraView.CameraUnauthorized += OnCameraUnauthorized;
+
             AlbumView.LayoutIfNeeded();
             _cameraView.LayoutIfNeeded();
 
             var albumDataSource = LazyDataSource(AlbumView, AlbumView.CellSize, MediaTypes);
+            albumDataSource.CameraRollUnauthorized += OnCameraRollUnauthorized;
+
             var albumDelegate = LazyDelegate(AlbumView, albumDataSource);
             AlbumDataSource = albumDataSource;
             AlbumDelegate = albumDelegate;
@@ -269,9 +273,6 @@ namespace Chafu
             _menuView.Done += DoneButtonPressed;
             _cameraButton.TouchUpInside += CameraButtonPressed;
             _videoButton.TouchUpInside += VideoButtonPressed;
-
-            AlbumDataSource.CameraRollUnauthorized += OnCameraRollUnauthorized;
-            _cameraView.CameraUnauthorized += OnCameraUnauthorized;
 
             ChangeMode(Configuration.ModeOrder == ModeOrder.LibraryFirst ?
                 Mode.Library : Mode.Camera);
