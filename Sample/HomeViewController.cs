@@ -15,8 +15,10 @@ namespace Sample
             base.ViewDidLoad();
             Title = "Chafu";
 
-            var deleteAll = new UIBarButtonItem(UIBarButtonSystemItem.Trash) { TintColor = Configuration.BackgroundColor };
-
+            var deleteAll = new UIBarButtonItem(UIBarButtonSystemItem.Trash)
+            {
+                TintColor = Configuration.BackgroundColor
+            };
 
             NavigationController.NavigationBar.BarTintColor = Configuration.TintColor;
             NavigationController.NavigationBar.TintColor = Configuration.BaseTintColor;
@@ -85,10 +87,14 @@ namespace Sample
             var albumViewController = new AlbumViewController
             {
                 LazyDataSource = (view, size, mediaTypes) =>
-                    new LocalFilesDataSource(view, size, mediaTypes) { ImagesPath = TempPath() },
-                LazyDelegate = (view, source) => new LocalFilesDelegate(view, (LocalFilesDataSource)source),
-                ShowExtraButton = true,
-                ShowDoneButton = false,
+                    new LocalFilesDataSource(view, size, mediaTypes)
+                    {
+                        ImagesPath = AppDelegate.TempPath()
+                    },
+                LazyDelegate = (view, source) =>
+                    new LocalFilesDelegate(view, (LocalFilesDataSource)source),
+                ShowExtraButton = false,
+                ShowDoneButton = true,
                 ShowDeleteButton = true
             };
 
@@ -114,7 +120,8 @@ namespace Sample
             deleteAll.Clicked += (sender, args) =>
             {
                 DeleteAllStuff();
-                ((LocalFilesDataSource)albumViewController.AlbumDataSource)?.UpdateImageSource(TempPath());
+                ((LocalFilesDataSource)albumViewController.AlbumDataSource)?
+                    .UpdateImageSource(AppDelegate.TempPath());
             };
 
             Add(imageView);
@@ -151,18 +158,20 @@ namespace Sample
 
         private string GetRandomPath()
         {
-            var dirPath = TempPath();
+            var dirPath = AppDelegate.TempPath();
             if (!Directory.Exists(dirPath))
                 return null;
 
             var files = Directory.GetFiles(dirPath);
+            if (files.Length == 0)
+                return null;
             var random = new Random().Next(files.Length - 1);
             return files[random];
         }
 
         private string CopyImageToLocalFolder(UIImage image)
         {
-            var dirPath = TempPath();
+            var dirPath = AppDelegate.TempPath();
             var fileName = $"{Guid.NewGuid().ToString("N")}.jpg";
             var tempPath = Path.Combine(dirPath, fileName);
 
@@ -186,7 +195,7 @@ namespace Sample
         {
             DispatchQueue.DefaultGlobalQueue.DispatchAsync(() =>
             {
-                var dirPath = TempPath();
+                var dirPath = AppDelegate.TempPath();
                 var fileName = $"{Guid.NewGuid().ToString("N")}.mov";
                 var tempPath = Path.Combine(dirPath, fileName);
 
@@ -201,18 +210,12 @@ namespace Sample
         {
             DispatchQueue.DefaultGlobalQueue.DispatchAsync(() =>
             {
-                var dirPath = TempPath();
+                var dirPath = AppDelegate.TempPath();
                 if (!Directory.Exists(dirPath)) return;
 
                 Directory.Delete(dirPath, true);
                 Directory.CreateDirectory(dirPath);
             });
-        }
-
-        public string TempPath()
-        {
-            var ret = Path.Combine(Path.GetTempPath(), "Chafu");
-            return ret;
         }
     }
 }
