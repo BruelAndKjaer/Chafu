@@ -16,6 +16,6 @@ namespace Chafu
         /// <summary>
         /// Start with Library first
         /// </summary>
-        LibraryFirst,
+        LibraryFirst
     }
 }
