@@ -259,9 +259,19 @@ namespace Chafu
             AlbumDataSource.CameraRollUnauthorized += OnCameraRollUnauthorized;
             _cameraView.CameraUnauthorized += OnCameraUnauthorized;
 
-		    ChangeMode(Configuration.ModeOrder == ModeOrder.LibraryFirst ? 
-                Mode.Library : Mode.Camera);
-		}
+            switch (Configuration.ModeOrder)
+            {
+                case ModeOrder.CameraFirst:
+                    ChangeMode(Mode.Camera);
+                    break;
+                case ModeOrder.VideoFirst:
+                    ChangeMode(HasVideo ? Mode.Video : Mode.Library); // Fallback to Library if the Video is disabled
+                    break;
+                case ModeOrder.LibraryFirst:
+                    ChangeMode(Mode.Library);
+                    break;
+            }
+        }
 
         /// <inheritdoc />
         public override void ViewWillDisappear (bool animated)
@@ -454,5 +464,5 @@ namespace Chafu
 
         /// <inheritdoc />
         public override UIInterfaceOrientation InterfaceOrientation => UIInterfaceOrientation.Portrait;
-	}
+    }
 }
