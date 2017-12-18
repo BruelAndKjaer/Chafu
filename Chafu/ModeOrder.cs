@@ -10,8 +10,12 @@ namespace Chafu
         /// </summary>
         CameraFirst,
         /// <summary>
+        /// Start with Video first
+        /// </summary>
+        VideoFirst,
+        /// <summary>
         /// Start with Library first
         /// </summary>
-        LibraryFirst
+        LibraryFirst,
     }
 }
