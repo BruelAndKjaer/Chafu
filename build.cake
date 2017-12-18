@@ -43,7 +43,7 @@ Task("Build")
 	.IsDependentOn("Restore")
 	.Does(() =>  {
 	
-	DotNetBuild(sln, 
+	MSBuild(sln, 
 		settings => settings.SetConfiguration("Release")
 							.WithProperty("DebugSymbols", "true")
             				.WithProperty("DebugType", "Full")
