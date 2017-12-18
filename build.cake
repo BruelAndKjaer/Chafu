@@ -1,5 +1,5 @@
 #tool "nuget:?package=GitVersion.CommandLine"
-#tool "nuget:?package=gitlink"
+#tool "nuget:?package=gitlink&version=2.4.0"
 
 var sln = new FilePath("Chafu.sln");
 var project = new FilePath("Chafu/Chafu.csproj");
