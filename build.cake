@@ -1,12 +1,12 @@
 #tool "nuget:?package=GitVersion.CommandLine"
-#tool "nuget:?package=gitlink"
+#tool "nuget:?package=gitlink&version=2.4.0"
 
-var sln = new FilePath("Chafu.sln");
-var project = new FilePath("Chafu/Chafu.csproj");
-var sample = new FilePath("Sample/Sample.csproj");
-var binDir = new DirectoryPath("Chafu/bin/Release");
-var nuspec = new FilePath("chafu.nuspec");
-var outputDir = new DirectoryPath("artifacts");
+var sln = new FilePath("./Chafu.sln");
+var project = new FilePath("./Chafu/Chafu.csproj");
+var sample = new FilePath("./Sample/Sample.csproj");
+var binDir = new DirectoryPath("./Chafu/bin/Release");
+var nuspec = new FilePath("./chafu.nuspec");
+var outputDir = new DirectoryPath("./artifacts");
 var target = Argument("target", "Default");
 
 var isRunningOnAppVeyor = AppVeyor.IsRunningOnAppVeyor;
@@ -43,7 +43,7 @@ Task("Build")
 	.IsDependentOn("Restore")
 	.Does(() =>  {
 	
-	DotNetBuild(sln, 
+	MSBuild(sln, 
 		settings => settings.SetConfiguration("Release")
 							.WithProperty("DebugSymbols", "true")
             				.WithProperty("DebugType", "Full")
