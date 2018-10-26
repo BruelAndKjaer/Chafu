@@ -1,3 +1,5 @@
+<p align="center"><img src="images/logo/horizontal.png" alt="Chafu" height="150px"></p>
+
 # Chafu
 
 ## Continuous Integration
